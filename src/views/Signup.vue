@@ -1,0 +1,377 @@
+<template>
+  <!-- Background image -->
+  <img src="/src/assets/background.png" alt="background" class="background" />
+
+  <!-- Logo -->
+  <div class="logo">
+    <img src="/src/assets/logo.png" alt="Harmonilink Logo" />
+    <p>armonilink</p>
+  </div>
+
+  <!-- CD -->
+  <div class="cd">
+    <img src="/src/assets/cd.png" alt="CD" class="CD" />
+    <img src="/src/assets/cdbg.png" alt="CD Background" class="cdbg" />
+  </div>
+
+  <!-- Signup form -->
+  <div class="signup">
+    <h2>SIGN UP</h2>
+    <form @submit.prevent="handleSignup">
+      <!-- Username -->
+      <div class="input-group" :class="{ invalid: usernameError }">
+        <input
+          type="text"
+          v-model="username"
+          placeholder="Username"
+          required
+          autofocus
+          autocomplete="off"
+        />
+        <span class="icon"><i class="fa-solid fa-user"></i></span>
+      </div>
+      <p v-if="usernameError" class="error-message">{{ usernameError }}</p>
+
+      <!-- Email -->
+      <div class="input-group" :class="{ invalid: emailError }">
+        <input
+          type="email"
+          v-model="email"
+          placeholder="Email"
+          required
+          autocomplete="off"
+        />
+        <span class="icon"><i class="fa-solid fa-envelope"></i></span>
+      </div>
+      <p v-if="emailError" class="error-message">{{ emailError }}</p>
+
+      <!-- Password -->
+      <div class="input-group" :class="{ invalid: passwordError }">
+        <input
+          :type="showPassword ? 'text' : 'password'"
+          v-model="password"
+          placeholder="Password"
+          required
+          autocomplete="off"
+        />
+        <span class="icon" @click="togglePasswordVisibility('password')">
+          <i :class="showPassword ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'"></i>
+        </span>
+      </div>
+      <p v-if="passwordError" class="error-message">{{ passwordError }}</p>
+      <p v-if="passwordStrength.message !== 'Strong password'" :style="{ color: passwordStrength.color, fontSize: '12px', margin: '5px 0' }">
+        {{ passwordStrength.message }}
+      </p>
+
+      <!-- Confirm Password -->
+      <div class="input-group" :class="{ invalid: confirmPasswordError }">
+        <input
+          :type="showConfirmPassword ? 'text' : 'password'"
+          v-model="confirmPassword"
+          placeholder="Confirm Password"
+          required
+          autocomplete="off"
+        />
+        <span class="icon" @click="togglePasswordVisibility('confirm')">
+          <i :class="showConfirmPassword ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'"></i>
+        </span>
+      </div>
+      <p v-if="confirmPasswordError" class="error-message">{{ confirmPasswordError }}</p>
+
+      <!-- Terms checkbox -->
+      <div class="checkbox-group">
+        <input type="checkbox" id="terms" v-model="termsAccepted" required />
+        <label for="terms">
+          By checking this box, you are agreeing to our
+          <router-link to="/terms" class="terms">Terms of Service.</router-link>
+        </label>
+      </div>
+
+      <!-- Signup button -->
+      <button type="submit" :disabled="loading">Sign Up</button>
+
+      <!-- Login redirect -->
+      <p class="login-text">
+        Already have an account?
+        <router-link to="/login" class="signin-link">Sign In</router-link>
+      </p>
+    </form>
+  </div>
+</template>
+  
+<script setup>
+import { ref, computed } from 'vue';
+import axios from 'axios';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+
+const username = ref('');
+const email = ref('');
+const password = ref('');
+const confirmPassword = ref('');
+const termsAccepted = ref(false);
+
+const usernameError = ref('');
+const emailError = ref('');
+const passwordError = ref('');
+const confirmPasswordError = ref('');
+const loading = ref(false);
+
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const passwordStrength = computed(() => {
+  const val = password.value;
+  if (!val) return { message: '', color: '' };
+
+  const hasUpper = /[A-Z]/.test(val);
+  const hasLower = /[a-z]/.test(val);
+  const hasNumber = /[0-9]/.test(val);
+  const hasSymbol = /[^A-Za-z0-9]/.test(val);
+  const isLong = val.length >= 8;
+
+  const score = [hasUpper, hasLower, hasNumber, hasSymbol].filter(Boolean).length;
+
+  if (!isLong || score < 3) return { message: 'Too weak', color: 'red' };
+  if (score === 3) return { message: 'Could be stronger', color: 'orange' };
+  return { message: 'Strong password', color: 'green' };
+});
+
+const togglePasswordVisibility = (type) => {
+  if (type === 'password') {
+    showPassword.value = !showPassword.value;
+  } else if (type === 'confirm') {
+    showConfirmPassword.value = !showConfirmPassword.value;
+  }
+};
+
+const showPassword = ref(false);
+const showConfirmPassword = ref(false);
+
+const handleSignup = async () => {
+  usernameError.value = '';
+  emailError.value = '';
+  passwordError.value = '';
+  confirmPasswordError.value = '';
+
+  // Validate inputs
+  if (!username.value.trim()) usernameError.value = 'Username is required!';
+  if (!emailPattern.test(email.value)) emailError.value = 'Invalid email format!';
+  if (passwordStrength.value.message !== 'Strong password') passwordError.value = 'Use a stronger password!';
+  if (password.value !== confirmPassword.value) confirmPasswordError.value = 'Passwords do not match!';
+  if (!termsAccepted.value) {
+    alert('You must accept the Terms of Service to sign up.');
+    return;
+  }
+
+  if (usernameError.value || emailError.value || passwordError.value || confirmPasswordError.value) return;
+
+  try {
+    loading.value = true;
+    const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/signup`, {
+      username: username.value,
+      email: email.value,
+      password: password.value,
+    });
+
+    alert('Signup successful!');
+    router.push('/login');
+  } catch (error) {
+    if (error.response?.status === 422) {
+      const errors = error.response.data.errors || {};
+      if (errors.username) usernameError.value = errors.username[0];
+      if (errors.email) emailError.value = errors.email[0];
+    } else {
+      alert('An error occurred. Please try again.');
+    }
+  } finally {
+    loading.value = false;
+  }
+};
+</script>
+  
+<style scoped>
+ 
+
+/* imports of Google Fonts and Font Awesome for icons */
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css');
+
+/* global styles for the application */
+* {
+  font-family: 'Fira Code', monospace;
+}
+
+.background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  flex-direction: column;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  top: 30px;
+  left: 30px;
+  gap: 5px;
+}
+
+.logo img {
+  width: 40px;
+  height: 40px;
+}
+
+.logo p {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.cdbg {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  top: 4.4rem;
+  right: 0px;
+  height: 38rem;
+  width: 50rem;
+  border-radius: 10px;
+}
+
+.CD {
+  position: fixed;
+  top: 8rem;
+  right: 8rem;
+  z-index: 10;
+  height: 30rem;
+  animation: rotate 20s linear infinite;
+}
+
+/* animation */
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.signup {
+  width: 30rem;
+  height: 33rem;
+  padding: 20px;
+  background: linear-gradient(to right, #c697bd, #dbb4d7 80%, #1f0d3e);
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  position: absolute;
+  top: 50%;
+  left: 588px;
+  transform: translate(-50%, -50%);
+  color: #322848;
+}
+
+h2 {
+  margin-bottom: 3rem;
+  color: #322848;
+  font-size: 40px;
+}
+
+.input-group {
+  position: relative;
+  margin: 1rem 0;
+}
+
+.input-group input {
+  width: 24rem;
+  height: 1.5rem;
+  padding: 8px;
+  padding-right: 40px;
+  background: rgba(235, 235, 235, 0.4);
+  border: none;
+  border-radius: 5px;
+  font-size: 15px;
+  color: #333;
+}
+
+.input-group input:focus {
+  border: 2px solid #1f0d3e;
+  outline: none;
+}
+
+.input-group .icon {
+  position: absolute;
+  right: 2.8rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #080d2a;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  font-size: 10px;
+  margin: 10px 0;
+  margin-left: 36px;
+}
+
+.checkbox-group input {
+  margin-right: 8px;
+}
+
+button {
+  width: 20rem;
+  height: 2.5rem;
+  padding: 10px;
+  background: #1f0d3e;
+  color: #ebebeb;
+  border: none;
+  border-radius: 40px;
+  cursor: pointer;
+  margin-top: 10px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+button:hover {
+  background: #14092b;
+}
+
+.login-text {
+  margin-top: 15px;
+  font-size: 13px;
+}
+
+.signin-link {
+  text-decoration: underline;
+  color: #322848;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.terms {
+  text-decoration: solid;
+  color: #322848;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.input-group.invalid input {
+  border: 2px solid red;
+}
+
+.error-message {
+  color: red;
+  font-size: 12px;
+  margin-top: 5px;
+  text-align: left;
+}
+</style>
