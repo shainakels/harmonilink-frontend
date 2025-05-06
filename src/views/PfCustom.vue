@@ -49,7 +49,7 @@
   
   const saveProfile = async () => {
     const birthday = `${year.value}-${String(month.value).padStart(2, '0')}-${String(day.value).padStart(2, '0')}`;
-    const user_id = localStorage.getItem('user_id'); // Assuming user_id is stored in localStorage
+    const user_id = localStorage.getItem('user_id'); 
   
     try {
       const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/pfcustom`, {
@@ -60,8 +60,8 @@
       });
   
       if (response.data.status === 'success') {
-        alert('Profile saved successfully!');
-        router.push('/pfmixtape'); // Navigate to the next page
+        localStorage.setItem('onboardingStep', 'pfmixtape'); 
+        router.push('/pfmixtape'); 
       } else {
         alert(response.data.message || 'Something went wrong!');
       }
@@ -73,6 +73,7 @@
   </script>
   
   <style scoped>
+
   @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap');
   
   * {
@@ -93,9 +94,9 @@
     transform: rotate(180deg);
   }
   
-  /* Fade transition */
+  
   .fade-enter-active, .fade-leave-active {
-    transition: opacity 1s ease-in-out; /* Slow transition for fade effect */
+    transition: opacity 1s ease-in-out; 
   }
   .fade-enter, .fade-leave-to {
     opacity: 0;

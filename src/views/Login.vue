@@ -1,16 +1,14 @@
 <template>
+  <!-- Background image -->
   <img src="/src/assets/background.png" alt="background" class="background">
-  
   <div class="cd">
     <img src="/src/assets/cd.png" alt="CD" class="CD">
   </div>
-
+   <!-- Login form -->
   <div class="login">
     <h2>LOG IN</h2>
     <img src="/src/assets/logo.png" alt="Harmonilink Logo">
-
     <p class="quote-text">Bringing people together through the power of music.</p>
-
     <form @submit.prevent="handleLogin">
       <div class="input-group">
         <input
@@ -22,7 +20,6 @@
         />
         <span v-if="!email.includes('@')" class="email-domain">@gmail.com</span>
       </div>
-
       <div class="input-group">
         <input
           :type="showPassword ? 'text' : 'password'"
@@ -44,12 +41,13 @@
       </div>
 
       <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
-
+      <!--Keep Me Logged In checkbox-->
       <div class="checkbox-container">
         <div class="checkbox-group">
           <input type="checkbox" id="keep" v-model="keepLoggedIn">
           <label for="keep">Keep me logged in</label>
         </div>
+        <!--Forget Password-->
         <p class="forgot-password">
           <router-link to="/forgot-password">Forgot password?</router-link>
         </p>
@@ -59,7 +57,10 @@
         {{ loading ? 'Logging in...' : 'Log In' }}
       </button>
 
-      <p class="login-text">Don't have an account? <router-link to="/SignUp" class="signin-link">Sign Up</router-link></p>
+      <p class="login-text">
+        Don't have an account? 
+        <router-link to="/signup" class="signin-link">Sign Up</router-link>
+      </p>
     </form>
   </div>
 </template>
@@ -73,7 +74,7 @@ const router = useRouter();
 const email = ref('');
 const password = ref('');
 const showPassword = ref(false);
-const keepLoggedIn = ref(false); // Define keepLoggedIn
+const keepLoggedIn = ref(false); 
 const loading = ref(false);
 const errorMessage = ref('');
 
@@ -92,20 +93,24 @@ const handleLogin = async () => {
     });
 
     if (response.status === 200) {
-      const user_id = response.data.user_id; // Assuming the backend returns user_id
-      if (keepLoggedIn.value) {
-        localStorage.setItem('userLoggedIn', 'true');
-        localStorage.setItem('user_id', user_id); // Store user_id
-      } else {
-        sessionStorage.setItem('userLoggedIn', 'true');
-        sessionStorage.setItem('user_id', user_id); // Store user_id
-      }
+      const { user_id, onboarding_completed } = response.data;
+      localStorage.setItem('userLoggedIn', 'true');
+      localStorage.setItem('user_id', user_id);
 
-      alert('Login successful!');
-      router.push('/pfcustom'); // Redirect to the PfCustom page
+      if (!onboarding_completed) {      
+        localStorage.setItem('onboardingStep', 'pfcustom');
+        router.push('/pfcustom');
+      } else {
+        localStorage.setItem('onboardingStep', 'home');
+        router.push('/home');
+      }
     }
   } catch (error) {
-    if (error.response?.status === 400) {
+    if (error.response?.status === 422) {
+      errorMessage.value = 'Email and password are required.';
+    } else if (error.response?.status === 404) {
+      errorMessage.value = 'User not registered. Please sign up first.';
+    } else if (error.response?.status === 400) {
       errorMessage.value = 'Invalid email or password.';
     } else {
       errorMessage.value = 'Something went wrong. Please try again later.';
@@ -228,7 +233,7 @@ h2 {
   transform: translateY(-50%);
   font-size: 15px;
   color: #888;
-  pointer-events: none; /* Prevent interaction with the text */
+  pointer-events: none; 
 }
 
 .checkbox-container {
@@ -255,6 +260,11 @@ h2 {
   cursor: pointer;
   text-decoration: underline;
   color: #ebebeb;
+}
+
+.forgot-password a {
+  color: #ffffff;
+  text-decoration: underline;
 }
 
 button {

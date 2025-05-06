@@ -104,11 +104,11 @@
   
   const songName = ref('');
   const artistName = ref('');
-  const twinkleActive = ref(false); // Twinkle effect state
+  const twinkleActive = ref(false); 
   
   const mixtapeNameError = ref('');
   const mixtapeBioError = ref('');
-  const showSongError = ref(false); // Error state for song count
+  const showSongError = ref(false); 
   
   function triggerPhotoUpload() {
     photoInput.value.click();
@@ -162,7 +162,27 @@
   }
   
   const handleFinish = async () => {
-    const user_id = localStorage.getItem('user_id'); 
+    if (!mixtapeName.value.trim()) {
+      alert('Mixtape name is required.');
+      return;
+    }
+  
+    if (!mixtapeBio.value.trim()) {
+      alert('Mixtape bio is required.');
+      return;
+    }
+  
+    if (!photoUrl.value) {
+      alert('Mixtape photo is required.');
+      return;
+    }
+  
+    if (songs.value.length < 3) {
+      alert('At least 3 songs are required.');
+      return;
+    }
+  
+    const user_id = localStorage.getItem('user_id');
   
     try {
       const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/pfmixtape`, {
@@ -174,13 +194,15 @@
       });
   
       if (response.data.status === 'success') {
-        alert('Mixtape created successfully!');
-        router.push('/welcome'); 
-      } else {
-        alert(response.data.message || 'Something went wrong!');
+        // Mark onboarding as completed
+        await axios.post(`${import.meta.env.VITE_API_URL}/api/complete-onboarding`, { user_id });
+        localStorage.setItem('onboardingStep', 'welcome');
+  
+        // Show the congratulations popup
+        showCongratsPopup.value = true;
       }
     } catch (error) {
-      console.error(error);
+      console.error('Error in handleFinish:', error);
       alert('Failed to create mixtape. Please try again.');
     }
   };
@@ -436,7 +458,6 @@
     cursor: pointer;
   }
   
-  /* Twinkling effect */
   @keyframes twinkle {
     0% {
       box-shadow: 0 0 5px 2px rgba(255, 255, 255, 0.5);

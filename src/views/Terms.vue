@@ -36,6 +36,7 @@
   </script>
   
   <style scoped>
+  
 .terms-page {
   position: fixed;
   top: 0;

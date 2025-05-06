@@ -6,8 +6,7 @@
   </template>
   
   <script setup>
-  // This is a basic setup script.
-  // You can add logic here later.
+  
   </script>
   
   <style scoped>

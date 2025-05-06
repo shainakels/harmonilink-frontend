@@ -83,7 +83,7 @@
         <input type="checkbox" id="terms" v-model="termsAccepted" required />
         <label for="terms">
           By checking this box, you are agreeing to our
-          <router-link to="/terms" class="terms">Terms of Service.</router-link>
+          <span class="terms" @click="showTermsPopup = true">Terms of Service.</span>
         </label>
       </div>
 
@@ -96,6 +96,37 @@
         <router-link to="/login" class="signin-link">Sign In</router-link>
       </p>
     </form>
+  </div>
+
+  <!-- Terms of Service Popup -->
+  <div v-if="showTermsPopup" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        Terms of Service
+        <span class="close" @click="showTermsPopup = false">×</span>
+      </div>
+      <div class="modal-content">
+        <p>
+          At <strong>HarmoniLink</strong>, we value your privacy and are fully committed to safeguarding your personal
+          information in accordance with the <strong>Data Privacy Act of 2012 (RA 10173)</strong>.
+        </p>
+        <p>
+          By signing up and using our services, you consent to the <strong>collection, use, storage, and processing</strong>
+          of your personal data—including, but not limited to, your name, email address, and account credentials. This
+          data is collected solely for the purpose of delivering and enhancing the features and functionality of our
+          platform.
+        </p>
+        <ul>
+          <li>Your personal information is kept <strong>secure and confidential</strong>.</li>
+          <li>Your data will <strong>not be shared with third parties</strong> without your explicit consent, unless required by law.</li>
+          <li>You retain the <strong>right to access, correct, update, or withdraw</strong> your personal data at any time.</li>
+        </ul>
+        <p>
+          <br>
+          We are committed to using your information responsibly and transparently.
+        </p>
+      </div>
+    </div>
   </div>
 </template>
   
@@ -117,6 +148,8 @@ const emailError = ref('');
 const passwordError = ref('');
 const confirmPasswordError = ref('');
 const loading = ref(false);
+
+const showTermsPopup = ref(false); 
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -154,7 +187,6 @@ const handleSignup = async () => {
   passwordError.value = '';
   confirmPasswordError.value = '';
 
-  // Validate inputs
   if (!username.value.trim()) usernameError.value = 'Username is required!';
   if (!emailPattern.test(email.value)) emailError.value = 'Invalid email format!';
   if (passwordStrength.value.message !== 'Strong password') passwordError.value = 'Use a stronger password!';
@@ -179,8 +211,8 @@ const handleSignup = async () => {
   } catch (error) {
     if (error.response?.status === 422) {
       const errors = error.response.data.errors || {};
-      if (errors.username) usernameError.value = errors.username[0];
-      if (errors.email) emailError.value = errors.email[0];
+      if (errors.username) usernameError.value = errors.username; 
+      if (errors.email) emailError.value = errors.email; 
     } else {
       alert('An error occurred. Please try again.');
     }
@@ -192,12 +224,9 @@ const handleSignup = async () => {
   
 <style scoped>
  
-
-/* imports of Google Fonts and Font Awesome for icons */
 @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap');
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css');
 
-/* global styles for the application */
 * {
   font-family: 'Fira Code', monospace;
 }
@@ -254,7 +283,6 @@ const handleSignup = async () => {
   animation: rotate 20s linear infinite;
 }
 
-/* animation */
 @keyframes rotate {
   from {
     transform: rotate(0deg);
@@ -373,5 +401,60 @@ button:hover {
   font-size: 12px;
   margin-top: 5px;
   text-align: left;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-box {
+  background: #fff;
+  padding: 30px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  font-size: 20px;
+  color: #080d2a;
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  margin-left: 155px;
+}
+
+.modal-header .close {
+  cursor: pointer;
+  font-size: 30px;
+  color: #333;
+}
+
+.modal-content {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #080d2a;
+}
+
+.modal-content ul {
+  margin: 10px 0;
+  padding-left: 20px;
+  list-style-position: outside;
+}
+
+.modal-content ul li {
+  margin-bottom: 5px;
 }
 </style>

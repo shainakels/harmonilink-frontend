@@ -1,4 +1,3 @@
-// filepath: c:\harmonilink\frontend\src\router.js
 import { createRouter, createWebHistory } from 'vue-router';
 import Signup from './views/Signup.vue';
 import Login from './views/Login.vue';
@@ -7,17 +6,35 @@ import ForgotPassword from './views/ForgotPassword.vue';
 import PfCustom from './views/PfCustom.vue';
 import PfMixtape from './views/PfMixtape.vue';
 import Welcome from './views/Welcome.vue';
+import ResetPassword from './views/ResetPassword.vue';
 
 const routes = [
-  { path: '/', redirect: '/signup' }, // Redirect root to signup
+  { 
+    path: '/', 
+    name: 'Root',
+    beforeEnter: (to, from, next) => {
+      const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+      const onboardingStep = localStorage.getItem('onboardingStep');
+
+      if (!isLoggedIn) {
+        next('/signup');
+      } else {
+        if (onboardingStep === 'pfcustom') next('/pfcustom');
+        else if (onboardingStep === 'pfmixtape') next('/pfmixtape');
+        else if (onboardingStep === 'welcome') next('/welcome');
+        else next('/home'); 
+      }
+    }
+  },
   { path: '/signup', component: Signup },
   { path: '/login', component: Login },
-  { path: '/home', component: () => import('./views/Home.vue') }, // Example home route
+  { path: '/home', component: () => import('./views/Home.vue') },
   { path: '/terms', component: Terms },
   { path: '/forgot-password', component: ForgotPassword }, 
-  {path: '/pfcustom', component: PfCustom}, 
-  {path: '/pfmixtape', component: PfMixtape},
-  {path: '/welcome', component: Welcome}, // Example welcome route
+  { path: '/pfcustom', component: PfCustom }, 
+  { path: '/pfmixtape', component: PfMixtape },
+  { path: '/welcome', component: Welcome },
+  { path: '/reset-password', component: ResetPassword },
 ];
 
 const router = createRouter({
@@ -25,16 +42,17 @@ const router = createRouter({
   routes,
 });
 
-// Add a navigation guard
 router.beforeEach((to, from, next) => {
   const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
 
-  if (to.path === '/home' && !isLoggedIn) {
-    // Redirect unauthenticated users to login
-    next('/login');
-  } else {
-    next(); // Allow navigation
+  const publicPages = ['/login', '/signup', '/terms', '/forgot-password', '/reset-password'];
+  const isPublic = publicPages.includes(to.path);
+
+  if (!isLoggedIn && !isPublic) {
+    return next('/login');
   }
+
+  next(); 
 });
 
 export default router;

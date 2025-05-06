@@ -46,14 +46,14 @@
   const showPage = ref(true);
   
   const navigateToNextPage = () => {
-    router.push('/home'); // Navigate to the profile setup page
+    localStorage.setItem('onboardingStep', 'home'); 
+    router.push('/home'); 
   };
   
-  // Check if user is logged in when the component is mounted
   onMounted(() => {
     const isLoggedIn = localStorage.getItem('userLoggedIn');
     if (!isLoggedIn) {
-      router.push('/login'); // Redirect to login page if not logged in
+      router.push('/login'); 
     }
   });
   </script>
