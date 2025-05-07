@@ -46,8 +46,8 @@
   const showPage = ref(true);
   
   const navigateToNextPage = () => {
-    localStorage.setItem('onboardingStep', 'home'); 
-    router.push('/home'); 
+    localStorage.setItem('onboardingStep', 'discover'); 
+    router.push('/discover'); 
   };
   
   onMounted(() => {

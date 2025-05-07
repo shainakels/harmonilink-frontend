@@ -7,6 +7,7 @@ import PfCustom from './views/PfCustom.vue';
 import PfMixtape from './views/PfMixtape.vue';
 import Welcome from './views/Welcome.vue';
 import ResetPassword from './views/ResetPassword.vue';
+import Discover from './views/Discover.vue';
 
 const routes = [
   { 
@@ -22,13 +23,13 @@ const routes = [
         if (onboardingStep === 'pfcustom') next('/pfcustom');
         else if (onboardingStep === 'pfmixtape') next('/pfmixtape');
         else if (onboardingStep === 'welcome') next('/welcome');
-        else next('/home'); 
+        else next('/discover'); 
       }
     }
   },
   { path: '/signup', component: Signup },
   { path: '/login', component: Login },
-  { path: '/home', component: () => import('./views/Home.vue') },
+  { path: '/discover', component: () => import('./views/Discover.vue') },
   { path: '/terms', component: Terms },
   { path: '/forgot-password', component: ForgotPassword }, 
   { path: '/pfcustom', component: PfCustom }, 

@@ -93,16 +93,17 @@ const handleLogin = async () => {
     });
 
     if (response.status === 200) {
-      const { user_id, onboarding_completed } = response.data;
+      const { token, user_id, onboarding_completed } = response.data;
+      localStorage.setItem('authToken', token);
       localStorage.setItem('userLoggedIn', 'true');
       localStorage.setItem('user_id', user_id);
 
-      if (!onboarding_completed) {      
+      if (!onboarding_completed) {
         localStorage.setItem('onboardingStep', 'pfcustom');
         router.push('/pfcustom');
       } else {
-        localStorage.setItem('onboardingStep', 'home');
-        router.push('/home');
+        localStorage.setItem('onboardingStep', 'discover');
+        router.push('/discover');
       }
     }
   } catch (error) {
