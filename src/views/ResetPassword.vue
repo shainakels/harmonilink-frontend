@@ -4,6 +4,7 @@
     <h2>Reset Password</h2>
     <p>Make sure your new password is strong. Use a combination of letters, numbers, and symbols.</p>
     <form @submit.prevent="handleResetPassword">
+      <!-- Password -->
       <div class="input-group">
         <input
           :type="showPassword ? 'text' : 'password'"
@@ -11,18 +12,24 @@
           placeholder="New Password"
           required
           autocomplete="off"
+          @focus="showPasswordPopup = true"
+          @blur="hidePasswordPopup"
         />
-        <span class="icon" @click="togglePasswordVisibility"
-          :aria-label="showPassword ? 'Hide password' : 'Show password'"
-          role="button" tabindex="0" title="Toggle password visibility">
+        <span class="icon" @click="togglePasswordVisibility">
           <i :class="showPassword ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'"></i>
         </span>
+
+        <!-- Password Validation Popup -->
+        <div v-if="showPasswordPopup" class="password-popup">
+          <p v-for="(criteria, index) in passwordCriteria" :key="index" :class="{ met: criteria.met }">
+            <i :class="criteria.met ? 'fa-solid fa-check' : 'fa-solid fa-times'"></i>
+            {{ criteria.message }}
+          </p>
+        </div>
         <p v-if="passwordError" class="error-message">{{ passwordError }}</p>
-        <p v-if="passwordStrength.message !== 'Strong password'" :style="{ color: passwordStrength.color, fontSize: '12px', margin: '5px 0' }">
-          {{ passwordStrength.message }}
-        </p>
       </div>
 
+      <!-- Confirm Password -->
       <div class="input-group">
         <input
           :type="showConfirmPassword ? 'text' : 'password'"
@@ -31,13 +38,12 @@
           required
           autocomplete="off"
         />
-        <span class="icon" @click="toggleConfirmPasswordVisibility"
-          :aria-label="showConfirmPassword ? 'Hide password' : 'Show password'"
-          role="button" tabindex="0" title="Toggle password visibility">
+        <span class="icon" @click="toggleConfirmPasswordVisibility">
           <i :class="showConfirmPassword ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'"></i>
         </span>
         <p v-if="confirmPasswordError" class="error-message">{{ confirmPasswordError }}</p>
       </div>
+
       <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
       <button type="submit" :disabled="loading">
         {{ loading ? 'Resetting...' : 'Reset Password' }}
@@ -62,22 +68,18 @@ const loading = ref(false);
 const errorMessage = ref('');
 const passwordError = ref('');
 const confirmPasswordError = ref('');
+const showPasswordPopup = ref(false);
 
-const passwordStrength = computed(() => {
+const passwordCriteria = computed(() => {
   const val = password.value;
-  if (!val) return { message: '', color: '' };
 
-  const hasUpper = /[A-Z]/.test(val);
-  const hasLower = /[a-z]/.test(val);
-  const hasNumber = /[0-9]/.test(val);
-  const hasSymbol = /[^A-Za-z0-9]/.test(val);
-  const isLong = val.length >= 8;
-
-  const score = [hasUpper, hasLower, hasNumber, hasSymbol].filter(Boolean).length;
-
-  if (!isLong || score < 3) return { message: 'Too weak', color: 'red' };
-  if (score === 3) return { message: 'Could be stronger', color: 'orange' };
-  return { message: 'Strong password', color: 'green' };
+  return [
+    { message: 'At least 8 characters', met: val.length >= 8 },
+    { message: 'At least one uppercase letter', met: /[A-Z]/.test(val) },
+    { message: 'At least one lowercase letter', met: /[a-z]/.test(val) },
+    { message: 'At least one number', met: /[0-9]/.test(val) },
+    { message: 'At least one special character', met: /[^A-Za-z0-9]/.test(val) },
+  ];
 });
 
 const togglePasswordVisibility = () => {
@@ -88,13 +90,19 @@ const toggleConfirmPasswordVisibility = () => {
   showConfirmPassword.value = !showConfirmPassword.value;
 };
 
+const hidePasswordPopup = () => {
+  setTimeout(() => {
+    showPasswordPopup.value = false;
+  }, 200);
+};
+
 const handleResetPassword = async () => {
   passwordError.value = '';
   confirmPasswordError.value = '';
   errorMessage.value = '';
 
-  if (passwordStrength.value.message !== 'Strong password') {
-    passwordError.value = 'Password must be strong.';
+  if (passwordCriteria.value.some((criteria) => !criteria.met)) {
+    passwordError.value = 'Password must meet all criteria.';
     return;
   }
 
@@ -153,12 +161,13 @@ const handleResetPassword = async () => {
 }
 
 h2 {
-  margin-bottom: 25px;
+  margin-bottom: 18px;
   color: #333;
 }
 
 p {
-  margin-bottom: 25px;
+  margin-bottom: 16px;
+  font-size: 14px;
   color: #666;
 }
 
@@ -203,5 +212,40 @@ button:disabled {
   font-size: 12px;
   margin-top: 5px;
   text-align: left;
+}
+
+.password-popup {
+  position: absolute;
+  top: 110%;
+  margin-left: 15px;
+  left: 0;
+  width: 91%;
+  background: rgba(255, 255, 255, 0.9); 
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  font-size: 12px;
+  color: #333;
+}
+
+.password-popup p {
+  margin: 5px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.password-popup p.met {
+  color: green;
+}
+
+.password-popup p:not(.met) {
+  color: red;
+}
+
+.password-popup i {
+  font-size: 12px;
 }
 </style>

@@ -27,12 +27,11 @@ function toggleDropdown() {
 }
 
 function logout() {
-  // Clear user-related data
+
   localStorage.removeItem('authToken');
   localStorage.removeItem('userLoggedIn');
   localStorage.removeItem('onboardingStep');
 
-  // Redirect to login page
   router.push('/login');
 }
 </script>

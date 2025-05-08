@@ -53,15 +53,22 @@
           placeholder="Password"
           required
           autocomplete="off"
+          @focus="showPasswordPopup = true"
+          @blur="hidePasswordPopup"
         />
         <span class="icon" @click="togglePasswordVisibility('password')">
           <i :class="showPassword ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'"></i>
         </span>
+
+        <!-- Password Validation Popup -->
+        <div v-if="showPasswordPopup" class="password-popup">
+          <p v-for="(criteria, index) in passwordCriteria" :key="index" :class="{ met: criteria.met }">
+            <i :class="criteria.met ? 'fa-solid fa-check' : 'fa-solid fa-times'"></i>
+            {{ criteria.message }}
+          </p>
+        </div>
       </div>
       <p v-if="passwordError" class="error-message">{{ passwordError }}</p>
-      <p v-if="passwordStrength.message !== 'Strong password'" :style="{ color: passwordStrength.color, fontSize: '12px', margin: '5px 0' }">
-        {{ passwordStrength.message }}
-      </p>
 
       <!-- Confirm Password -->
       <div class="input-group" :class="{ invalid: confirmPasswordError }">
@@ -86,6 +93,12 @@
           <span class="terms" @click="showTermsPopup = true">Terms of Service.</span>
         </label>
       </div>
+
+      <!-- reCAPTCHA -->
+      <div class="recaptcha-wrapper">
+        <div id="recaptcha-container"></div>
+      </div>
+
 
       <!-- Signup button -->
       <button type="submit" :disabled="loading">Sign Up</button>
@@ -131,7 +144,7 @@
 </template>
   
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
 
@@ -150,6 +163,7 @@ const confirmPasswordError = ref('');
 const loading = ref(false);
 
 const showTermsPopup = ref(false); 
+const showPasswordPopup = ref(false);
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -170,6 +184,18 @@ const passwordStrength = computed(() => {
   return { message: 'Strong password', color: 'green' };
 });
 
+const passwordCriteria = computed(() => {
+  const val = password.value;
+
+  return [
+    { message: 'At least 8 characters', met: val.length >= 8 },
+    { message: 'At least one uppercase letter', met: /[A-Z]/.test(val) },
+    { message: 'At least one lowercase letter', met: /[a-z]/.test(val) },
+    { message: 'At least one number', met: /[0-9]/.test(val) },
+    { message: 'At least one special character', met: /[^A-Za-z0-9]/.test(val) },
+  ];
+});
+
 const togglePasswordVisibility = (type) => {
   if (type === 'password') {
     showPassword.value = !showPassword.value;
@@ -181,6 +207,38 @@ const togglePasswordVisibility = (type) => {
 const showPassword = ref(false);
 const showConfirmPassword = ref(false);
 
+const hidePasswordPopup = () => {
+  setTimeout(() => {
+    showPasswordPopup.value = false;
+  }, 200); 
+};
+
+const recaptchaVerified = ref(false);
+
+const verifyRecaptcha = () => {
+  const response = grecaptcha.getResponse();
+  if (response.length === 0) {
+    alert('Please complete the reCAPTCHA.');
+    recaptchaVerified.value = false;
+  } else {
+    recaptchaVerified.value = true;
+  }
+};
+
+onMounted(() => {
+  const renderRecaptcha = () => {
+    if (window.grecaptcha) {
+      window.grecaptcha.render('recaptcha-container', {
+        sitekey: '6LeSaTIrAAAAAKUISWV1I9lpPKEfntCrGP5t3WeH',
+      });
+    } else {
+      setTimeout(renderRecaptcha, 500); // Try again in 500ms
+    }
+  };
+
+  renderRecaptcha();
+});
+
 const handleSignup = async () => {
   usernameError.value = '';
   emailError.value = '';
@@ -189,37 +247,53 @@ const handleSignup = async () => {
 
   if (!username.value.trim()) usernameError.value = 'Username is required!';
   if (!emailPattern.test(email.value)) emailError.value = 'Invalid email format!';
-  if (passwordStrength.value.message !== 'Strong password') passwordError.value = 'Use a stronger password!';
+  if (passwordCriteria.value.some((criteria) => !criteria.met)) passwordError.value = 'Use a stronger password!';
   if (password.value !== confirmPassword.value) confirmPasswordError.value = 'Passwords do not match!';
   if (!termsAccepted.value) {
     alert('You must accept the Terms of Service to sign up.');
+    grecaptcha.reset();
     return;
   }
 
-  if (usernameError.value || emailError.value || passwordError.value || confirmPasswordError.value) return;
+  const recaptchaResponse = grecaptcha.getResponse();
+  if (!recaptchaResponse) {
+    alert('Please complete the reCAPTCHA.');
+    grecaptcha.reset();
+    return;
+  }
+
+  if (usernameError.value || emailError.value || passwordError.value || confirmPasswordError.value) {
+    grecaptcha.reset();
+    return;
+  }
 
   try {
     loading.value = true;
+
     const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/signup`, {
       username: username.value,
       email: email.value,
       password: password.value,
+      recaptchaResponse,
     });
 
     alert('Signup successful!');
     router.push('/login');
   } catch (error) {
     if (error.response?.status === 422) {
-      const errors = error.response.data.errors || {};
-      if (errors.username) usernameError.value = errors.username; 
-      if (errors.email) emailError.value = errors.email; 
+      const errors = error.response.data.errors;
+      usernameError.value = errors.username || '';
+      emailError.value = errors.email || '';
+      passwordError.value = errors.password || '';
     } else {
-      alert('An error occurred. Please try again.');
+      alert('Signup failed. Please try again.');
     }
+    grecaptcha.reset();
   } finally {
     loading.value = false;
   }
 };
+
 </script>
   
 <style scoped>
@@ -355,6 +429,22 @@ h2 {
   margin-right: 8px;
 }
 
+.recaptcha-container {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  transform: scale(0.9); 
+  transform-origin: top left; 
+}
+
+.recaptcha-wrapper {
+  display: flex;
+  justify-content: center;
+  margin: 1rem 0;
+  transform: scale(0.85); 
+  transform-origin: center; 
+}
+
 button {
   width: 20rem;
   height: 2.5rem;
@@ -401,6 +491,41 @@ button:hover {
   font-size: 12px;
   margin-top: 5px;
   text-align: left;
+}
+
+.password-popup {
+  position: absolute;
+  top: 110%;
+  left: 0;
+  width: 87%;
+  margin-left: 27px;
+  background: rgba(255, 255, 255, 0.9); 
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  font-size: 12px;
+  color: #333;
+}
+
+.password-popup p {
+  margin: 5px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.password-popup p.met {
+  color: green;
+}
+
+.password-popup p:not(.met) {
+  color: red;
+}
+
+.password-popup i {
+  font-size: 14px;
 }
 
 .modal-overlay {
@@ -456,5 +581,24 @@ button:hover {
 
 .modal-content ul li {
   margin-bottom: 5px;
+}
+
+@media (max-width: 768px) {
+  .signup {
+    width: 90%;
+    height: auto;
+    padding: 20px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .input-group input {
+    width: 100%;
+  }
+
+  button {
+    width: 100%;
+  }
 }
 </style>

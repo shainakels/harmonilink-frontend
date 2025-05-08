@@ -50,8 +50,6 @@
             <div class="song-count">{{ songs.length }}/5 Songs</div>
             </div>
 
-
-  
             <div class="popup-buttons">
               <button @click="createMixtape">Create Mixtape</button>
               <button @click="showConfirmCancel = true">Cancel</button>
@@ -111,7 +109,7 @@
       { icon: 'fa-solid fa-heart', text: 'Favorites', route: '/favorites' }
     ];
   
-    const mixtapes = ref([]); // get mixtapes from backend
+    const mixtapes = ref([]); 
     const isSortedByName = ref(true);
     const mixtapeName = ref('');
     const mixtapeDescription = ref('');
@@ -235,8 +233,6 @@
     font-size: 17px;
   }
   
-  /* --- Mixtape Section --- */
-  
   .mixtape-header {
     display: flex;
     align-items: center;
@@ -260,7 +256,6 @@
     cursor: pointer;
   }
   
-  /* Popup for creating mixtape */
   .popup-overlay {
     position: fixed;
     top: 0;
@@ -373,7 +368,6 @@
     border: 1px solid #ebebeb;
   }
   
-  /* Song details modal */
   .modal-overlay {
     position: fixed;
     top: 0;
@@ -430,7 +424,6 @@
     cursor: pointer;
   }
   
-  /* Confirm close popup */
   .confirm-box {
     background-color: #dbb4d7;
     padding: 1rem;
@@ -465,7 +458,6 @@
     border: 1px solid #ebebeb;
   }
   
-  /* Mixtape list and search */
   .separator {
     border: none;
     border-top: 1px solid white;
