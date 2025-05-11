@@ -232,7 +232,7 @@ onMounted(() => {
         sitekey: '6LeSaTIrAAAAAKUISWV1I9lpPKEfntCrGP5t3WeH',
       });
     } else {
-      setTimeout(renderRecaptcha, 500); // Try again in 500ms
+      setTimeout(renderRecaptcha, 500); 
     }
   };
 
@@ -435,6 +435,7 @@ h2 {
   justify-content: center;
   transform: scale(0.9); 
   transform-origin: top left; 
+  color: red;
 }
 
 .recaptcha-wrapper {

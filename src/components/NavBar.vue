@@ -3,7 +3,13 @@
     <img src="/src/assets/logo2.png" alt="Logo" class="logo" />
     <div class="search-container">
       <i class="fa-solid fa-microphone mic-icon"></i>
-      <input type="text" placeholder="Search" class="search-input" />
+      <input
+        type="text"
+        placeholder="Search"
+        class="search-input"
+        v-model="searchQuery"
+        @input="emitSearchQuery"
+      />
     </div>
     <div class="user-menu">
       <i class="fa-solid fa-circle-user user-icon" @click="toggleDropdown"></i>
@@ -20,18 +26,22 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const showDropdown = ref(false);
+const searchQuery = ref(''); // Tracks the search input
 const router = useRouter();
 
 function toggleDropdown() {
   showDropdown.value = !showDropdown.value;
 }
 
-function logout() {
+function emitSearchQuery() {
+  // Emit the search query to the parent component
+  emit('search', searchQuery.value);
+}
 
+function logout() {
   localStorage.removeItem('authToken');
   localStorage.removeItem('userLoggedIn');
   localStorage.removeItem('onboardingStep');
-
   router.push('/login');
 }
 </script>

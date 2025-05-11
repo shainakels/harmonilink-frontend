@@ -1,16 +1,23 @@
 <template>
   <NavLayout>
     <div class="discover-wrapper">
-      <!-- Display logged-in user's name -->
-      <div class="welcome-message" v-if="currentUser">
-        <h2>Welcome, {{ currentUser.name }}!</h2>
-      </div>
-
       <div class="discover-scroll">
         <div class="discover-container" :class="{ flipped: isFlipped }">
           <!-- Navigation Buttons -->
-          <button class="nav-button left" @click="prevProfile" :disabled="currentIndex === 0">←</button>
-          <button class="nav-button right" @click="nextProfile" :disabled="currentIndex === profiles.length - 1">→</button>
+          <button 
+            class="nav-button left" 
+            @click="prevProfile" 
+            :disabled="currentIndex === 0 || isFlipped"
+          >
+            ←
+          </button>
+          <button 
+            class="nav-button right" 
+            @click="nextProfile" 
+            :disabled="currentIndex === profiles.length - 1 || isFlipped"
+          >
+            →
+          </button>
 
           <!-- No Profiles Message -->
           <div v-if="profiles.length === 0" class="no-profiles">
@@ -25,15 +32,16 @@
                 <span class="refresh-time">{{ refreshTime }}</span>
               </div>
               <div class="profile-count-wrapper">
-                <span class="profile-count">Profiles today: {{ profiles.length }}</span>
+                <span class="profile-count">Profiles Viewed: {{ viewedProfiles }}/10</span>
               </div>
             </div>
 
             <div class="profile-card">
               <h2 class="profile-name">{{ currentProfile.username }}</h2>
-              <p class="profile-info">{{ currentProfile.age || 'N/A' }} years old, {{ currentProfile.gender }}</p>
-              <img :src="currentProfile.mixtapes[0]?.photo_url || '/src/assets/default-mixtape.jpg'" alt="Mixtape Cover" class="profile-image" />
-              <p class="profile-bio">{{ currentProfile.profile_bio || 'No bio available.' }}</p>
+              <p class="profile-info">{{ currentProfile.age }} years old, {{ currentProfile.gender }}</p>
+              <img :src="currentProfile.mixtapes[0]?.photo_url" class="mixtape-image" />
+              <h2 class="mixtape-title-front">{{ currentProfile.mixtapes[0]?.name }}</h2>
+              <p class="mixtape-description">{{ currentProfile.mixtapes[0]?.bio }}</p>
               <button class="unpack-button" @click="flipCard">
                 Unpack <span class="arrow">▶</span>
               </button>
@@ -46,10 +54,10 @@
               <i class="fa-solid fa-arrow-left"></i>
             </div>
 
+            <!-- Show mixtape details if available -->
             <div class="back-mixtape" v-if="currentProfile.mixtapes?.length > 0">
-              <img :src="currentProfile.mixtapes[0].photo_url" alt="Mixtape Image" class="mixtape-image" />
+              <img :src="currentProfile.mixtapes[0].photo_url" class="mixtape-image" />
               <h3 class="mixtape-title-back">{{ currentProfile.mixtapes[0].name }}</h3>
-              <p class="mixtape-description">{{ currentProfile.mixtapes[0].mixtape_bio }}</p>
               <ol class="song-list">
                 <li v-for="(song, index) in currentProfile.mixtapes[0].songs" :key="index">
                   {{ song.song_name }} by {{ song.artist_name }}
@@ -57,8 +65,24 @@
               </ol>
             </div>
 
-            <div v-else>
-              <p>No mixtape available for this profile.</p>
+            <!-- Fallback message if no mixtapes are available -->
+            <div class="no-mixtape-message" v-else>
+              <p>No mixtapes yet. Wanna give them a chance?</p>
+            </div>
+
+            <!-- Action Section -->
+            <div class="action-section">
+              <div class="buttons">
+                <button class="heart-btn" @click="animateHeart">
+                  <i class="fa-solid fa-heart"></i>
+                </button>
+                <button class="x-btn" @click="animateX">
+                  <i class="fa-solid fa-x"></i>
+                </button>
+              </div>
+              <p class="action-message">
+                If you both vibe with each other, tap the heart button!
+              </p>
             </div>
           </div>
         </div>
@@ -68,7 +92,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import NavLayout from '../layouts/NavLayout.vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
@@ -87,6 +111,9 @@ const currentUser = ref(null);
 // Timer for profile refresh
 const refreshTime = ref('03:00:00');
 let refreshInterval;
+
+// Tracks the number of profiles unpacked
+const viewedProfiles = ref(0);
 
 // Fetch current user profile
 async function fetchCurrentUser() {
@@ -110,7 +137,7 @@ async function fetchCurrentUser() {
   }
 }
 
-// Fetch profiles and mixtapes from the backend
+// Fetch profiles from the backend and shuffle them
 async function fetchProfiles() {
   try {
     const token = localStorage.getItem('authToken');
@@ -122,7 +149,14 @@ async function fetchProfiles() {
     const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/discover`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    profiles.value = response.data;
+
+    // Assign profiles from the backend and shuffle them
+    profiles.value = shuffleArray(response.data).map(profile => ({
+      ...profile,
+      viewed: false, // Add a viewed property to each profile
+    }));
+    currentIndex.value = 0; // Reset to the first profile
+    viewedProfiles.value = 0; // Reset the viewed profiles count
 
     console.log('Fetched profiles:', JSON.stringify(profiles.value, null, 2)); // Debugging
 
@@ -136,6 +170,15 @@ async function fetchProfiles() {
       router.push('/login');
     }
   }
+}
+
+// Utility function to shuffle an array
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
 }
 
 // Navigate to the next profile
@@ -154,31 +197,118 @@ function prevProfile() {
 
 // Flip the profile card
 function flipCard() {
+  if (!isFlipped.value) {
+    // Increment viewedProfiles only if the profile is being unpacked for the first time
+    if (!currentProfile.value.viewed) {
+      currentProfile.value.viewed = true; // Mark the profile as viewed
+      viewedProfiles.value++;
+    }
+  }
   isFlipped.value = !isFlipped.value;
 }
 
 // Start the refresh timer
 function startRefreshTimer() {
-  let timeLeft = 10800; // 3 hours in seconds
+  const savedEndTime = localStorage.getItem('refreshEndTime');
+  let timeLeft;
+
+  if (savedEndTime) {
+    // Calculate the remaining time based on the saved end time
+    const endTime = new Date(parseInt(savedEndTime, 10));
+    const now = new Date();
+    timeLeft = Math.max(Math.floor((endTime - now) / 1000), 0);
+  } else {
+    // Default to 3 hours in seconds if no saved end time exists
+    timeLeft = 10800;
+    const endTime = new Date(Date.now() + timeLeft * 1000);
+    localStorage.setItem('refreshEndTime', endTime.getTime());
+  }
+
   refreshInterval = setInterval(() => {
     const hours = Math.floor(timeLeft / 3600);
     const minutes = Math.floor((timeLeft % 3600) / 60);
     const seconds = timeLeft % 60;
+
     refreshTime.value = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
     if (timeLeft === 0) {
       clearInterval(refreshInterval);
-      fetchProfiles(); // Refresh profiles
+      localStorage.removeItem('refreshEndTime'); // Clear saved end time when timer ends
+      fetchProfiles(); // Fetch a new set of profiles from the database
       startRefreshTimer(); // Restart the timer
     }
+
     timeLeft--;
   }, 1000);
 }
+
+// Animate heart button
+const animateHeart = async () => {
+  const favoriteProfile = currentProfile.value;
+
+  if (favoriteProfile) {
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        alert('You must be logged in to add favorites.');
+        return;
+      }
+
+      // Send the profile to the backend to store in the favorites table
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/favorites`,
+        { mixtape_id: favoriteProfile.mixtapes[0]?.mixtape_id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      alert('Profile added to favorites!');
+      nextProfile(); // Move to the next profile
+    } catch (error) {
+      console.error('Error adding to favorites:', error);
+      alert('Failed to add to favorites. Please try again.');
+    }
+  }
+};
+
+// Animate X button
+const animateX = async () => {
+  const discardedProfile = currentProfile.value;
+
+  if (discardedProfile) {
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        alert('You must be logged in to discard profiles.');
+        return;
+      }
+
+      // Send the profile to the backend to store in the discarded table
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/discard`,
+        { discarded_user_id: discardedProfile.user_id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      alert('Profile discarded.');
+      nextProfile(); // Move to the next profile
+    } catch (error) {
+      console.error('Error discarding profile:', error);
+      alert('Failed to discard profile. Please try again.');
+    }
+  }
+};
 
 // Lifecycle hook
 onMounted(() => {
   fetchCurrentUser();
   fetchProfiles();
   startRefreshTimer();
+});
+
+onUnmounted(() => {
+  if (refreshInterval) {
+    clearInterval(refreshInterval);
+  }
 });
 </script>
 
@@ -188,12 +318,6 @@ onMounted(() => {
   height: calc(100vh - 60px);
   overflow-y: auto;
   padding: 2rem 1rem;
-}
-
-.welcome-message {
-  text-align: center;
-  color: #fff;
-  margin-bottom: 1rem;
 }
 
 .discover-scroll {
@@ -406,17 +530,13 @@ onMounted(() => {
   object-fit: cover;
   border-radius: 8px;
   margin: 0 auto;
+  margin-top: 1rem;
+  
 }
 
-.mixtape-title-back {
-  position: absolute; 
-  top: 145px; 
-  left: 0;
-  width: 100%;
+.mixtape-title-front {
+  margin-top: 3rem;
   text-align: center;
-  font-size: 1.2rem;
-  font-weight: bold;
-  margin: 0; 
 }
 
 .mixtape-description {
@@ -425,13 +545,24 @@ onMounted(() => {
   text-align: center;
 }
 
+.mixtape-title-back {
+  position: absolute; 
+  top: 175px; 
+  left: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 0; 
+}
+
 .song-list {
   text-align: left;
   font-size: 0.9rem;
   line-height: 1.4;
   max-height: 250px;
   overflow-y: auto;
-  margin: 3.5rem auto 0; 
+  margin: 5rem auto 0; 
   padding: 0 1.5rem; 
   list-style-type: decimal; 
   display: flex;
@@ -440,6 +571,21 @@ onMounted(() => {
   overflow-y: auto;
   width: 90%;
   flex: 1;
+}
+
+.no-mixtape-message {
+  background-color: rgba(108, 119, 178, 0.35);
+  position: relative;
+  padding: 9rem;
+  border-radius: 10px;
+  width: 31rem;
+  height: 380px;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: left;
+  text-align: center;
+  font-size: 1.2rem;
 }
 
 .action-section {
