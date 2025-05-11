@@ -2,7 +2,11 @@
   <nav class="top-nav">
     <img src="/src/assets/logo2.png" alt="Logo" class="logo" />
     <div class="search-container">
-      <i class="fa-solid fa-microphone mic-icon"></i>
+      <i 
+        class="fa-solid fa-microphone mic-icon" 
+        :class="{ 'listening': isListening }" 
+        @click="toggleSpeechRecognition"
+      ></i>
       <input
         type="text"
         placeholder="Search"
@@ -27,15 +31,19 @@ import { useRouter } from 'vue-router';
 
 const showDropdown = ref(false);
 const searchQuery = ref(''); // Tracks the search input
+const isListening = ref(false); // Tracks whether speech recognition is active
 const router = useRouter();
+let recognition = null; // SpeechRecognition instance
+
+// Emit the search query to the parent component
+const emit = defineEmits(['search']);
 
 function toggleDropdown() {
   showDropdown.value = !showDropdown.value;
 }
 
 function emitSearchQuery() {
-  // Emit the search query to the parent component
-  emit('search', searchQuery.value);
+  emit('search', searchQuery.value); // Emit the search query
 }
 
 function logout() {
@@ -43,6 +51,50 @@ function logout() {
   localStorage.removeItem('userLoggedIn');
   localStorage.removeItem('onboardingStep');
   router.push('/login');
+}
+
+// Initialize SpeechRecognition
+if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SpeechRecognition();
+  recognition.lang = 'en-US'; // Set the language
+  recognition.interimResults = false; // Only return final results
+  recognition.maxAlternatives = 1;
+
+  recognition.onstart = () => {
+    isListening.value = true;
+  };
+
+  recognition.onend = () => {
+    isListening.value = false;
+  };
+
+  recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript;
+    searchQuery.value = transcript; // Update the search query with the recognized text
+    emitSearchQuery(); // Emit the updated search query
+  };
+
+  recognition.onerror = (event) => {
+    console.error('Speech recognition error:', event.error);
+    isListening.value = false;
+  };
+} else {
+  console.warn('SpeechRecognition is not supported in this browser.');
+}
+
+// Toggle speech recognition
+function toggleSpeechRecognition() {
+  if (!recognition) {
+    alert('Speech recognition is not supported in your browser.');
+    return;
+  }
+
+  if (isListening.value) {
+    recognition.stop(); // Stop listening
+  } else {
+    recognition.start(); // Start listening
+  }
 }
 </script>
 
@@ -91,6 +143,28 @@ function logout() {
   width: 100%;
   text-align: left;
 }
+
+.mic-icon {
+  position: absolute;
+  left: 10px;
+  color: white;
+  z-index: 1;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.mic-icon.listening {
+  color: red; /* Change color when listening */
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.5rem 1rem 0.5rem 2.5rem;
+  background-color: #432775;
+  border: none;
+  border-radius: 40px;
+  color: white;
+}
 </style>
 
 <style>
@@ -133,21 +207,5 @@ function logout() {
     display: flex;
     align-items: center;
     width: 30rem;
-  }
-
-  .mic-icon {
-    position: absolute;
-    left: 10px;
-    color: white;
-    z-index: 1;
-  }
-
-  .search-input {
-    width: 100%;
-    padding: 0.5rem 1rem 0.5rem 2.5rem;
-    background-color: #432775;
-    border: none;
-    border-radius: 40px;
-    color: white;
   }
 </style>
