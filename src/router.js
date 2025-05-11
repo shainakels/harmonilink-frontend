@@ -8,6 +8,7 @@ import PfMixtape from './views/PfMixtape.vue';
 import Welcome from './views/Welcome.vue';
 import ResetPassword from './views/ResetPassword.vue';
 import Discover from './views/Discover.vue';
+import Favorites from './views/Favorites.vue';
 
 const routes = [
   { 
@@ -36,6 +37,7 @@ const routes = [
   { path: '/pfmixtape', component: PfMixtape },
   { path: '/welcome', component: Welcome },
   { path: '/reset-password', component: ResetPassword },
+  { path: '/favorites', component: Favorites },
 ];
 
 const router = createRouter({
