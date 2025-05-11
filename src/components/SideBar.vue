@@ -87,8 +87,8 @@
   
         <div class="mixtape-list">
           <div class="mixtape-item" v-for="(mix, index) in mixtapes" :key="index">
-            <img src="/src/assets/logo2.png" alt="Mixtape Image" class="mixtape-img" />
-            <span>{{ mix }}</span>
+            <img :src="mix.photo_url || '/src/assets/logo2.png'" alt="Mixtape Image" class="mixtape-img" />
+            <span>{{ mix.name }}</span>
           </div>
         </div>
       </div>
@@ -97,6 +97,7 @@
   
   <script setup>
     import { ref } from 'vue';
+    import axios from 'axios';
   
     const showPopup = ref(false);
     const showSongModal = ref(false);
@@ -110,7 +111,6 @@
     ];
   
     const mixtapes = ref([]); 
-    const isSortedByName = ref(true);
     const mixtapeName = ref('');
     const mixtapeDescription = ref('');
     const songName = ref('');
@@ -143,9 +143,39 @@
       }
     }
   
-    const createMixtape = () => {
-      console.log('Mixtape created:', mixtapeName.value, songs.value);
-      closePopup();
+    const createMixtape = async () => {
+      if (!mixtapeName.value || songs.value.length === 0) {
+        alert('Please provide a mixtape name and at least one song.');
+        return;
+      }
+  
+      try {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+          alert('You must be logged in to create a mixtape.');
+          return;
+        }
+  
+        const response = await axios.post(
+          `${import.meta.env.VITE_API_URL}/api/create-mixtape`,
+          {
+            name: mixtapeName.value,
+            description: mixtapeDescription.value,
+            photoUrl: photoUrl.value,
+            songs: songs.value,
+          },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+  
+        alert('Mixtape created successfully!');
+        closePopup();
+        fetchMixtapes(); // Refresh the mixtape list
+      } catch (error) {
+        console.error('Error creating mixtape:', error);
+        alert('Failed to create mixtape. Please try again.');
+      }
     };
   
     const addSong = () => {
@@ -163,13 +193,30 @@
       artistName.value = '';
     };
   
-    const sortMixtapes = () => {
-      if (isSortedByName.value) {
-        mixtapes.value.sort();
-      } else {
-        mixtapes.value.reverse();
+    const fetchMixtapes = async () => {
+      try {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+          console.error('No auth token found.');
+          return;
+        }
+    
+        // Use the correct endpoint to fetch mixtapes
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/mixtapes`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+    
+        mixtapes.value = response.data;
+      } catch (error) {
+        console.error('Error fetching mixtapes:', error);
       }
-      isSortedByName.value = !isSortedByName.value;
+    };
+  
+    // Fetch mixtapes on component mount
+    fetchMixtapes();
+  
+    const sortMixtapes = () => {
+      mixtapes.value.sort((a, b) => a.localeCompare(b));
     };
   </script>
   
@@ -343,15 +390,14 @@
   color: #fff;
   margin: 0;
 }
-
   
-  .popup-buttons {
+.popup-buttons {
     display: flex;
     justify-content: space-between;
     gap: 1rem;
-  }
+}
   
-  .popup-buttons button {
+.popup-buttons button {
     flex: 1;
     padding: 0.5rem;
     border: none;
@@ -515,5 +561,4 @@
     border-radius: 6px;
   }
   </style>
-  
-  
+
