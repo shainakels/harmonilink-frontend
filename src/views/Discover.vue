@@ -42,8 +42,15 @@
               <img :src="currentProfile.mixtapes[0]?.photo_url" class="mixtape-image" />
               <h2 class="mixtape-title-front">{{ currentProfile.mixtapes[0]?.name }}</h2>
               <p class="mixtape-description">{{ currentProfile.mixtapes[0]?.bio }}</p>
-              <button class="unpack-button" @click="flipCard">
-                Unpack <span class="arrow">▶</span>
+
+              <!-- Unpack Button -->
+              <button 
+                class="unpack-button" 
+                :class="{ unpacked: currentProfile.viewed }" 
+                @click="flipCard"
+              >
+                {{ currentProfile.viewed ? 'Unpacked' : 'Unpack' }}
+                <span v-if="currentProfile.favorited" class="heart-indicator">❤️</span>
               </button>
             </div>
           </div>
@@ -73,10 +80,21 @@
             <!-- Action Section -->
             <div class="action-section">
               <div class="buttons">
-                <button class="heart-btn" @click="animateHeart">
+                <!-- Heart Button -->
+                <button 
+                  class="heart-btn" 
+                  :class="{ clicked: currentProfile.favorited }" 
+                  @click="animateHeart"
+                >
                   <i class="fa-solid fa-heart"></i>
                 </button>
-                <button class="x-btn" @click="animateX">
+
+                <!-- Discard Button -->
+                <button 
+                  class="x-btn" 
+                  @click="animateX" 
+                  :disabled="currentProfile.favorited"
+                >
                   <i class="fa-solid fa-x"></i>
                 </button>
               </div>
@@ -139,30 +157,30 @@ async function fetchCurrentUser() {
 
 // Fetch profiles from the backend and shuffle them
 async function fetchProfiles() {
-  try {
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      console.error('No auth token found.');
-      return;
-    }
+  const token = localStorage.getItem('authToken');
+  if (!token) {
+    console.error('No auth token found.');
+    return;
+  }
 
+  if (profiles.value.length > 0) {
+    console.log('Using saved profiles from localStorage.');
+    return; // Use the saved profiles
+  }
+
+  try {
     const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/discover`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    // Assign profiles from the backend and shuffle them
-    profiles.value = shuffleArray(response.data).map(profile => ({
+    profiles.value = response.data.map(profile => ({
       ...profile,
       viewed: false, // Add a viewed property to each profile
     }));
     currentIndex.value = 0; // Reset to the first profile
     viewedProfiles.value = 0; // Reset the viewed profiles count
 
-    console.log('Fetched profiles:', JSON.stringify(profiles.value, null, 2)); // Debugging
-
-    if (profiles.value.length === 0) {
-      console.warn('No profiles found in the database.');
-    }
+    saveStateToLocalStorage(); // Save the fetched profiles to localStorage
   } catch (error) {
     console.error('Error fetching profiles:', error);
     if (error.response?.status === 401 || error.response?.status === 403) {
@@ -183,6 +201,11 @@ function shuffleArray(array) {
 
 // Navigate to the next profile
 function nextProfile() {
+  if (profiles.value.length === 0) {
+    alert('No more profiles available.');
+    return;
+  }
+
   if (currentIndex.value < profiles.value.length - 1) {
     currentIndex.value++;
   }
@@ -198,10 +221,17 @@ function prevProfile() {
 // Flip the profile card
 function flipCard() {
   if (!isFlipped.value) {
-    // Increment viewedProfiles only if the profile is being unpacked for the first time
+    // Mark the profile as viewed
     if (!currentProfile.value.viewed) {
       currentProfile.value.viewed = true; // Mark the profile as viewed
       viewedProfiles.value++;
+
+      saveStateToLocalStorage(); // Save the updated state
+
+      // Start the refresh timer if it hasn't started yet
+      if (!refreshInterval) {
+        startRefreshTimer();
+      }
     }
   }
   isFlipped.value = !isFlipped.value;
@@ -209,37 +239,87 @@ function flipCard() {
 
 // Start the refresh timer
 function startRefreshTimer() {
-  const savedEndTime = localStorage.getItem('refreshEndTime');
-  let timeLeft;
-
-  if (savedEndTime) {
-    // Calculate the remaining time based on the saved end time
-    const endTime = new Date(parseInt(savedEndTime, 10));
-    const now = new Date();
-    timeLeft = Math.max(Math.floor((endTime - now) / 1000), 0);
-  } else {
-    // Default to 3 hours in seconds if no saved end time exists
-    timeLeft = 10800;
-    const endTime = new Date(Date.now() + timeLeft * 1000);
-    localStorage.setItem('refreshEndTime', endTime.getTime());
+  if (!currentUser.value || !currentUser.value.id) {
+    console.error('User ID is not available. Cannot start the timer.');
+    return;
   }
 
-  refreshInterval = setInterval(() => {
+  const timerKey = `refreshEndTime_${currentUser.value.id}`; // Unique key for each user
+  let endTime = localStorage.getItem(timerKey);
+
+  if (!endTime || isNaN(parseInt(endTime, 10))) {
+    // Set endTime to 3 hours from now
+    endTime = Date.now() + 3 * 60 * 60 * 1000; // 3 hours in ms
+    localStorage.setItem(timerKey, endTime.toString());
+  } else {
+    endTime = parseInt(endTime, 10);
+  }
+
+  function updateTimer() {
+    const now = Date.now();
+    const timeLeft = Math.max(Math.floor((endTime - now) / 1000), 0);
+
     const hours = Math.floor(timeLeft / 3600);
     const minutes = Math.floor((timeLeft % 3600) / 60);
     const seconds = timeLeft % 60;
 
     refreshTime.value = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
-    if (timeLeft === 0) {
+    if (timeLeft <= 0) {
       clearInterval(refreshInterval);
-      localStorage.removeItem('refreshEndTime'); // Clear saved end time when timer ends
-      fetchProfiles(); // Fetch a new set of profiles from the database
-      startRefreshTimer(); // Restart the timer
+      refreshInterval = null; // Reset the interval
+      localStorage.removeItem(timerKey); // Clear the timer for this user
+      fetchProfiles(); // Fetch new profiles
     }
+  }
 
-    timeLeft--;
-  }, 1000);
+  updateTimer(); // Run immediately
+  refreshInterval = setInterval(updateTimer, 1000);
+}
+
+// Save state to localStorage
+function saveStateToLocalStorage() {
+  if (!currentUser.value || !currentUser.value.id) {
+    console.error('User ID is not available. Cannot save state.');
+    return;
+  }
+
+  const stateKey = `discoverState_${currentUser.value.id}`; // Unique key for each user
+  const state = {
+    profiles: profiles.value.map(profile => ({
+      ...profile,
+      favorited: profile.favorited || false,
+      viewed: profile.viewed || false,
+    })),
+    currentIndex: currentIndex.value,
+    viewedProfiles: viewedProfiles.value,
+  };
+  localStorage.setItem(stateKey, JSON.stringify(state));
+}
+
+// Load state from localStorage
+function loadStateFromLocalStorage() {
+  if (!currentUser.value || !currentUser.value.id) {
+    console.error('User ID is not available. Cannot load state.');
+    return;
+  }
+
+  const stateKey = `discoverState_${currentUser.value.id}`; // Unique key for each user
+  const savedState = localStorage.getItem(stateKey);
+  if (savedState) {
+    const state = JSON.parse(savedState);
+    profiles.value = state.profiles || [];
+    currentIndex.value = state.currentIndex || 0;
+    viewedProfiles.value = state.viewedProfiles || 0;
+  }
+}
+
+// Clear state
+function clearState() {
+  profiles.value = [];
+  currentIndex.value = 0;
+  viewedProfiles.value = 0;
+  isFlipped.value = false;
 }
 
 // Animate heart button
@@ -257,12 +337,15 @@ const animateHeart = async () => {
       // Send the profile to the backend to store in the favorites table
       await axios.post(
         `${import.meta.env.VITE_API_URL}/api/favorites`,
-        { mixtape_id: favoriteProfile.mixtapes[0]?.mixtape_id },
+        { user_id: favoriteProfile.user_id },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
+      // Mark the profile as favorited
+      favoriteProfile.favorited = true;
+
+      saveStateToLocalStorage(); // Save the updated state
       alert('Profile added to favorites!');
-      nextProfile(); // Move to the next profile
     } catch (error) {
       console.error('Error adding to favorites:', error);
       alert('Failed to add to favorites. Please try again.');
@@ -289,20 +372,36 @@ const animateX = async () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
+      // Remove the discarded profile from the profiles list
+      profiles.value.splice(currentIndex.value, 1);
+
+      // Adjust the current index if necessary
+      if (currentIndex.value >= profiles.value.length) {
+        currentIndex.value = profiles.value.length - 1;
+      }
+
+      // Reset the flipped state to ensure the next profile is shown on the front
+      isFlipped.value = false;
+
+      saveStateToLocalStorage(); // Save the updated state
       alert('Profile discarded.');
-      nextProfile(); // Move to the next profile
     } catch (error) {
-      console.error('Error discarding profile:', error);
+      console.error('Error discarding profile:', error); // Log the error
       alert('Failed to discard profile. Please try again.');
     }
   }
 };
 
 // Lifecycle hook
-onMounted(() => {
-  fetchCurrentUser();
-  fetchProfiles();
-  startRefreshTimer();
+onMounted(async () => {
+  await fetchCurrentUser(); // Fetch the current user
+  loadStateFromLocalStorage(); // Load saved state for the current user
+  await fetchProfiles(); // Fetch profiles if not already loaded
+
+  // Start the timer only if the user is logged in and profiles are viewed
+  if (currentUser.value && currentUser.value.id && viewedProfiles.value > 0) {
+    startRefreshTimer();
+  }
 });
 
 onUnmounted(() => {
@@ -493,11 +592,24 @@ onUnmounted(() => {
   margin-right: auto;
   display: block;
   user-select: none;
+  position: relative;
+}
+
+.unpack-button.unpacked {
+  background-color: #5c5e78;
+  color: #ffffff;
+  cursor: default;
 }
 
 .unpack-button:hover {
   background-color: #dbb4d7;
   color: #1f0d3e;
+}
+
+.heart-indicator {
+  margin-left: 0.5rem;
+  font-size: 1.2rem;
+  color: red;
 }
 
 .back-button{
@@ -617,15 +729,31 @@ onUnmounted(() => {
 }
 
 .heart-btn {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  font-size: 2rem;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease;
   background: radial-gradient(circle, #ff0045, #ffffff);
+}
+
+.heart-btn.clicked {
+  border-color: white;
+  background: radial-gradient(circle, #ff0045, #ffffff);
+  transform: scale(1.2);
 }
 
 .x-btn {
   background: radial-gradient(circle, #0075ff, #ffffff);
 }
 
-.heart-btn.clicked, .x-btn.clicked {
-  transform: scale(1.2);
+.x-btn:disabled {
+  background: #ccc; /* Gray background for disabled state */
+  cursor: not-allowed; /* Change cursor to indicate it's disabled */
+  opacity: 0.6; /* Reduce opacity */
 }
 
 .action-message {
@@ -645,3 +773,8 @@ onUnmounted(() => {
   margin-top: 2rem;
 }
 </style>
+
+
+
+
+
