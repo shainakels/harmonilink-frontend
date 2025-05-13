@@ -39,8 +39,12 @@
             ></textarea>
   
             <div class="song-list-scroll">
-              <div v-for="(song, index) in songs" :key="index" class="song-item">
+              <div v-for="(song, index) in songs" :key="index" class="song-item song-item-flex">
                 <span>{{ song.name }} - {{ song.artist }}</span>
+                <div class="song-actions-buttons">
+                  <i class="fa-solid fa-pen edit-icon" @click="editSong(index)"></i>
+                  <i class="fa-solid fa-trash delete-icon" @click="deleteSong(index)"></i>
+                </div>
               </div>
             </div>
 
@@ -133,6 +137,17 @@
       photoUrl.value = null;
     };
   
+    const editSong = (index) => {
+    songName.value = songs.value[index].name;
+    artistName.value = songs.value[index].artist;
+    deleteSong(index); // Remove so the updated one can be re-added
+    showSongModal.value = true;
+  };
+
+  const deleteSong = (index) => {
+    songs.value.splice(index, 1);
+  };
+
     function triggerPhotoUpload() {
       photoInput.value?.click();
     }
@@ -607,6 +622,27 @@
   padding: 0.5rem;
   border-radius: 5px;
   margin-bottom: 1rem;
+}
+
+.song-item-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #2c1a40;
+  padding: 0.5rem;
+  border-radius: 5px;
+  margin-bottom: 0.5rem;
+  color: white;
+}
+
+.song-actions-buttons i {
+  margin-left: 0.5rem;
+  cursor: pointer;
+  color: #c2b4d6;
+}
+
+.song-actions-buttons i:hover {
+  color: #ffffff;
 }
 
   </style>
