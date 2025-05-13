@@ -38,16 +38,17 @@
               class="description-box"
             ></textarea>
   
-            <div v-for="(song, index) in songs" :key="index" class="song-item">
-              <span>{{ song.name }} - {{ song.artist }}</span>
+            <div class="song-list-scroll">
+              <div v-for="(song, index) in songs" :key="index" class="song-item">
+                <span>{{ song.name }} - {{ song.artist }}</span>
+              </div>
             </div>
-  
+
             <div class="song-actions">
-              <div v-if="songs.length < 5" class="add-song" @click="showSongModal = true">
-              <i class="fa-solid fa-circle-plus"></i>
-              <span>Add Song</span>
-            </div>
-            <div class="song-count">{{ songs.length }}/5 Songs</div>
+              <div class="add-song" @click="showSongModal = true">
+                <i class="fa-solid fa-circle-plus"></i>
+                <span>Add Song</span>
+              </div>
             </div>
 
             <div class="popup-buttons">
@@ -69,10 +70,10 @@
   
         <div v-if="showConfirmCancel" class="modal-overlay">
           <div class="confirm-box">
-            <p>Confirm to close Mixtape Creation</p>
+            <p>Are you sure you want to close it?</p>
             <div class="confirm-buttons">
-              <button @click="closePopup">Confirm</button>
-              <button @click="showConfirmCancel = false">Decline</button>
+              <button @click="closePopup">Close</button>
+              <button @click="showConfirmCancel = false">Stay</button>
             </div>
           </div>
         </div>
@@ -171,7 +172,7 @@
   
         alert('Mixtape created successfully!');
         closePopup();
-        fetchMixtapes(); // Refresh the mixtape list
+        fetchMixtapes();
       } catch (error) {
         console.error('Error creating mixtape:', error);
         alert('Failed to create mixtape. Please try again.');
@@ -179,7 +180,7 @@
     };
   
     const addSong = () => {
-      if (songs.value.length < 5 && songName.value && artistName.value) {
+      if (songName.value && artistName.value) {
         songs.value.push({ name: songName.value, artist: artistName.value });
         songName.value = '';
         artistName.value = '';
@@ -493,14 +494,14 @@
   }
   
   .confirm-buttons button:first-child:hover {
-    background: #080d2a;
-    color: #dbb4d7;
+    background: red;
+    color: white;
     border: 1px solid #ebebeb;
   }
   
   .confirm-buttons button:last-child:hover {
-    background: red;
-    color: white;
+    background: #080d2a;
+    color: #dbb4d7;
     border: 1px solid #ebebeb;
   }
   
@@ -560,5 +561,53 @@
     object-fit: cover;
     border-radius: 6px;
   }
+
+  .mixtape-name {
+  font-weight: bold;
+  font-size: 1.1rem; /* Slightly larger than default */
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  padding: 0.5rem;
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.description-box {
+  font-size: 0.95rem;
+  padding: 0.5rem;
+  width: 100%;
+  height: 80px;
+  resize: none;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-bottom: 0.5rem;
+}
+
+.song-item {
+  font-size: 0.9rem;
+  padding: 0.25rem 0;
+  overflow-wrap: break-word;
+}
+
+.popup-box {
+  max-height: 90vh;
+  overflow-y: auto;
+  padding-right: 1rem;
+}
+
+.song-item + .song-item {
+  border-top: 1px solid #3a2c56;
+}
+
+.popup-box .song-list-scroll {
+  max-height: 150px;
+  overflow-y: auto;
+  background-color: #2e1f45;
+  padding: 0.5rem;
+  border-radius: 5px;
+  margin-bottom: 1rem;
+}
+
   </style>
 
