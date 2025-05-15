@@ -141,90 +141,93 @@ const handleLogin = async () => {
   background-repeat: no-repeat;
   display: flex;
   flex-direction: column;
-  transform: rotate(180deg);
+  transform: none;
 }
 
 .CD {
   position: fixed;
-  top: 8.5rem;
-  right: 26rem;
-  height: 32rem;
-  transform: rotate(120deg);
-  animation: moveRight 1s ease-out;
+  top: 50%;
+  right: 50%;
+  height: 28rem;
+  transform: translate(90%, -50%);
+  z-index: 0;
+  animation: rotate 20s linear infinite;
 }
 
-@keyframes moveRight {
+@keyframes rotate {
   from {
-    right: 30rem;
-    opacity: 0;
+    transform: translate(90%, -50%) rotate(0deg);
   }
   to {
-    right: 26rem;
-    opacity: 1;
+    transform: translate(90%, -50%) rotate(360deg);
   }
 }
 
 .login {
-  width: 29em;
-  height: 38rem;
-  padding: 20px;
+  width: 25rem;
+  height: auto;
+  min-height: 32rem;
+  padding: 2rem;
   background: linear-gradient(to bottom, #c697bd, #dbb4d7 50%, #1f0d3e);
-  border-radius: 25px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   text-align: center;
   position: absolute;
   top: 50%;
-  left: 750px;
+  left: 50%;
   transform: translate(-50%, -50%);
   color: #322848;
+  z-index: 1;
 }
 
 .login img {
-  width: 8rem;
+  width: 4rem;
+  margin-bottom: 0.5rem;
 }
 
 h2 {
-  margin-top: 0.5rem;
-  margin-bottom: 1.5rem;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
   color: #322848;
-  font-size: 40px;
+  font-size: 2rem;
+  font-weight: 600;
 }
 
 .quote-text {
-  font-size: 12px;
-  margin-top: 3rem;
-  color: #333;
+  font-size: 0.75rem;
+  margin: 0.5rem 0 2rem;
+  color: #666;
 }
 
 .input-group {
   position: relative;
   margin: 1rem 0;
-  top: 1rem;
 }
 
 .input-group input {
-  width: 24rem;
-  height: 1.5rem;
-  padding: 8px;
-  padding-right: 40px;
-  background: rgba(235, 235, 235, 0.4);
-  border: none;
+  width: 100%;
+  height: 2.5rem;
+  padding: 0.5rem 2.5rem 0.5rem 1rem;
+  background: rgba(235, 235, 235, 0.8);
+  border: 1px solid #ddd;
   border-radius: 5px;
-  font-size: 15px;
+  font-size: 0.9rem;
   color: #333;
 }
 
 .input-group input:focus {
-  border: 2px solid #1f0d3e;
+  border-color: #322848;
   outline: none;
+  background: rgba(255, 255, 255, 0.95);
 }
 
 .input-group .icon {
   position: absolute;
-  right: 2.8rem;
+  right: 1rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #080d2a;
+  color: #666;
+  cursor: pointer;
 }
 
 .email-domain {
@@ -241,16 +244,16 @@ h2 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 89%;
-  font-size: 11px;
-  margin-top: 14px;
-  margin-left: 1.5rem;
+  width: 100%;
+  font-size: 0.8rem;
+  margin: 1rem 0;
   color: #ebebeb;
 }
 
 .checkbox-group {
   display: flex;
   align-items: center;
+  gap: 0.5rem;
 }
 
 .checkbox-group input {
@@ -264,26 +267,28 @@ h2 {
 }
 
 .forgot-password a {
-  color: #ffffff;
-  text-decoration: underline;
+  color: #ebebeb;
+  text-decoration: none;
+  font-weight: 500;
 }
 
 button {
-  width: 20rem;
-  height: 2.5rem;
-  padding: 10px;
-  background: #1f0d3e;
-  color: #ebebeb;
+  width: 100%;
+  height: 2.75rem;
+  padding: 0.5rem;
+  background: #322848;
+  color: #fff;
   border: none;
-  border-radius: 40px;
+  border-radius: 5px;
   cursor: pointer;
-  margin-top: 15px;
-  font-size: 18px;
-  font-weight: bold;
+  margin: 1.5rem 0;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: background 0.2s;
 }
 
 button:hover {
-  background: #14092b;
+  background: #1f1a2e;
 }
 
 button:disabled {
@@ -298,15 +303,96 @@ button:disabled {
 }
 
 .login-text {
-  margin-top: 13px;
-  font-size: 13px;
+  margin-top: 1rem;
+  font-size: 0.85rem;
   color: #ebebeb;
 }
 
 .signin-link {
-  text-decoration: underline;
   color: #ebebeb;
-  cursor: pointer;
-  font-weight: bold;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .CD {
+    animation: rotate-1200 20s linear infinite;
+  }
+  
+  @keyframes rotate-1200 {
+    from {
+      transform: translate(80%, -50%) rotate(0deg);
+    }
+    to {
+      transform: translate(80%, -50%) rotate(360deg);
+    }
+  }
+}
+
+@media (max-width: 992px) {
+  .CD {
+    animation: rotate-992 20s linear infinite;
+  }
+  
+  @keyframes rotate-992 {
+    from {
+      transform: translate(70%, -50%) rotate(0deg);
+    }
+    to {
+      transform: translate(70%, -50%) rotate(360deg);
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .CD {
+    display: none;
+  }
+  
+  .login {
+    width: 90%;
+    max-width: 25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .login {
+    padding: 1.5rem;
+    min-height: 30rem;
+  }
+  
+  h2 {
+    font-size: 1.75rem;
+  }
+  
+  .input-group input {
+    font-size: 0.85rem;
+  }
+  
+  .checkbox-container {
+    font-size: 0.75rem;
+  }
+}
+
+/* Remove dark mode since we're using specific gradients */
+@media (prefers-color-scheme: dark) {
+  .login {
+    background: linear-gradient(to bottom, #c697bd, #dbb4d7 50%, #1f0d3e);
+  }
+  
+  .input-group input {
+    background: rgba(235, 235, 235, 0.4);
+    border: none;
+  }
+  
+  .input-group input:focus {
+    border: 2px solid #1f0d3e;
+    background: rgba(235, 235, 235, 0.4);
+  }
+  
+  h2, .quote-text, .checkbox-container, .forgot-password a, .login-text, .signin-link {
+    color: #ebebeb;
+  }
 }
 </style>
