@@ -68,7 +68,6 @@
           </p>
         </div>
       </div>
-      <p v-if="passwordError" class="error-message">{{ passwordError }}</p>
 
       <!-- Confirm Password -->
       <div class="input-group" :class="{ invalid: confirmPasswordError }">
@@ -101,7 +100,9 @@
 
 
       <!-- Signup button -->
-      <button type="submit" :disabled="loading">Sign Up</button>
+       <button type="submit" :disabled="loading">
+        {{ loading ? 'Signing up...' : 'Sign Up' }}
+      </button>
 
       <!-- Login redirect -->
       <p class="login-text">
@@ -242,13 +243,18 @@ onMounted(() => {
 const handleSignup = async () => {
   usernameError.value = '';
   emailError.value = '';
-  passwordError.value = '';
-  confirmPasswordError.value = '';
+  confirmPasswordError.value = ''; // All relevant errors go here now
+  passwordError.value = ''; // Will no longer be shown visually
 
   if (!username.value.trim()) usernameError.value = 'Username is required!';
   if (!emailPattern.test(email.value)) emailError.value = 'Invalid email format!';
-  if (passwordCriteria.value.some((criteria) => !criteria.met)) passwordError.value = 'Use a stronger password!';
-  if (password.value !== confirmPassword.value) confirmPasswordError.value = 'Passwords do not match!';
+
+  const passwordNotStrong = passwordCriteria.value.some((criteria) => !criteria.met);
+  const passwordsDoNotMatch = password.value !== confirmPassword.value;
+
+  if (passwordNotStrong) confirmPasswordError.value = 'Password conditions not met.';
+  else if (passwordsDoNotMatch) confirmPasswordError.value = 'Passwords do not match!';
+
   if (!termsAccepted.value) {
     alert('You must accept the Terms of Service to sign up.');
     grecaptcha.reset();
@@ -262,7 +268,7 @@ const handleSignup = async () => {
     return;
   }
 
-  if (usernameError.value || emailError.value || passwordError.value || confirmPasswordError.value) {
+  if (usernameError.value || emailError.value || confirmPasswordError.value) {
     grecaptcha.reset();
     return;
   }
@@ -270,25 +276,16 @@ const handleSignup = async () => {
   try {
     loading.value = true;
 
-    const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/signup`, {
+    await axios.post(`${import.meta.env.VITE_API_URL}/api/signup`, {
       username: username.value,
       email: email.value,
       password: password.value,
       recaptchaResponse,
     });
 
-    alert('Signup successful!');
-    router.push('/login');
+    router.push({ path: '/login', query: { signup: 'success' } });
   } catch (error) {
-    if (error.response?.status === 422) {
-      const errors = error.response.data.errors;
-      usernameError.value = errors.username || '';
-      emailError.value = errors.email || '';
-      passwordError.value = errors.password || '';
-    } else {
-      alert('Signup failed. Please try again.');
-    }
-    grecaptcha.reset();
+    console.error(error);
   } finally {
     loading.value = false;
   }
@@ -489,9 +486,10 @@ button:hover {
 
 .error-message {
   color: red;
-  font-size: 12px;
-  margin-top: 5px;
+  font-size: 11px;
+  margin-top: -3px;
   text-align: left;
+  margin-left: 30px;
 }
 
 .password-popup {

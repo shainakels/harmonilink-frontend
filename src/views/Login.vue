@@ -9,6 +9,7 @@
     <h2>LOG IN</h2>
     <img src="/src/assets/logo.png" alt="Harmonilink Logo">
     <p class="quote-text">Bringing people together through the power of music.</p>
+    <p v-if="successMessage" class="success-message">{{ successMessage }}</p>
     <form @submit.prevent="handleLogin">
       <div class="input-group">
         <input
@@ -66,17 +67,32 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, onMounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import axios from 'axios';
 
 const router = useRouter();
+const route = useRoute();
+
 const email = ref('');
 const password = ref('');
 const showPassword = ref(false);
-const keepLoggedIn = ref(false); 
+const keepLoggedIn = ref(false);
 const loading = ref(false);
 const errorMessage = ref('');
+const successMessage = ref('');
+
+// Show success message if ?signup=success exists in URL
+onMounted(() => {
+  if (route.query.signup === 'success') {
+    successMessage.value = 'Account created successfully. You can now log in.';
+
+    // Remove the query parameter after 5 seconds
+    setTimeout(() => {
+      router.replace({ query: {} });
+    }, 5000);
+  }
+});
 
 const togglePasswordVisibility = () => {
   showPassword.value = !showPassword.value;
@@ -298,10 +314,10 @@ button:disabled {
 
 .error-message {
   color: red;
-  font-size: 12px;
-  margin-top: 24px;
+  font-size: 11px;
+  margin-top: -3px;
+  text-align: left;
 }
-
 .login-text {
   margin-top: 1rem;
   font-size: 0.85rem;
@@ -374,6 +390,13 @@ button:disabled {
     font-size: 0.75rem;
   }
 }
+
+.success-message {
+  color: green;
+  font-size: 11px;
+  margin: 0.5rem 0;
+}
+
 
 /* Remove dark mode since we're using specific gradients */
 @media (prefers-color-scheme: dark) {
