@@ -47,8 +47,47 @@ function selectGender(gender) {
   selectedGender.value = gender;
 }
 
+// Helper to check if a date is valid
+function isValidDate(y, m, d) {
+  const date = new Date(`${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`);
+  // Check if date is valid and matches input (handles leap years, month lengths, etc.)
+  return (
+    date.getFullYear() === Number(y) &&
+    date.getMonth() + 1 === Number(m) &&
+    date.getDate() === Number(d)
+  );
+}
+
 const saveProfile = async () => {
-  const birthday = `${year.value}-${String(month.value).padStart(2, '0')}-${String(day.value).padStart(2, '0')}`;
+  // Validate year, month, day
+  const y = Number(year.value);
+  const m = Number(month.value);
+  const d = Number(day.value);
+
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth() + 1;
+  const currentDay = new Date().getDate();
+
+  if (
+    !y || !m || !d ||
+    y < 1900 || y > currentYear ||
+    m < 1 || m > 12 ||
+    d < 1 || d > 31 ||
+    !isValidDate(y, m, d)
+  ) {
+    alert('Please enter a valid date.');
+    return;
+  }
+
+  // Prevent future dates
+  const inputDate = new Date(`${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`);
+  const today = new Date();
+  if (inputDate > today) {
+    alert('Birthday cannot be in the future.');
+    return;
+  }
+
+  const birthday = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
   const user_id = localStorage.getItem('user_id'); 
 
   try {

@@ -39,7 +39,7 @@
             <div class="profile-card">
               <h2 class="profile-name">{{ currentProfile.username }}</h2>
               <p class="profile-info">{{ currentProfile.age }} years old, {{ currentProfile.gender }}</p>
-              <img :src="currentProfile.mixtapes[0]?.photo_url" class="mixtape-image" />
+              <img :src="getFullPhotoUrl(currentProfile.mixtapes[0]?.photo_url)" class="mixtape-image" />
               <h2 class="mixtape-title-front">{{ currentProfile.mixtapes[0]?.name }}</h2>
               <p class="mixtape-description">{{ currentProfile.mixtapes[0]?.bio }}</p>
 
@@ -63,13 +63,30 @@
 
             <!-- Show mixtape details if available -->
             <div class="back-mixtape" v-if="currentProfile.mixtapes?.length > 0">
-              <img :src="currentProfile.mixtapes[0].photo_url" class="mixtape-image" />
+              <img :src="getFullPhotoUrl(currentProfile.mixtapes[0].photo_url)" class="mixtape-image" />
               <h3 class="mixtape-title-back">{{ currentProfile.mixtapes[0].name }}</h3>
-              <ol class="song-list">
-                <li v-for="(song, index) in currentProfile.mixtapes[0].songs" :key="index">
-                  {{ song.song_name }} by {{ song.artist_name }}
+              <ul class="song-list">
+                <li v-for="(song, index) in currentProfile.mixtapes[0].songs" :key="index" class="song-item">
+                  <button
+                    v-if="song.preview_url"
+                    class="mini-audio-btn"
+                    @click.stop="toggleDiscoverPlay(index)"
+                    :aria-label="discoverPlayingIndex === index ? 'Pause preview' : 'Play preview'"
+                    style="margin-right: 0.5rem;"
+                  >
+                    <i :class="discoverPlayingIndex === index ? 'fa-solid fa-pause' : 'fa-solid fa-play'"></i>
+                  </button>
+                  <span>{{ song.song_name }} by {{ song.artist_name }}</span>
+                  <audio
+                    v-if="song.preview_url"
+                    ref="discoverAudioRefs"
+                    :src="song.preview_url"
+                    @ended="onDiscoverAudioEnded"
+                    style="display: none;"
+                  ></audio>
+                  <span v-else class="no-preview" style="margin-left:0.5rem;">No preview</span>
                 </li>
-              </ol>
+              </ul>
             </div>
 
             <!-- Fallback message if no mixtapes are available -->
@@ -85,6 +102,7 @@
                   class="heart-btn" 
                   :class="{ clicked: currentProfile.favorited }" 
                   @click="animateHeart"
+                  title="Add to Favorites"
                 >
                   <i class="fa-solid fa-heart"></i>
                 </button>
@@ -94,6 +112,7 @@
                   class="x-btn" 
                   @click="animateX" 
                   :disabled="currentProfile.favorited"
+                  title="Discard Profile"
                 >
                   <i class="fa-solid fa-x"></i>
                 </button>
@@ -110,7 +129,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import NavLayout from '../layouts/NavLayout.vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
@@ -132,6 +151,44 @@ let refreshInterval;
 
 // Tracks the number of profiles unpacked
 const viewedProfiles = ref(0);
+
+// Audio playback management
+const discoverAudioRefs = ref([]);
+const discoverPlayingIndex = ref(null);
+
+function toggleDiscoverPlay(index) {
+  // Pause all other audios
+  discoverAudioRefs.value.forEach((audio, i) => {
+    if (audio && i !== index) {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+  });
+
+  const currentAudio = discoverAudioRefs.value[index];
+  if (!currentAudio) return;
+
+  if (discoverPlayingIndex.value === index && !currentAudio.paused) {
+    currentAudio.pause();
+    discoverPlayingIndex.value = null;
+  } else {
+    currentAudio.play();
+    discoverPlayingIndex.value = index;
+  }
+}
+
+function onDiscoverAudioEnded() {
+  discoverPlayingIndex.value = null;
+}
+
+// Reset refs when songs change
+watch(
+  () => currentProfile.value?.mixtapes?.[0]?.songs,
+  () => {
+    discoverAudioRefs.value = [];
+    discoverPlayingIndex.value = null;
+  }
+);
 
 // Fetch current user profile
 async function fetchCurrentUser() {
@@ -249,7 +306,7 @@ function startRefreshTimer() {
 
   if (!endTime || isNaN(parseInt(endTime, 10))) {
     // Set endTime to 3 hours from now
-    endTime = Date.now() + 3 * 60 * 60 * 1000; // 3 hours in ms
+    endTime = Date.now() + 60 * 1000; // 3 hours in ms
     localStorage.setItem(timerKey, endTime.toString());
   } else {
     endTime = parseInt(endTime, 10);
@@ -269,6 +326,9 @@ function startRefreshTimer() {
       clearInterval(refreshInterval);
       refreshInterval = null; // Reset the interval
       localStorage.removeItem(timerKey); // Clear the timer for this user
+
+      // Clear cached profiles and fetch new ones
+      clearState(); // Clear profiles, index, and viewed count
       fetchProfiles(); // Fetch new profiles
     }
   }
@@ -320,6 +380,11 @@ function clearState() {
   currentIndex.value = 0;
   viewedProfiles.value = 0;
   isFlipped.value = false;
+
+  if (currentUser.value && currentUser.value.id) {
+    const stateKey = `discoverState_${currentUser.value.id}`;
+    localStorage.removeItem(stateKey); // Clear saved state for the user
+  }
 }
 
 // Animate heart button
@@ -391,6 +456,14 @@ const animateX = async () => {
     }
   }
 };
+
+// Utility function to get full photo URL
+function getFullPhotoUrl(url) {
+  if (!url) return '';
+  if (url.startsWith('http')) return url;
+  // Always ensure exactly one slash between base and path
+  return `${import.meta.env.VITE_API_URL.replace(/\/$/, '')}/${url.replace(/^\/?/, '')}`;
+}
 
 // Lifecycle hook
 onMounted(async () => {
@@ -669,6 +742,7 @@ onUnmounted(() => {
 }
 
 .song-list {
+  list-style: none;
   text-align: left;
   font-size: 0.9rem;
   line-height: 1.4;
@@ -676,13 +750,29 @@ onUnmounted(() => {
   overflow-y: auto;
   margin: 5rem auto 0; 
   padding: 0 1.5rem; 
-  list-style-type: decimal; 
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   overflow-y: auto;
   width: 90%;
   flex: 1;
+}
+
+.mini-audio-btn {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  outline: none;
+  color: #fff;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.mini-audio-btn:hover {
+  color: #dbb4d7;
 }
 
 .no-mixtape-message {
@@ -773,7 +863,6 @@ onUnmounted(() => {
   margin-top: 2rem;
 }
 </style>
-
 
 
 
