@@ -168,6 +168,17 @@ const showPasswordPopup = ref(false);
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+const validateUsername = (name) => {
+  if (!name) return 'Username is required!';
+  if (/\s/.test(name)) return 'Username cannot contain spaces.';
+  if (/[@]/.test(name)) return 'Username cannot contain "@" or email domains.';
+  if (name.toLowerCase().includes('@gmail.com')) return 'Username cannot include "@gmail.com".';
+  // Optional: restrict to alphanumeric, underscores, dots, and dashes only
+  if (!/^[a-zA-Z0-9._-]+$/.test(name)) return 'Username can only contain letters, numbers, dots, underscores, or dashes.';
+  if (name.length < 3) return 'Username must be at least 3 characters.';
+  return '';
+};
+
 const passwordStrength = computed(() => {
   const val = password.value;
   if (!val) return { message: '', color: '' };
@@ -241,7 +252,7 @@ onMounted(() => {
 });
 
 const handleSignup = async () => {
-  usernameError.value = '';
+  usernameError.value = validateUsername(username.value);
   emailError.value = '';
   confirmPasswordError.value = ''; // All relevant errors go here now
   passwordError.value = ''; // Will no longer be shown visually

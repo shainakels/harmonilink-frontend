@@ -66,27 +66,38 @@
               <img :src="getFullPhotoUrl(currentProfile.mixtapes[0].photo_url)" class="mixtape-image" />
               <h3 class="mixtape-title-back">{{ currentProfile.mixtapes[0].name }}</h3>
               <ul class="song-list">
-                <li v-for="(song, index) in currentProfile.mixtapes[0].songs" :key="index" class="song-item">
-                  <button
-                    v-if="song.preview_url"
-                    class="mini-audio-btn"
-                    @click.stop="toggleDiscoverPlay(index)"
-                    :aria-label="discoverPlayingIndex === index ? 'Pause preview' : 'Play preview'"
-                    style="margin-right: 0.5rem;"
-                  >
-                    <i :class="discoverPlayingIndex === index ? 'fa-solid fa-pause' : 'fa-solid fa-play'"></i>
-                  </button>
-                  <span>{{ song.song_name }} by {{ song.artist_name }}</span>
-                  <audio
-                    v-if="song.preview_url"
-                    ref="discoverAudioRefs"
-                    :src="song.preview_url"
-                    @ended="onDiscoverAudioEnded"
-                    style="display: none;"
-                  ></audio>
-                  <span v-else class="no-preview" style="margin-left:0.5rem;">No preview</span>
-                </li>
-              </ul>
+            <li v-for="(song, index) in currentProfile.mixtapes[0].songs" :key="index" class="song-item">
+              <img
+                v-if="song.artwork_url"
+                :src="song.artwork_url"
+                alt="Artwork"
+                class="song-artwork"
+                style="width: 40px; height: 40px; margin-right: 0.5rem; border-radius: 6px;"
+              />
+
+              <button
+                v-if="song.preview_url"
+                class="mini-audio-btn"
+                @click.stop="toggleDiscoverPlay(index)"
+                :aria-label="discoverPlayingIndex === index ? 'Pause preview' : 'Play preview'"
+                style="margin-right: 0.5rem;"
+              >
+                <i :class="discoverPlayingIndex === index ? 'fa-solid fa-pause' : 'fa-solid fa-play'"></i>
+              </button>
+
+              <span>{{ song.song_name }} by {{ song.artist_name }}</span>
+
+              <audio
+                v-if="song.preview_url"
+                ref="discoverAudioRefs"
+                :src="song.preview_url"
+                @ended="onDiscoverAudioEnded"
+                style="display: none;"
+              ></audio>
+
+              <span v-else class="no-preview" style="margin-left: 0.5rem;">No preview</span>
+            </li>
+          </ul>
             </div>
 
             <!-- Fallback message if no mixtapes are available -->
@@ -258,6 +269,7 @@ function shuffleArray(array) {
 
 // Navigate to the next profile
 function nextProfile() {
+  pauseAllPreviews();
   if (profiles.value.length === 0) {
     alert('No more profiles available.');
     return;
@@ -270,6 +282,7 @@ function nextProfile() {
 
 // Navigate to the previous profile
 function prevProfile() {
+  pauseAllPreviews();
   if (currentIndex.value > 0) {
     currentIndex.value--;
   }
@@ -277,6 +290,7 @@ function prevProfile() {
 
 // Flip the profile card
 function flipCard() {
+  pauseAllPreviews();
   if (!isFlipped.value) {
     // Mark the profile as viewed
     if (!currentProfile.value.viewed) {
@@ -387,8 +401,20 @@ function clearState() {
   }
 }
 
+// Pause all audio previews
+function pauseAllPreviews() {
+  discoverAudioRefs.value.forEach(audio => {
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+  });
+  discoverPlayingIndex.value = null;
+}
+
 // Animate heart button
 const animateHeart = async () => {
+  pauseAllPreviews();
   const favoriteProfile = currentProfile.value;
 
   if (favoriteProfile) {
@@ -420,6 +446,7 @@ const animateHeart = async () => {
 
 // Animate X button
 const animateX = async () => {
+  pauseAllPreviews();
   const discardedProfile = currentProfile.value;
 
   if (discardedProfile) {
@@ -862,6 +889,16 @@ onUnmounted(() => {
   font-size: 1.2rem;
   margin-top: 2rem;
 }
+
+.song-artwork {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  object-fit: cover;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}
+
 </style>
 
 

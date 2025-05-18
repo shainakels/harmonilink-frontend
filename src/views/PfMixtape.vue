@@ -33,8 +33,11 @@
     <p v-if="mixtapeBioError" class="error-message">{{ mixtapeBioError }}</p>
 
     <div v-for="(song, index) in songs" :key="index" class="song-entry song-item-flex">
-      <div>
-        {{ song.name }} - {{ song.artist }}
+      <div class="song-details-flex">
+      <img v-if="song.artwork" :src="song.artwork" alt="Artwork" class="song-artwork" />
+      <div class="song-text">
+        <div>{{ song.name }} - {{ song.artist }}</div>
+      </div>
         <button
           v-if="song.previewUrl"
           class="mini-audio-btn"
@@ -92,9 +95,15 @@
         
         <div v-if="searchResults.length > 0" class="search-results">
           <div v-for="(result, index) in searchResults" :key="index" class="search-item">
-            <div class="search-details" @click="addSongFromResult(result)">
-              <strong>{{ result.trackName }}</strong> - {{ result.artistName }}
-            </div>
+          <img
+            v-if="result.artworkUrl100"
+            :src="result.artworkUrl100"
+            alt="Artwork"
+            class="search-artwork"
+          />
+          <div class="search-details" @click="addSongFromResult(result)">
+            <strong>{{ result.trackName }}</strong> - {{ result.artistName }}
+          </div>
             <button
               v-if="result.previewUrl"
               class="mini-audio-btn"
@@ -236,6 +245,7 @@ function addSongFromResult(result) {
     name: result.trackName,
     artist: result.artistName,
     previewUrl: result.previewUrl || null,
+    artwork: result.artworkUrl100 || null,
   };
   if (isEditing.value && editingIndex.value !== null) {
     songs.value[editingIndex.value] = newSong;
@@ -296,11 +306,12 @@ const handleFinish = async () => {
   if (!photoUrl.value) return alert('Mixtape photo is required.');
   if (songs.value.length < 3) return showSongError.value = true;
 
-  const user_id = localStorage.getItem('user_id');
+  const user_id = Number(localStorage.getItem('user_id'));
   if (isSubmitting.value) return;
   isSubmitting.value = true;
 
   try {
+    console.log('Submitting songs:', songs.value);
     const response = await axios.post(`${VITE_API_URL}/api/pfmixtape`, {
       user_id,
       name: mixtapeName.value,
@@ -777,5 +788,29 @@ watch(songs, () => {
   cursor: pointer;
 }
 
+.song-details-flex {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.song-artwork {
+  width: 50px;
+  height: 50px;
+  border-radius: 5px;
+  object-fit: cover;
+}
+
+.song-text {
+  flex-grow: 1;
+}
+
+.search-artwork {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  margin-right: 10px;
+  border-radius: 5px;
+}
 
   </style>

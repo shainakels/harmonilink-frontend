@@ -8,9 +8,29 @@
       <div class="profile-setup">
         <p>My Birthday</p>
         <div class="birthday-inputs">
-          <input type="number" v-model="month" placeholder="MM" min="1" max="12" required />
-          <input type="number" v-model="day" placeholder="DD" min="1" max="31" required />
-          <input type="number" v-model="year" placeholder="YYYY" min="1900" max="2025" required />
+          <input
+            type="text"
+            v-model="month"
+            placeholder="MM"
+            @input="onMonthInput"
+            maxlength="2"
+          />
+
+          <input
+            type="text"
+            v-model="day"
+            placeholder="DD"
+            @input="onDayInput"
+            maxlength="2"
+          />
+
+          <input
+            type="text"
+            v-model="year"
+            placeholder="YYYY"
+            @input="onYearInput"
+            maxlength="4"
+          />
         </div>
 
         <p>I identify as ...</p>
@@ -31,7 +51,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 
@@ -42,6 +62,8 @@ const month = ref('');
 const day = ref('');
 const year = ref('');
 const bio = ref('');
+
+const currentYear = new Date().getFullYear();
 
 function selectGender(gender) {
   selectedGender.value = gender;
@@ -58,13 +80,63 @@ function isValidDate(y, m, d) {
   );
 }
 
+function onMonthInput(e) {
+  let val = e.target.value.replace(/\D/g, ''); // allow digits only
+  if (val.length > 2) val = val.slice(0, 2);
+
+  // Clamp month between 1 and 12 only if user has entered 2 digits
+  if (val.length === 2) {
+    const num = parseInt(val, 10);
+    if (num < 1) val = '01';
+    else if (num > 12) val = '12';
+  }
+
+  month.value = val;
+}
+
+function onDayInput(e) {
+  let val = e.target.value.replace(/\D/g, ''); // digits only
+  if (val.length > 2) val = val.slice(0, 2);
+
+  // Only clamp day if input length is 2 (user finished typing)
+  if (val.length === 2) {
+    const num = parseInt(val, 10);
+    if (num < 1) val = '01';
+    else if (num > maxDay.value) val = maxDay.value.toString();
+  }
+
+  day.value = val;
+}
+
+function onYearInput(e) {
+  let val = e.target.value.replace(/\D/g, ''); // digits only
+  if (val.length > 4) val = val.slice(0, 4);
+
+  // Only clamp year if input length is 4 (user finished typing)
+  if (val.length === 4) {
+    const num = parseInt(val, 10);
+    if (num < 1900) val = '1900';
+    else if (num > currentYear) val = currentYear.toString();
+  }
+
+  year.value = val;
+}
+
+
+
+// Compute max day for the selected month/year (handles leap years)
+const maxDay = computed(() => {
+  const y = Number(year.value) || 2000;
+  const m = Number(month.value) || 1;
+  return new Date(y, m, 0).getDate();
+});
+
 const saveProfile = async () => {
   // Validate year, month, day
   const y = Number(year.value);
   const m = Number(month.value);
   const d = Number(day.value);
 
-  const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
   const currentDay = new Date().getDate();
 
@@ -72,7 +144,7 @@ const saveProfile = async () => {
     !y || !m || !d ||
     y < 1900 || y > currentYear ||
     m < 1 || m > 12 ||
-    d < 1 || d > 31 ||
+    d < 1 || d > maxDay.value ||
     !isValidDate(y, m, d)
   ) {
     alert('Please enter a valid date.');
