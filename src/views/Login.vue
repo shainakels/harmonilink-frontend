@@ -46,7 +46,7 @@
       <div class="checkbox-container">
         <div class="checkbox-group">
           <input type="checkbox" id="keep" v-model="keepLoggedIn">
-          <label for="keep">Keep me logged in</label>
+          <label for="keep">Remember me</label>
         </div>
         <!--Forget Password-->
         <p class="forgot-password">
@@ -113,6 +113,7 @@ const handleLogin = async () => {
       localStorage.setItem('authToken', token);
       localStorage.setItem('userLoggedIn', 'true');
       localStorage.setItem('user_id', user_id);
+      localStorage.setItem('token', response.data.token);
 
       if (!onboarding_completed) {
         localStorage.setItem('onboardingStep', 'pfcustom');

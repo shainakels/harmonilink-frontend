@@ -451,7 +451,7 @@ const animateX = async () => {
 
   if (discardedProfile) {
     try {
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem('token');
       if (!token) {
         alert('You must be logged in to discard profiles.');
         return;
@@ -900,7 +900,6 @@ onUnmounted(() => {
 }
 
 </style>
-
 
 
 
