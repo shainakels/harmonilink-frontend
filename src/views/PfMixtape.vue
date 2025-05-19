@@ -1,5 +1,5 @@
 <template>
-  <img src="/src/assets/background.png" alt="background" class="background" />
+  <img src="/src/assets/background.png" alt="background" class="background">
   
   <div class="create-text">Create your Mixtape</div>
   
@@ -7,7 +7,14 @@
     <div class="upload-box" @click="triggerPhotoUpload">
       <img v-if="photoUrl" :src="getFullPhotoUrl(photoUrl)" class="photo-preview" />
       <span v-else>Add photo</span>
-      <input type="file" ref="photoInput" @change="handlePhotoUpload" hidden />
+      <input
+        type="file"
+        accept=".jpg, .jpeg, .png"
+        ref="photoInput"
+        @change="handlePhotoUpload"
+        hidden
+      />
+
     </div>
     <p v-if="photoUploadError" class="error-message">{{ photoUploadError }}</p>
 
@@ -32,6 +39,7 @@
 
     <p v-if="mixtapeBioError" class="error-message">{{ mixtapeBioError }}</p>
 
+    <div class="song-list-container">
     <div v-for="(song, index) in songs" :key="index" class="song-entry song-item-flex">
       <div class="song-details-flex">
       <img v-if="song.artwork" :src="song.artwork" alt="Artwork" class="song-artwork" />
@@ -60,6 +68,7 @@
         <i class="fa-solid fa-trash delete-icon" @click="deleteSong(index)"></i>
       </div>
     </div>
+    </div>
 
     <div class="song-count">
       {{ songs.length }} / 3 Songs
@@ -82,7 +91,7 @@
     </button>
 
     <button class="later-button" @click="skipMixtapeCreation">I want to do it later.</button>
-
+  </div>
     <!-- Song Modal -->
     <div v-if="showSongModal" class="modal-overlay">
       <div class="modal-box">
@@ -95,15 +104,15 @@
         
         <div v-if="searchResults.length > 0" class="search-results">
           <div v-for="(result, index) in searchResults" :key="index" class="search-item">
-          <img
-            v-if="result.artworkUrl100"
-            :src="result.artworkUrl100"
-            alt="Artwork"
-            class="search-artwork"
-          />
-          <div class="search-details" @click="addSongFromResult(result)">
-            <strong>{{ result.trackName }}</strong> - {{ result.artistName }}
-          </div>
+            <img
+              v-if="result.artworkUrl100"
+              :src="result.artworkUrl100"
+              alt="Artwork"
+              class="search-artwork"
+            />
+            <div class="search-info" @click="addSongFromResult(result)">
+              <strong>{{ result.trackName }}</strong> - {{ result.artistName }}
+            </div>
             <button
               v-if="result.previewUrl"
               class="mini-audio-btn"
@@ -112,7 +121,7 @@
             >
               <i :class="searchPlayingIndex === index ? 'fa-solid fa-pause' : 'fa-solid fa-play'"></i>
             </button>
-            <div v-else class="no-preview">No preview available</div>
+            <div v-else class="no-preview">No preview</div>
             <audio
               v-if="result.previewUrl"
               ref="searchAudioRefs"
@@ -121,6 +130,7 @@
               style="display: none;"
             ></audio>
           </div>
+
         </div>
         <div v-else class="search-empty">
           <p>No results found yet. Try typing a song name or artist.</p>
@@ -149,7 +159,6 @@
         <p>You just finished creating your profile.</p>
       </div>
     </div>
-  </div>
 </template>
 
 <script setup>
@@ -208,6 +217,12 @@ async function handlePhotoUpload(event) {
   photoUploadError.value = '';
   const file = event.target.files[0];
   if (file) {
+    const validTypes = ['image/jpeg', 'image/png'];
+    if (!validTypes.includes(file.type)) {
+      photoUploadError.value = 'Only JPG and PNG images are allowed.';
+      return;
+    }
+
     const formData = new FormData();
     formData.append('photo', file);
 
@@ -436,17 +451,18 @@ watch(songs, () => {
   }
   
   .background {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    transform: rotate(180deg);
-    z-index: -1;
-  }
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  flex-direction: column;
+  transform: rotate(180deg);
+}
   
   .create-text {
     position: absolute;
@@ -461,7 +477,7 @@ watch(songs, () => {
   .main-box {
     background-color: #080d2a;
     width: 35rem;
-    height: 30rem;
+    height: 36rem;
     padding: 2rem;
     border-radius: 15px;
     color: white;
@@ -477,7 +493,7 @@ watch(songs, () => {
   .upload-box {
     background-color: #bebebe;
     width: 10rem;
-    height: 10rem;
+    min-height: 10rem;
     margin: 0 auto 1rem;
     border: 5px solid #fffefd;
     border-radius: 0.5rem;
@@ -497,7 +513,7 @@ watch(songs, () => {
   
   .input,
   .textarea {
-    width: 60%;
+    width: 80%;
     text-align: center;
     margin-bottom: 0.5rem;
     padding: 0.5rem;
@@ -523,13 +539,25 @@ watch(songs, () => {
   
   .textarea {
     resize: none;
-    height: 40px;
+    height: 50px;
   }
+
+  .song-list-container {
+    display: flex;
+    flex-direction: column;
+    height: 10rem;
+    overflow-y: auto;
+    padding: 5px;
+    margin-top: 1rem;
+    border: 1px solid #444;
+    border-radius: 10px;
+    }
   
   .song-count {
     text-align: center;
     font-size: 1rem;
     color: #bebebe;
+    margin-top: 1rem;
     margin-bottom: 1rem;
   }
   
@@ -558,10 +586,8 @@ watch(songs, () => {
     justify-content: space-between;
     align-items: center;
     background-color: #2c1a40;
-    padding: 0.5rem;
+    padding: 0.3rem;
     border-radius: 5px;
-    margin-bottom: 0.5rem;
-    color: white;
   }
   
   .song-actions-buttons {
@@ -642,7 +668,7 @@ watch(songs, () => {
     background-color: #dbb4d7;
     padding: 1.5rem;
     border-radius: 1rem;
-    width: 350px;
+    width: 30rem;
     text-align: center;
     color: #1f0d3e;
     position: relative;
@@ -743,15 +769,18 @@ watch(songs, () => {
   margin-top: 1rem;
   max-height: 150px;
   overflow-y: auto;
-  background: #1a1f3c9c;
+  background: #1f0d3e;
   padding: 0.5rem;
   border-radius: 0.5rem;
+  color: #dbb4d7;
 }
+
 .search-item {
-  margin-bottom: 1rem;
-  padding: 0.5rem;
-  background-color: #1a1f3c;
-  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
   cursor: pointer;
 }
 
@@ -766,17 +795,16 @@ watch(songs, () => {
 }
 
 .no-preview {
-  font-size: 0.85rem;
-  color: #bbb;
+  font-size: 12px;
+  color: #999;
 }
 
 .mini-audio-btn {
   background: none;
   border: none;
+  font-size: 16px;
   cursor: pointer;
   color: #dbb4d7;
-  font-size: 1rem;
-  margin-left: 0.5rem;
 }
 
 .mini-audio-btn:hover {
@@ -795,22 +823,29 @@ watch(songs, () => {
 }
 
 .song-artwork {
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
   border-radius: 5px;
   object-fit: cover;
 }
 
 .song-text {
   flex-grow: 1;
+  text-align: left;
 }
 
 .search-artwork {
   width: 50px;
   height: 50px;
   object-fit: cover;
-  margin-right: 10px;
-  border-radius: 5px;
+  border-radius: 8px;
+}
+
+.search-info {
+  flex: 1;
+  font-size: 14px;
 }
 
   </style>
+
+  

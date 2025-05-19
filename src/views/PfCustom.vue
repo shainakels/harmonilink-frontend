@@ -1,197 +1,456 @@
 <template>
-  <transition name="fade">
-    <div>
-      <img src="/src/assets/background.png" alt="background" class="background">
+  <img src="/src/assets/background.png" alt="background" class="background">
+  
+  <div class="create-text">Create your Mixtape</div>
+  
+  <div class="main-box">
+    <div class="upload-box" @click="triggerPhotoUpload">
+      <img v-if="photoUrl" :src="getFullPhotoUrl(photoUrl)" class="photo-preview" />
+      <span v-else>Add photo</span>
+      <input
+        type="file"
+        accept=".jpg, .jpeg, .png"
+        ref="photoInput"
+        @change="handlePhotoUpload"
+        hidden
+      />
 
-      <div class="setup-text">Let's set up your Profile</div>
+    </div>
+    <p v-if="photoUploadError" class="error-message">{{ photoUploadError }}</p>
 
-      <div class="profile-setup">
-        <p>My Birthday</p>
-        <div class="birthday-inputs">
-          <input
-            type="text"
-            v-model="month"
-            placeholder="MM"
-            @input="onMonthInput"
-            maxlength="2"
-          />
+    <input
+      type="text"
+      v-model="mixtapeName"
+      class="input"
+      :class="{ error: mixtapeNameError }"
+      placeholder="Mixtape Name"
+      @input="validateMixtapeName"
+    />
+    
+    <p v-if="mixtapeNameError" class="error-message">{{ mixtapeNameError }}</p>
 
-          <input
-            type="text"
-            v-model="day"
-            placeholder="DD"
-            @input="onDayInput"
-            maxlength="2"
-          />
+    <textarea
+      v-model="mixtapeBio"
+      class="textarea"
+      :class="{ error: mixtapeBioError }"
+      placeholder="Say something about your mixtape"
+      @input="validateMixtapeBio"
+    ></textarea>
 
-          <input
-            type="text"
-            v-model="year"
-            placeholder="YYYY"
-            @input="onYearInput"
-            maxlength="4"
-          />
-        </div>
+    <p v-if="mixtapeBioError" class="error-message">{{ mixtapeBioError }}</p>
 
-        <p>I identify as ...</p>
-        <div class="gender-options">
-          <button class="gender-button" :class="{ selected: selectedGender === 'Female' }" @click="selectGender('Female')">Female</button>
-          <button class="gender-button" :class="{ selected: selectedGender === 'Male' }" @click="selectGender('Male')">Male</button>
-          <button class="gender-button" :class="{ selected: selectedGender === 'Non-Binary' }" @click="selectGender('Non-Binary')">Non-Binary</button>
-          <button class="gender-button" :class="{ selected: selectedGender === 'Other' }" @click="selectGender('Other')">Other</button>
-        </div>
-
-        <p>Tell People More About You!</p>
-        <textarea v-model="bio" placeholder="Write something about yourself..."></textarea>
-
-        <button class="continue-button" @click="saveProfile">Continue</button>
+    <div class="song-list-container">
+    <div v-for="(song, index) in songs" :key="index" class="song-entry song-item-flex">
+      <div class="song-details-flex">
+      <img v-if="song.artwork" :src="song.artwork" alt="Artwork" class="song-artwork" />
+      <div class="song-text">
+        <div>{{ song.name }} - {{ song.artist }}</div>
+      </div>
+        <button
+          v-if="song.previewUrl"
+          class="mini-audio-btn"
+          @click="togglePlay(index)"
+          :aria-label="playingIndex === index ? 'Pause preview' : 'Play preview'"
+        >
+          <i :class="playingIndex === index ? 'fa-solid fa-pause' : 'fa-solid fa-play'"></i>
+        </button>
+        <div v-else class="no-preview">No preview available</div>
+        <audio
+          v-if="song.previewUrl"
+          ref="audioRefs"
+          :src="song.previewUrl"
+          @ended="onAudioEnded"
+          style="display: none;"
+        ></audio>
+      </div>
+      <div class="song-actions-buttons">
+        <i class="fa-solid fa-pen edit-icon" @click="editSong(index)"></i>
+        <i class="fa-solid fa-trash delete-icon" @click="deleteSong(index)"></i>
       </div>
     </div>
-  </transition>
+    </div>
+
+    <div class="song-count">
+      {{ songs.length }} / 3 Songs
+      <p v-if="showSongError && songs.length < 3" class="error-message">
+        You need to add 3 songs to proceed.
+      </p>
+    </div>
+
+    <div v-if="songs.length < 3" class="add-song-row" @click="openSongModal">
+      <i class="fa-solid fa-circle-plus"></i> <span>Add Song</span>
+    </div>
+    
+    <button
+      class="create-button"
+      :class="{ 'twinkle-effect': twinkleActive }"
+      :disabled="isSubmitting"
+      @click="handleFinish"
+    >
+      {{ isSubmitting ? 'Creating...' : 'Create Mixtape' }}
+    </button>
+
+    <button class="later-button" @click="skipMixtapeCreation">I want to do it later.</button>
+  </div>
+    <!-- Song Modal -->
+    <div v-if="showSongModal" class="modal-overlay">
+      <div class="modal-box">
+        <div class="modal-header">
+          Song Search
+          <span class="close" @click="confirmCloseModal">×</span>
+        </div>
+        <input type="text" v-model="songName" class="modal-input" placeholder="Song Name" @input="searchSongs" />
+        <input type="text" v-model="artistName" class="modal-input" placeholder="Artist Name" @input="searchSongs" />
+        
+        <div v-if="searchResults.length > 0" class="search-results">
+          <div v-for="(result, index) in searchResults" :key="index" class="search-item">
+            <img
+              v-if="result.artworkUrl100"
+              :src="result.artworkUrl100"
+              alt="Artwork"
+              class="search-artwork"
+            />
+            <div class="search-info" @click="addSongFromResult(result)">
+              <strong>{{ result.trackName }}</strong> - {{ result.artistName }}
+            </div>
+            <button
+              v-if="result.previewUrl"
+              class="mini-audio-btn"
+              @click.stop="toggleSearchPlay(index)"
+              :aria-label="searchPlayingIndex === index ? 'Pause preview' : 'Play preview'"
+            >
+              <i :class="searchPlayingIndex === index ? 'fa-solid fa-pause' : 'fa-solid fa-play'"></i>
+            </button>
+            <div v-else class="no-preview">No preview</div>
+            <audio
+              v-if="result.previewUrl"
+              ref="searchAudioRefs"
+              :src="result.previewUrl"
+              @ended="onSearchAudioEnded"
+              style="display: none;"
+            ></audio>
+          </div>
+
+        </div>
+        <div v-else class="search-empty">
+          <p>No results found yet. Try typing a song name or artist.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Confirm Close Modal -->
+    <div v-if="showConfirmClose" class="modal-overlay">
+      <div class="confirm-box">
+        <p>Are you sure you want to close this?</p>
+        <div class="confirm-buttons">
+          <button @click="closeSongModal">Yes</button>
+          <button @click="showConfirmClose = false">No</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Congrats Modal -->
+    <div v-if="showCongratsPopup" class="modal-overlay">
+      <div class="modal-box">
+        <div class="modal-header">
+          Congratulations!
+          <span class="close" @click="closePopupAndRedirect">×</span>
+        </div>
+        <p>You just finished creating your profile.</p>
+      </div>
+    </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 
 const router = useRouter();
 
-const selectedGender = ref('');
-const month = ref('');
-const day = ref('');
-const year = ref('');
-const bio = ref('');
+const photoInput = ref(null);
+const photoUrl = ref('');
+const mixtapeName = ref('');
+const mixtapeBio = ref('');
+const songs = ref([]);
 
-const currentYear = new Date().getFullYear();
+const showSongModal = ref(false);
+const showConfirmClose = ref(false);
+const showCongratsPopup = ref(false);
 
-function selectGender(gender) {
-  selectedGender.value = gender;
+const songName = ref('');
+const artistName = ref('');
+const searchResults = ref([]);
+
+const twinkleActive = ref(false); 
+
+const mixtapeNameError = ref('');
+const mixtapeBioError = ref('');
+const showSongError = ref(false); 
+const isSubmitting = ref(false);
+const photoUploadError = ref('');
+
+const isEditing = ref(false);
+const editingIndex = ref(null);
+
+const playingIndex = ref(null);
+
+const audioRefs = ref([]);
+
+const searchAudioRefs = ref([]);
+const searchPlayingIndex = ref(null);
+
+const rawUrl = import.meta.env.VITE_API_URL;
+const VITE_API_URL = rawUrl.endsWith('/') ? rawUrl.slice(0, -1) : rawUrl;
+
+function getFullPhotoUrl(url) {
+  if (!url) return '';
+  if (url.startsWith('http')) return url;
+  return `${VITE_API_URL.replace(/\/$/, '')}/${url.replace(/^\/?/, '')}`;
 }
 
-// Helper to check if a date is valid
-function isValidDate(y, m, d) {
-  const date = new Date(`${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`);
-  // Check if date is valid and matches input (handles leap years, month lengths, etc.)
-  return (
-    date.getFullYear() === Number(y) &&
-    date.getMonth() + 1 === Number(m) &&
-    date.getDate() === Number(d)
-  );
+function triggerPhotoUpload() {
+  photoInput.value.click();
 }
 
-function onMonthInput(e) {
-  let val = e.target.value.replace(/\D/g, ''); // allow digits only
-  if (val.length > 2) val = val.slice(0, 2);
+async function handlePhotoUpload(event) {
+  photoUploadError.value = '';
+  const file = event.target.files[0];
+  if (file) {
+    const validTypes = ['image/jpeg', 'image/png'];
+    if (!validTypes.includes(file.type)) {
+      photoUploadError.value = 'Only JPG and PNG images are allowed.';
+      return;
+    }
 
-  // Clamp month between 1 and 12 only if user has entered 2 digits
-  if (val.length === 2) {
-    const num = parseInt(val, 10);
-    if (num < 1) val = '01';
-    else if (num > 12) val = '12';
+    const formData = new FormData();
+    formData.append('photo', file);
+
+    try {
+      const response = await axios.post(`${VITE_API_URL}/api/upload`, formData);
+      photoUrl.value = response.data.imageUrl;
+    } catch (error) {
+      if (error.response && error.response.data && error.response.data.error) {
+        photoUploadError.value = error.response.data.error;
+      } else {
+        photoUploadError.value = 'Photo upload failed. Please try again.';
+      }
+    }
   }
-
-  month.value = val;
 }
 
-function onDayInput(e) {
-  let val = e.target.value.replace(/\D/g, ''); // digits only
-  if (val.length > 2) val = val.slice(0, 2);
+function openSongModal() {
+  showSongModal.value = true;
+  songName.value = '';
+  artistName.value = '';
+  searchResults.value = [];
+}
 
-  // Only clamp day if input length is 2 (user finished typing)
-  if (val.length === 2) {
-    const num = parseInt(val, 10);
-    if (num < 1) val = '01';
-    else if (num > maxDay.value) val = maxDay.value.toString();
+function confirmCloseModal() {
+  showConfirmClose.value = true;
+}
+
+function closeSongModal() {
+  showConfirmClose.value = false;
+  showSongModal.value = false;
+}
+
+function addSongFromResult(result) {
+  const newSong = {
+    name: result.trackName,
+    artist: result.artistName,
+    previewUrl: result.previewUrl || null,
+    artwork: result.artworkUrl100 || null,
+  };
+  if (isEditing.value && editingIndex.value !== null) {
+    songs.value[editingIndex.value] = newSong;
+    isEditing.value = false;
+    editingIndex.value = null;
+  } else if (songs.value.length < 3) {
+    songs.value.push(newSong);
   }
-
-  day.value = val;
+  showSongError.value = false;
+  closeSongModal();
 }
 
-function onYearInput(e) {
-  let val = e.target.value.replace(/\D/g, ''); // digits only
-  if (val.length > 4) val = val.slice(0, 4);
-
-  // Only clamp year if input length is 4 (user finished typing)
-  if (val.length === 4) {
-    const num = parseInt(val, 10);
-    if (num < 1900) val = '1900';
-    else if (num > currentYear) val = currentYear.toString();
-  }
-
-  year.value = val;
-}
-
-
-
-// Compute max day for the selected month/year (handles leap years)
-const maxDay = computed(() => {
-  const y = Number(year.value) || 2000;
-  const m = Number(month.value) || 1;
-  return new Date(y, m, 0).getDate();
-});
-
-const saveProfile = async () => {
-  // Validate year, month, day
-  const y = Number(year.value);
-  const m = Number(month.value);
-  const d = Number(day.value);
-
-  const currentMonth = new Date().getMonth() + 1;
-  const currentDay = new Date().getDate();
-
-  if (
-    !y || !m || !d ||
-    y < 1900 || y > currentYear ||
-    m < 1 || m > 12 ||
-    d < 1 || d > maxDay.value ||
-    !isValidDate(y, m, d)
-  ) {
-    alert('Please enter a valid date.');
+async function searchSongs() {
+  if (!songName.value && !artistName.value) {
+    searchResults.value = [];
     return;
   }
 
-  // Prevent future dates
-  const inputDate = new Date(`${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`);
-  const today = new Date();
-  if (inputDate > today) {
-    alert('Birthday cannot be in the future.');
-    return;
+  const query = `${songName.value} ${artistName.value}`.trim();
+  try {
+    const response = await axios.get('https://itunes.apple.com/search', {
+    params: {
+      term: query,
+      entity: 'musicTrack',
+      limit: 5,
+    },
+  });
+    searchResults.value = response.data.results || [];
+  } catch (err) {
+    console.error('Error fetching songs from iTunes:', err);
+    searchResults.value = [];
   }
+}
 
-  const birthday = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-  const user_id = localStorage.getItem('user_id'); 
+function validateMixtapeName() {
+  if (mixtapeName.value.length > 50) {
+    mixtapeNameError.value = 'Mixtape name cannot exceed 50 characters.';
+  } else if (!mixtapeName.value.trim()) {
+    mixtapeNameError.value = 'Mixtape name cannot be empty.';
+  } else {
+    mixtapeNameError.value = '';
+  }
+}
+
+function validateMixtapeBio() {
+  if (mixtapeBio.value.length > 120) {
+    mixtapeBioError.value = 'Mixtape bio cannot exceed 120 characters.';
+  } else {
+    mixtapeBioError.value = '';
+  }
+}
+
+const handleFinish = async () => {
+  validateMixtapeName();
+  validateMixtapeBio();
+
+  if (mixtapeNameError.value || mixtapeBioError.value) return;
+  if (!photoUrl.value) return alert('Mixtape photo is required.');
+  if (songs.value.length < 3) return showSongError.value = true;
+
+  const user_id = Number(localStorage.getItem('user_id'));
+  if (isSubmitting.value) return;
+  isSubmitting.value = true;
 
   try {
-    const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/pfcustom`, {
+    console.log('Submitting songs:', songs.value);
+    const response = await axios.post(`${VITE_API_URL}/api/pfmixtape`, {
       user_id,
-      birthday,
-      gender: selectedGender.value,
-      bio: bio.value,
+      name: mixtapeName.value,
+      bio: mixtapeBio.value,
+      photo_url: photoUrl.value,
+      songs: songs.value,
     });
 
     if (response.data.status === 'success') {
-      localStorage.setItem('onboardingStep', 'pfmixtape'); 
-      router.push('/pfmixtape'); 
-    } else {
-      alert(response.data.message || 'Something went wrong!');
+      await axios.post(`${VITE_API_URL}/api/complete-onboarding`, { user_id });
+      localStorage.setItem('onboardingStep', 'welcome');
+      showCongratsPopup.value = true;
     }
   } catch (error) {
-    console.error(error);
-    alert('Failed to save profile. Please try again.');
+    console.error('Error in handleFinish:', error);
+    alert('Failed to create mixtape. Please try again.');
+  } finally {
+    isSubmitting.value = false;
   }
 };
-</script>
 
-<style scoped>
-
-@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap');
-  
-* {
-  font-family: 'Fira Code', monospace;
+function skipMixtapeCreation() {
+  router.push('/welcome'); 
 }
 
-.background {
+function closePopupAndRedirect() {
+  showCongratsPopup.value = false;
+  router.push('/welcome');
+}
+
+function editSong(index) {
+  const song = songs.value[index];
+  songName.value = song.name;
+  artistName.value = song.artist;
+  // If you want to allow editing previewUrl, add here
+  isEditing.value = true;
+  editingIndex.value = index;
+  showSongModal.value = true;
+}
+
+function deleteSong(index) {
+  songs.value.splice(index, 1);
+}
+
+function togglePlay(index) {
+  // Pause all other audios
+  audioRefs.value.forEach((audio, i) => {
+    if (audio && i !== index) {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+  });
+
+  const currentAudio = audioRefs.value[index];
+  if (!currentAudio) return;
+
+  if (playingIndex.value === index && !currentAudio.paused) {
+    currentAudio.pause();
+    playingIndex.value = null;
+  } else {
+    currentAudio.play();
+    playingIndex.value = index;
+  }
+}
+
+function onAudioEnded() {
+  playingIndex.value = null;
+}
+
+function toggleSearchPlay(index) {
+  // Pause all other search audios
+  searchAudioRefs.value.forEach((audio, i) => {
+    if (audio && i !== index) {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+  });
+
+  const currentAudio = searchAudioRefs.value[index];
+  if (!currentAudio) return;
+
+  if (searchPlayingIndex.value === index && !currentAudio.paused) {
+    currentAudio.pause();
+    searchPlayingIndex.value = null;
+  } else {
+    currentAudio.play();
+    searchPlayingIndex.value = index;
+  }
+}
+
+function onSearchAudioEnded() {
+  searchPlayingIndex.value = null;
+}
+
+// Reset refs when search results change
+watch(searchResults, () => {
+  searchAudioRefs.value = [];
+});
+
+onMounted(() => {
+  document.addEventListener('play', function (e) {
+    const audios = document.querySelectorAll('audio');
+    audios.forEach((audio) => {
+      if (audio !== e.target) {
+        audio.pause();
+      }
+    });
+  }, true);
+});
+
+watch(songs, () => {
+  audioRefs.value = [];
+});
+
+</script>
+
+  <style scoped>
+  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap');
+  
+  * {
+    font-family: 'Fira Code', monospace;
+  }
+  
+  .background {
   position: fixed;
   top: 0;
   left: 0;
@@ -204,118 +463,389 @@ const saveProfile = async () => {
   flex-direction: column;
   transform: rotate(180deg);
 }
+  
+  .create-text {
+    position: absolute;
+    top: 4.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 3rem;
+    color: #ffffff;
+    text-align: center;
+  }
+  
+  .main-box {
+    background-color: #080d2a;
+    width: 35rem;
+    height: 36rem;
+    padding: 2rem;
+    border-radius: 15px;
+    color: white;
+    position: absolute;
+    top: 58%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .upload-box {
+    background-color: #bebebe;
+    width: 10rem;
+    min-height: 10rem;
+    margin: 0 auto 1rem;
+    border: 5px solid #fffefd;
+    border-radius: 0.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #444;
+    cursor: pointer;
+    overflow: hidden;
+  }
+  
+  .photo-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .input,
+  .textarea {
+    width: 80%;
+    text-align: center;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 0.4rem;
+    border: none;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #080d2a;
+    color: #ffffff;
+    font-size: 14px;
+  }
+  
+  .input::placeholder,
+  .textarea::placeholder {
+    color: #bebebe; 
+    opacity: 1;
+  }
+  
+  .input {
+    font-weight: bold;
+  }
+  
+  .textarea {
+    resize: none;
+    height: 50px;
+  }
 
+  .song-list-container {
+    display: flex;
+    flex-direction: column;
+    height: 10rem;
+    overflow-y: auto;
+    padding: 5px;
+    margin-top: 1rem;
+    border: 1px solid #444;
+    border-radius: 10px;
+    }
+  
+  .song-count {
+    text-align: center;
+    font-size: 1rem;
+    color: #bebebe;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .add-song-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    justify-content: flex-start;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    padding-left: 10%;
+  }
+  
+  .add-song-row i {
+    margin-right: 8px;
+    color: #dbb4d7;
+  }
+  
+  .song-entry {
+    text-align: center;
+    margin-bottom: 0.3rem;
+  }
+  
+  .song-item-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #2c1a40;
+    padding: 0.3rem;
+    border-radius: 5px;
+  }
+  
+  .song-actions-buttons {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .song-actions-buttons i {
+    margin-left: 0.5rem;
+    cursor: pointer;
+    color: #c2b4d6;
+  }
+  
+  .song-actions-buttons i:hover {
+    color: #ffffff;
+  }
+  
+  .edit-icon,
+  .delete-icon {
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #dbb4d7;
+  }
+  
+  .create-button,
+  .later-button {
+    display: block;
+    width: 45%;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    margin: 0.2rem auto;
+    text-decoration: none;
+    text-align: center;
+    background: radial-gradient(circle, #dbb4d7 10%, #1f0d3e 90%);
+    font-weight: bold;
+    font-size: 15px;
+  }
+  
+  .create-button {
+    color: #080d2a;
+    border: 1px solid #ffffff;
+    margin-top: auto; 
+  }
+  
+  .create-button:hover {
+    background: #080d2a;
+    color: #dbb4d7;
+    border: 1px solid #ebebeb;
+  }
+  
+  .later-button {
+    background: none;
+    font-size: 0.8rem;
+    color: #dbb4d7;
+    text-decoration: underline;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .later-button:hover {
+    color: #ffffff;
+  }
+  
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(5, 5, 5, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+  }
+  
+  .modal-box {
+    background-color: #dbb4d7;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    width: 30rem;
+    text-align: center;
+    color: #1f0d3e;
+    position: relative;
+  }
+  
+  .modal-header {
+    font-weight: bold;
+    margin-bottom: 1rem;
+    font-size: 1.6rem;
+  }
+  
+  .close {
+    position: absolute;
+    top: 3px;
+    right: 1rem;
+    cursor: pointer;
+    font-size: 2rem;
+  }
+  
+  .modal-input {
+    width: 90%;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    border-radius: 0.3rem;
+    border: none;
+  }
+  
+  .modal-add-btn {
+    background-color: #1f0d3e;
+    color: white;
+    padding: 0.5rem;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    width: 60%;
+  }
+  
+  .confirm-box {
+    background-color: #dbb4d7;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    text-align: center;
+    width: 250px;
+    color: #1f0d3e;
+  }
+  
+  .confirm-buttons {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 1.5rem;
+  }
+  
+  .confirm-buttons button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 0.4rem;
+    cursor: pointer;
+  }
+  
+  @keyframes twinkle {
+    0% {
+      box-shadow: 0 0 5px 2px rgba(255, 255, 255, 0.5);
+    }
+    50% {
+      box-shadow: 0 0 15px 10px rgba(255, 255, 255, 0.8);
+    }
+    100% {
+      box-shadow: 0 0 5px 2px rgba(255, 255, 255, 0.5);
+    }
+  }
+  
+  .twinkle-effect {
+    animation: twinkle 1s ease-in-out infinite;
+  }
+  
+  .error {
+    color: red;
+    text-align: center;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .error-message {
+    color: red;
+    font-size: 0.7rem;
+    margin-top: -0.rem;
+    margin-bottom: 0.5rem;
+    text-align: center;
+  }
 
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 1s ease-in-out; 
+  .input.error,
+.textarea.error {
+  border: 1px solid #ff4d4f;
+  background-color: #2c1c1c;
 }
-.fade-enter, .fade-leave-to {
-  opacity: 0;
-}
 
-.setup-text {
-  position: absolute;
-  top: 3rem; 
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 3rem;
-  color: #ffffff;
-  text-align: center;
-}
-
-.profile-setup {
-  background-color: #080d2a;
-  width: 35rem;
-  height: 30rem;
-  padding: 2rem;
-  border-radius: 15px;
-  color: white;
-  position: absolute;
-  top: 57%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-p {
-  font-size: 1.5rem;
-  margin: 1rem;
-  margin-bottom: 1.2rem;
-}
-
-.birthday-inputs {
-  display: flex;
-  gap: 2.5rem;
-  justify-content: center;
-  margin-bottom: 2rem;
-}
-
-.birthday-inputs input {
-  background: rgba(235, 235, 235, 0.7);
-  border: none;
-  padding: 9px;
-  width: 7rem;
-  text-align: center;
-  font-size: 1rem;
-  color: #080d2a;
-  border-radius: 5px;
-}
-
-.gender-options {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  margin-bottom: 2rem;
-}
-
-.gender-button {
-  background: rgba(235, 235, 235, 0.7);
-  border: none;
-  padding: 9px 25px;
-  cursor: pointer;
-  border-radius: 5px;
-  font-size: 1rem;
-}
-
-.gender-button.selected {
-  background-color: #dbb4d7;
-  color: #080d2a;
-}
-
-textarea {
-  width: 470px !important;
-  height: 90px;
-  background: rgba(235, 235, 235, 0.7);
-  border: none;
-  padding: 10px;
-  margin-left: 2rem;
-  font-size: 1rem;
-  border-radius: 5px;
-  resize: none;
-}
-
-.continue-button {
-  background: #dbb4d7;
-  color: #080d2a;
-  padding: 5px 30px;
-  border: none;
-  border-radius: 5px;
-  font-size: 1rem;
-  cursor: pointer;
+.search-results {
   margin-top: 1rem;
-  display: block; 
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.continue-button:hover {
-  background: #080d2a;
+  max-height: 150px;
+  overflow-y: auto;
+  background: #1f0d3e;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
   color: #dbb4d7;
-  border: 1px solid #ebebeb;
 }
 
-input:focus,
-textarea:focus {
-  outline: none;
-  background-color: #dbb4d7;
+.search-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+  cursor: pointer;
 }
-</style>
+
+.search-details {
+  margin-bottom: 0.25rem;
+}
+
+.preview-player {
+  width: 100%;
+  outline: none;
+  
+}
+
+.no-preview {
+  font-size: 12px;
+  color: #999;
+}
+
+.mini-audio-btn {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: #dbb4d7;
+}
+
+.mini-audio-btn:hover {
+  color: #dbb4d7;
+}
+
+.search-details {
+  color: #dbb4d7;
+  cursor: pointer;
+}
+
+.song-details-flex {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.song-artwork {
+  width: 40px;
+  height: 40px;
+  border-radius: 5px;
+  object-fit: cover;
+}
+
+.song-text {
+  flex-grow: 1;
+  text-align: left;
+}
+
+.search-artwork {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.search-info {
+  flex: 1;
+  font-size: 14px;
+}
+
+  </style>
+
+  
