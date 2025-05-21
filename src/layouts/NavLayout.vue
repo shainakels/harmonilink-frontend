@@ -28,7 +28,7 @@
   flex: 1; 
   overflow: hidden;
   position: relative; /* Ensure positioning context for absolute elements */
-  z-index: 1; /* Set a lower z-index */
+  z-index: 3; /* Set a lower z-index */
 }
   
   .page-content {
@@ -44,7 +44,6 @@
     left: 0;
     width: 100%;
     height: 60px; 
-    z-index: 1000; 
   }
   
   .SideNav {
@@ -53,7 +52,6 @@
     left: 0;
     width: 270px; 
     height: calc(100vh - 60px); 
-    z-index: 1000;
     overflow-y: auto; 
   }
   </style>

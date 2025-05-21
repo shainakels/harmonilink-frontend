@@ -753,7 +753,7 @@ onBeforeUnmount(() => {
   flex-direction: column;
   gap: 1rem;
   overflow: hidden;
-  z-index: 2000; /* Increased z-index */
+  z-index: 2;
 }
   
   .nav-section,
@@ -827,7 +827,7 @@ onBeforeUnmount(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 2; 
+  z-index: 999; 
   background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
