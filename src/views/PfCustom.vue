@@ -847,5 +847,3 @@ watch(songs, () => {
 }
 
   </style>
-
-  
