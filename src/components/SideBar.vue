@@ -168,7 +168,7 @@
           <div v-if="selectedMixtape" class="mixtape-detail-overlay">
           <div class="mixtape-detail-box">
             <span class="close-detail" @click="selectedMixtape = null">&times;</span>
-            <img :src="getFullPhotoUrl(selectedMixtape.photo_url)" class="detail-img" />
+            <img :src="getFullPhotoUrl(selectedMixtape.cover)" class="detail-img" />
             <h2>{{ selectedMixtape.name }}</h2>
             <p>{{ selectedMixtape.description }}</p>
             <p>{{ selectedMixtape.bio }}</p>
@@ -204,7 +204,7 @@
             @click="selectedMixtape = mix"
             style="position: relative;"
           >
-            <img :src="getFullPhotoUrl(mix.photo_url)" alt="Mixtape Image" class="mixtape-img" />
+            <img :src="getFullPhotoUrl(mix.cover)" alt="Mixtape Image" class="mixtape-img" />
             <span>{{ mix.name }}</span>
             <!-- Three-dot menu -->
             <div class="mixtape-menu-wrapper" @click.stop>
@@ -242,7 +242,8 @@ const mixtapeDescription = ref('');
 const songName = ref('');
 const artistName = ref('');
 const songs = ref([]);
-const photoUrl = ref(null);
+const photoUrl = ref(null); // for preview (can be blob or backend url)
+const photoPath = ref(null); // always the backend relative path
 const photoInput = ref(null);
 const selectedMixtape = ref(null); 
 
@@ -271,6 +272,7 @@ const closePopup = () => {
   mixtapeDescription.value = '';
   songs.value = [];
   photoUrl.value = null;
+  photoPath.value = null;
   editingMixtapeId.value = null;
 };
 
@@ -300,11 +302,13 @@ async function handlePhotoUpload(event) {
           },
         }
       );
-      // Use getFullPhotoUrl to convert the returned imageUrl to a full URL
+      // Save backend path for DB, and full URL for preview
+      photoPath.value = response.data.imageUrl;
       photoUrl.value = getFullPhotoUrl(response.data.imageUrl);
     } catch (err) {
       alert(err.response?.data?.error || 'Failed to upload image.');
       photoUrl.value = null;
+      photoPath.value = null;
     }
   }
 }
@@ -319,39 +323,40 @@ const createMixtape = async () => {
     return;
   }
 
-  console.log('Songs being sent:', songs.value); // <-- Add this line
+  // Use photoPath (backend relative path) for DB
+  let photoForDb = photoPath.value || null;
 
-  let photoPath = photoUrl.value;
-  // Remove base URL if present
-  if (photoPath && photoPath.startsWith(import.meta.env.VITE_API_URL)) {
-    photoPath = photoPath.replace(import.meta.env.VITE_API_URL.replace(/\/$/, '') + '/', '');
-  }
+  // Ensure all songs have artwork_url and preview_url
+  const songsForDb = songs.value.map(song => ({
+    name: song.name,
+    artist: song.artist,
+    preview_url: song.preview_url || null,
+    artwork_url: song.artwork_url || null,
+  }));
 
   try {
     const token = localStorage.getItem('token');
     if (editingMixtapeId.value) {
-      // Update existing mixtape
       await axios.put(
         `${import.meta.env.VITE_API_URL}/api/mixtapes/${editingMixtapeId.value}`,
         {
           name: mixtapeName.value,
           description: mixtapeDescription.value,
-          photoUrl: photoPath,
-          songs: songs.value,
+          photoUrl: photoForDb,
+          songs: songsForDb,
         },
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
     } else {
-      // Create new mixtape
       await axios.post(
         `${import.meta.env.VITE_API_URL}/api/create-mixtape`,
         {
           name: mixtapeName.value,
           description: mixtapeDescription.value,
-          photoUrl: photoPath,
-          songs: songs.value,
+          photoUrl: photoForDb,
+          songs: songsForDb,
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -361,6 +366,7 @@ const createMixtape = async () => {
     await fetchUserMixtapes();
     closePopup();
     editingMixtapeId.value = null;
+    photoPath.value = null;
   } catch (error) {
     alert('Failed to save mixtape.');
   }
@@ -416,7 +422,7 @@ const addSongFromResult = (result) => {
     isEditing.value = false;
     editingIndex.value = null;
   } else {
-    songs.value.push(newSong); // <-- NO LIMIT
+    songs.value.push(newSong);
   }
   closeSongModal();
 };
@@ -534,7 +540,7 @@ function sortMixtapes() {
       break;
     case 'oldest':
       mixtapes.value.sort((a, b) => {
-        return (a.created_at || a.id) - (b.created_at || b.id);
+        return (a.created_at || a.id) - (b.created_at || a.id);
       });
       break;
   }
@@ -632,7 +638,15 @@ async function fetchUserMixtapes() {
         Authorization: `Bearer ${token}`,
       },
     });
-    mixtapes.value = response.data;
+    console.log('Mixtapes API response:', response.data); // <--- Add this line
+    mixtapes.value = (response.data || []).map(mix => ({
+      ...mix,
+      songs: (mix.songs || []).map(song => ({
+        ...song,
+        preview_url: song.preview_url || song.url || null,
+        artwork_url: song.artwork_url || null,
+      })),
+    }));
     sortMixtapes(); // <-- sort after fetching
   } catch (error) {
     console.error('Failed to fetch mixtapes:', error);
@@ -654,12 +668,18 @@ function toggleMixtapeMenu(index) {
 }
 
 function editMixtape(index) {
-  // Populate popup with mixtape data for editing
   const mix = mixtapes.value[index];
   mixtapeName.value = mix.name;
-  mixtapeDescription.value = mix.bio || '';
-  songs.value = mix.songs ? JSON.parse(JSON.stringify(mix.songs)) : [];
-  photoUrl.value = mix.photo_url;
+  mixtapeDescription.value = mix.description || mix.bio || '';
+  // Deep copy all fields, including artwork_url and preview_url
+  songs.value = (mix.songs || []).map(song => ({
+    name: song.name,
+    artist: song.artist,
+    preview_url: song.preview_url || song.previewUrl || null,
+    artwork_url: song.artwork_url || song.artworkUrl100 || null,
+  }));
+  photoUrl.value = getFullPhotoUrl(mix.cover); // for preview
+  photoPath.value = mix.cover; // backend path
   editingMixtapeId.value = mix.id;
   showPopup.value = true;
   openMenuIndex.value = null;
@@ -1321,4 +1341,3 @@ onBeforeUnmount(() => {
   font-size: 0.95rem;
 }
 </style>
-
