@@ -226,7 +226,7 @@ const saveProfile = async () => {
 .profile-setup {
   background-color: #080d2a;
   width: 35rem;
-  height: 30rem;
+  height: 33rem;
   padding: 2rem;
   border-radius: 15px;
   color: white;

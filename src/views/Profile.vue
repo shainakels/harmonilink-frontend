@@ -853,9 +853,16 @@ function addEmptySongToEditable() {
 
 <style scoped>
 .profile-wrapper {
-  background-color: #ddb0d7;
-  overflow-y: auto;
-  padding: 2rem 1rem;
+  padding: 2rem;
+  background-color: #dbb4d7;
+  min-height: 100vh;
+  overflow: auto;
+  color: black;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+  margin-top: 80px;
+  margin-left: 270px;
 }
 
 .page-title {

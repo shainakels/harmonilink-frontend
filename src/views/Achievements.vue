@@ -49,6 +49,9 @@ const achievements = ref([
   color: black;
   display: flex;
   flex-direction: column;
+  margin-bottom: 1rem;
+  margin-top: 80px;
+  margin-left: 270px;
 }
 
 .achievements-title {

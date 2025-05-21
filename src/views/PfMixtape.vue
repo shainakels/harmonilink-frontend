@@ -444,8 +444,9 @@ watch(songs, () => {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+    display: flex;
+    flex-direction: column;
     transform: rotate(180deg);
-    z-index: -1;
   }
   
   .create-text {

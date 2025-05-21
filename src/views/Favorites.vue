@@ -59,9 +59,20 @@
               <img :src="selectedMixtape.image" alt="Mixtape Image" class="mixtape-image" />
               <h3 class="mixtape-title-back">{{ selectedMixtape.name }}</h3>
               <ol v-if="selectedMixtape.songs && selectedMixtape.songs.length" class="song-list">
-                <li v-for="(song, index) in selectedMixtape.songs" :key="index">
+                <li v-for="(song, index) in selectedMixtape.songs" :key="index" class="song-list-item">
                   <span class="song-number">{{ index + 1 }}. </span>
                   <span class="song-title">{{ song.title }}</span> by <span class="artist-name">{{ song.artist }}</span>
+                  <template v-if="song.artwork_url">
+                    <img :src="song.artwork_url" alt="Artwork" class="song-artwork" style="width:32px;height:32px;margin-left:8px;vertical-align:middle;" />
+                  </template>
+                  <template v-if="song.preview_url">
+                    <audio
+                      :src="song.preview_url"
+                      controls
+                      controlsList="nodownload noplaybackrate"
+                      style="vertical-align:middle; margin-left:8px; height:24px;"
+                    ></audio>
+                  </template>
                 </li>
               </ol>
               <p v-else class="song-list">(No songs listed)</p>
@@ -141,6 +152,8 @@ function closeMixtapePopup() {
   display: flex;
   flex-direction: column;
   margin-bottom: 1rem;
+  margin-top: 80px;
+  margin-left: 270px;
 }
 
 .favorites-title {
@@ -374,5 +387,12 @@ function closeMixtapePopup() {
   background: red;
   color: white;
   border: 1px solid #ebebeb;
+}
+
+.song-artwork {
+  border-radius: 4px;
+  object-fit: cover;
+  display: inline-block;
+  vertical-align: middle;
 }
 </style>
