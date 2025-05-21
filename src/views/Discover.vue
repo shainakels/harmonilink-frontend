@@ -1,23 +1,17 @@
 <template>
   <NavLayout>
     <div class="discover-wrapper">
-      <div class="discover-scroll">
-        <div class="discover-container" :class="{ flipped: isFlipped }">
-          <!-- Navigation Buttons -->
+
+      <!-- Navigation Buttons -->
           <button 
             class="nav-button left" 
             @click="prevProfile" 
             :disabled="currentIndex === 0 || isFlipped"
-          >
-            ←
+          > <i class="fa-solid fa-circle-arrow-left"></i>
           </button>
-          <button 
-            class="nav-button right" 
-            @click="nextProfile" 
-            :disabled="currentIndex === profiles.length - 1 || isFlipped"
-          >
-            →
-          </button>
+
+      <div class="discover-scroll">
+        <div class="discover-container" :class="{ flipped: isFlipped }">
 
           <!-- No Profiles Message -->
           <div v-if="profiles.length === 0" class="no-profiles">
@@ -135,6 +129,15 @@
           </div>
         </div>
       </div>
+
+       <!-- Navigation Buttons -->
+          <button 
+            class="nav-button right" 
+            @click="nextProfile" 
+            :disabled="currentIndex === profiles.length - 1 || isFlipped"
+          > <i class="fa-solid fa-circle-arrow-right"></i>
+          </button>
+
     </div>
   </NavLayout>
 </template>
@@ -513,51 +516,52 @@ onUnmounted(() => {
 
 <style scoped>
 .discover-wrapper {
-  background-color: #ddb0d7;
-  height: calc(100vh - 60px);
-  overflow-y: auto;
-  padding: 2rem 1rem;
-}
-
-.discover-scroll {
+  margin-top: 80px;
+  margin-left: 270px;
   display: flex;
   justify-content: center;
+  align-items: center;
+  height: calc(100% - 80px); 
+  width: calc(100% - 270px);
 }
 
 .discover-container {
   background-color: rgba(8, 13, 42, 0.85);
   border-radius: 12px;
-  padding: 3rem;
+  padding-top: 3rem;
   width: 900px;
   height: 550px;
   position: relative;
-  perspective: 1500px;
   user-select: none;
+  z-index: 0;
 }
 
 .nav-button {
-  position: absolute;
   top: 50%;
-  transform: translateY(-50%);
-  background-color: transparent;
-  border: 2px solid #080d2a;
+  transform: translateY(-20%);
+  background: none;
+  border: none;
+  font-size: 2.5rem;
   color: #080d2a;
-  font-size: 2rem;
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
   cursor: pointer;
-  z-index: 100;
-  user-select: none;
+  z-index: 1;
+  flex-direction: column; 
+  gap: 1rem; 
 }
 
-.nav-button.left {
-  left: -70px;
-  z-index: 100;
+.nav-button {
+  outline: none;
+  box-shadow: none;
 }
 
-.nav-button.right {
-  right: 10px;
+.nav-button:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.nav-button:active {
+  outline: none;
+  box-shadow: none;
 }
 
 /* front and back container */

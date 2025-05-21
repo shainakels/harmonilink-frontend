@@ -173,7 +173,89 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
 }
 }
 
+//Addition para maayos yung sa search bar
+import { onMounted, onBeforeUnmount, watch } from 'vue';
+
+const showSearchResults = ref(false);
+
+function handleClickOutside(event) {
+  const searchEl = document.querySelector('.search-container');
+  const resultsEl = document.querySelector('.search-results');
+  if (
+    searchEl && !searchEl.contains(event.target) &&
+    resultsEl && !resultsEl.contains(event.target)
+  ) {
+    showSearchResults.value = false;
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside);
+});
+
+watch(searchQuery, (newVal) => {
+  if (newVal.trim() === '') {
+    searchResults.value = [];
+    showSearchResults.value = false;
+  } else {
+    showSearchResults.value = true;
+  }
+});
+
 </script>
+
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap');
+  @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css');
+
+  * {
+    font-family: 'Fira Code', monospace;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background-color: #dbb4d7;
+    overflow-x: hidden;
+  }
+
+  .top-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background-color: #080d2a;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  z-index: 1;
+}
+
+  .logo {
+    height: 40px;
+  }
+
+  .search-container {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    width: 30rem;
+  }
+</style>
 
 <style scoped>
 .user-menu {
@@ -359,47 +441,4 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     opacity: 0;
   }
 }
-</style>
-
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap');
-  @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css');
-
-  * {
-    font-family: 'Fira Code', monospace;
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-
-  html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    background-color: #dbb4d7;
-    overflow: hidden;
-  }
-
-  .top-nav {
-    background-color: #080d2a;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 2.5rem 2rem;
-    height: 60px;
-    position: relative;
-  }
-
-  .logo {
-    height: 40px;
-  }
-
-  .search-container {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    align-items: center;
-    width: 30rem;
-  }
 </style>

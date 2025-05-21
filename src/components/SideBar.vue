@@ -21,6 +21,7 @@
           <i class="fa-solid fa-plus add-icon" @click="togglePopup"></i>
         </div>
   
+        <!--START OF POPUP FOR CREATE MIXTAPE-->
         <div v-if="showPopup" class="popup-overlay">
           <div class="popup-box">
             <h2>Create your Mixtape</h2>
@@ -28,7 +29,13 @@
             <div class="upload-box" @click="triggerPhotoUpload">
               <img v-if="photoUrl" :src="photoUrl" class="photo-preview" />
               <span v-else>Add photo</span>
-              <input type="file" ref="photoInput" @change="handlePhotoUpload" hidden />
+              <input
+                type="file"
+                accept=".jpg, .jpeg, .png"
+                ref="photoInput"
+                @change="handlePhotoUpload"
+                hidden
+              />
             </div>
   
             <input type="text" v-model="mixtapeName" placeholder="Mixtape Name" class="mixtape-name" />
@@ -120,23 +127,33 @@
   
         <div v-if="showConfirmCancel" class="modal-overlay">
           <div class="confirm-box">
-            <p>Are you sure you want to close it?</p>
-            <div class="confirm-buttons">
-              <button @click="showConfirmCancel = false">Stay</button>
-              <button @click="closePopup">Close</button>
-            </div>
+            <p>Are you sure you want to close this?</p>
+              <div class="confirm-buttons">
+                <button @click="closePopup">Yes</button>
+                <button @click="showConfirmCancel = false">No</button>
+              </div>
           </div>
         </div>
+
+        <!--END OF POPUP FOR CREATE MIXTAPE-->
   
         <hr class="separator" />
   
         <div class="mixtape-search">
-          <i 
-            :class="['fa-solid', 'fa-microphone', micActive ? 'mic-recording' : 'mic-icon']" 
-            @click="toggleMicRecording"
-          ></i>
-          <input type="text" v-model="searchText" class="mixtape-input" placeholder="Search mixtapes..." />
-          <i class="fa-solid fa-list-ul sort-icon" @click="toggleSortDropdown"></i>
+          <div class="input-wrapper input-with-mic">
+            <i 
+              :class="['fa-solid', 'fa-microphone', micActive ? 'mic-recording' : 'mic-icon']" 
+              class="mic-left-inside"
+              @click="toggleMicRecording"
+            ></i>
+            <input 
+              type="text" 
+              v-model="searchText" 
+              class="mixtape-input" 
+              placeholder="Search mixtapes..."
+            />
+            <i class="fa-solid fa-list-ul sort-icon" @click="toggleSortDropdown"></i>
+          </div>
           <div v-if="showSortDropdown" class="mixtape-sort-dropdown">
             <select v-model="sortOption" @change="sortMixtapes">
               <option value="az">Alphabetical (A–Z)</option>
@@ -756,14 +773,15 @@ onBeforeUnmount(() => {
     font-size: 17px;
   }
   
-  .mixtape-header {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    color: white;
-    font-weight: 500;
-    margin-bottom: 0.5rem;
-  }
+.mixtape-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
   
   .add-icon {
     background-color: #dbb4d7;
@@ -779,19 +797,19 @@ onBeforeUnmount(() => {
     cursor: pointer;
   }
   
-  .popup-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    z-index: 1000;
-  }
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1; 
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
   
   .popup-box {
     background-color: #080d2a;
@@ -802,6 +820,7 @@ onBeforeUnmount(() => {
     display: flex;
     flex-direction: column;
     gap: 1rem;
+     z-index: 10000;
   }
   
   .upload-box {
@@ -907,7 +926,7 @@ onBeforeUnmount(() => {
     background-color: #dbb4d7;
     padding: 1.5rem;
     border-radius: 1rem;
-    width: 350px;
+    width: 30rem;
     text-align: center;
     color: #1f0d3e;
     position: relative;
@@ -915,6 +934,7 @@ onBeforeUnmount(() => {
   
 .song-popup-box h3 {
     margin-bottom: 1rem;
+    font-size: 1.6rem;
 }
   
   .song-popup-box input {
@@ -925,27 +945,34 @@ onBeforeUnmount(() => {
     border: none;
   }
   
-  .song-popup-box button {
-    padding: 0.75rem;
-    border: none;
-    border-radius: 30px;
-    background-color: #1f0d3e;
-    color: white;
-    cursor: pointer;
-    width: 60%;
-  }
-  
   .exit-btn {
     position: absolute;
-    top: 10px;
-    right: 15px;
-    background: none;
-    color: #1f0d3e;
-    border: none;
-    font-size: 1.2rem;
+    top: 3px;
+    right: 1rem;
     cursor: pointer;
+    font-size: 2rem;
+    font-weight: bold;
   }
-  
+
+  .search-results {
+  margin-top: 1rem;
+  max-height: 150px;
+  overflow-y: auto;
+  background: #1f0d3e;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  color: #dbb4d7;
+}
+
+.search-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+  cursor: pointer;
+}
+
   .confirm-box {
     background-color: #dbb4d7;
     padding: 1rem;
@@ -985,12 +1012,7 @@ onBeforeUnmount(() => {
     border-top: 1px solid white;
     margin: 1rem 0;
   }
-  
-  .mixtape-search {
-    position: relative;
-    margin-bottom: 1rem;
-  }
-  
+   
   .search-icon,
   .sort-icon {
     position: absolute;
@@ -1004,13 +1026,39 @@ onBeforeUnmount(() => {
     align-items: center;
     justify-content: center;
   }
-  
-  .search-icon { left: 7px; }
-  .sort-icon  { right: 0px; cursor: pointer; }
+
+.input-with-mic {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.mic-left-inside {
+  position: absolute;
+  left: 10px;
+  z-index: 1;
+}
+
+.input-with-mic .mixtape-input {
+  padding-left: 32px; /* to make space for the mic icon */
+}
+
+.sort-icon {
+  position: absolute;
+  right: 0;
+  cursor: pointer;
+  color: white;
+  transition: color 0.2s;
+}
+
+.sort-icon:hover {
+  color: #555;
+}
   
   .mixtape-input {
-    width: 92%;
-    padding: 0.2rem 1rem 0.2rem 2.5rem;
+    width: 85%;
+    padding: 5px 35px;
     background-color: #432775;
     border: none;
     border-radius: 30px;
@@ -1021,7 +1069,8 @@ onBeforeUnmount(() => {
   .mixtape-list {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.5rem;
+    margin-top: 1rem;
   }
   
   .mixtape-item {
@@ -1034,7 +1083,7 @@ onBeforeUnmount(() => {
   }
   
   .mixtape-img {
-    width: 25px;
+    width: 40px;
     object-fit: cover;
     border-radius: 6px;
   }
@@ -1077,19 +1126,20 @@ onBeforeUnmount(() => {
   border-top: 1px solid #3a2c56;
 }
 
-.popup-box .song-list-scroll {
-  max-height: 150px;
-  overflow-y: auto;
-  background-color: #2e1f45;
-  padding: 0.5rem;
-  border-radius: 5px;
-  margin-bottom: 1rem;
-}
+.song-list-scroll {
+    display: flex;
+    flex-direction: column;
+    height: 10rem;
+    overflow-y: auto;
+    padding: 5px;
+    margin-top: 1rem;
+    border: 1px solid #444;
+    border-radius: 10px;
+    }
 
 .song-item-flex {
   display: flex;
   justify-content: space-between;
-  align-items: center;
   background-color: #2c1a40;
   padding: 0.5rem;
   border-radius: 5px;
@@ -1097,15 +1147,22 @@ onBeforeUnmount(() => {
   color: white;
 }
 
-.song-actions-buttons i {
-  margin-left: 0.5rem;
-  cursor: pointer;
-  color: #c2b4d6;
-}
-
-.song-actions-buttons i:hover {
-  color: #ffffff;
-}
+.song-actions-buttons {
+    display: flex;
+    gap: 0.5rem;
+    font-size: 1.25rem;
+    align-items: center;
+  }
+  
+  .song-actions-buttons i {
+    margin-left: 0.5rem;
+    cursor: pointer;
+    color: #c2b4d6;
+  }
+  
+  .song-actions-buttons i:hover {
+    color: #ffffff;
+  }
 
 .song-link {
   margin-left: 10px;
@@ -1158,19 +1215,10 @@ onBeforeUnmount(() => {
   margin-bottom: 1rem;
 }
 
-.song-detail-list {
-  list-style: none;
-  padding: 0;
-  margin-top: 1rem;
-  text-align: left;
-}
-
-.song-detail-list li {
+.song-details-flex {
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 0.5rem;
-  border-bottom: 1px solid #444;
-  padding-bottom: 0.3rem;
+  align-items: center;
+  gap: 10px;
 }
 
 .mic-icon {
@@ -1187,19 +1235,26 @@ onBeforeUnmount(() => {
 .mini-audio-btn {
   background: none;
   border: none;
+  font-size: 16px;
   cursor: pointer;
-  font-size: 1rem;
   color: #dbb4d7;
 }
 
+.mini-audio-btn:hover {
+  color: #dbb4d7;
+}
+
+.search-details {
+  flex: 1;
+  font-size: 14px;
+}
+
 .search-artwork,
-.photo-preview,
-.mixtape-img {
-  width: 50px;
-  height: 50px;
-  border-radius: 8px;
+.photo-preview {
+  width: 40px;
+  height: 40px;
+  border-radius: 5px;
   object-fit: cover;
-  display: block;
 }
 
 @keyframes pulse {

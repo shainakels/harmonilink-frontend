@@ -31,10 +31,9 @@
   
   .page-content {
     flex: 1;
-    padding: 20px;
-    margin-left: 270px; 
+    /* padding: 20px;
+    margin-left: 270px;  */
     overflow-y: auto;
-    height: 100vh; 
     position: relative; 
   }
   
