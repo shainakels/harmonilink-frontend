@@ -231,7 +231,7 @@
     name: 'You',
     age: 0,
     gender: 'Unknown',
-    image: '/src/assets/default-profile.png',
+    image: '/src/assets/default-profile.jpg',
     poll: {
       question: newPollQuestion.value.trim(),
       options: cleanedOptions

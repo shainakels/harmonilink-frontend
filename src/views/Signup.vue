@@ -349,7 +349,7 @@ const handleSignup = async () => {
   display: flex;
   align-items: center;
   position: absolute;
-  top: 4.5rem;
+  top: 4.4rem;
   right: 0px;
   height: 38rem;
   width: 50rem;
@@ -384,7 +384,7 @@ const handleSignup = async () => {
   text-align: center;
   position: absolute;
   top: 50%;
-  left: 610px;
+  left: 588px;
   transform: translate(-50%, -50%);
   color: #322848;
 }
@@ -612,4 +612,3 @@ button:hover {
   }
 }
 </style>
-
