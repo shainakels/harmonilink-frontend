@@ -44,27 +44,32 @@ const achievements = ref([
 .achievements-wrapper {
   padding: 2rem;
   background-color: #dbb4d7;
-  min-height: 100vh;
   overflow: auto;
   color: black;
   display: flex;
   flex-direction: column;
+  margin-bottom: 1rem;
+  margin-top: 80px;
+  margin-left: 270px;
+  min-height: calc(100vh - 100px);
 }
 
 .achievements-title {
   font-size: 2rem;
   font-weight: bold;
   color: black;
+  text-align: left;
 }
 
 .achievements-description {
   font-size: 1rem;
   margin-bottom: 2rem;
+  text-align: left;
 }
 
 .achievements-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
   gap: 1.5rem;
 }
 
@@ -78,13 +83,14 @@ const achievements = ref([
   flex-direction: column;
   justify-content: space-between;
   position: relative;
-  
+  text-align: left;
+  box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
 }
 
 .achievement-star {
   position: absolute;
-  top: 1.7rem;
-  right: 1.7rem;
+  top: 1.5rem;
+  right: 1.5rem;
   color: #ffb703;
   font-size: 2.5rem;
   pointer-events: none;

@@ -83,7 +83,9 @@
             </div>
 
             <div class="popup-buttons">
-              <button @click="createMixtape">Create Mixtape</button>
+              <button @click="createMixtape">
+                {{ isEditing ? 'Save Changes' : 'Create Mixtape' }}
+              </button>
               <button @click="showConfirmCancel = true">Cancel</button>
             </div>
           </div>
@@ -141,6 +143,23 @@
   
         <div class="mixtape-search">
           <div class="input-wrapper input-with-mic">
+            <div class="sort-wrapper">
+              <i class="fa-solid fa-list-ul sort-icon" @click="toggleSortDropdown"></i>
+              <div v-if="showSortDropdown" class="mixtape-sort-dropdown">
+                <div class="sort-option" @click="selectSortOption('az')">
+                  Alphabetical (A–Z)
+                </div>
+                <div class="sort-option" @click="selectSortOption('za')">
+                  Alphabetical (Z–A)
+                </div>
+                <div class="sort-option" @click="selectSortOption('newest')">
+                  Date Added (Newest First)
+                </div>
+                <div class="sort-option" @click="selectSortOption('oldest')">
+                  Date Added (Oldest First)
+                </div>
+              </div>
+            </div>
             <i 
               :class="['fa-solid', 'fa-microphone', micActive ? 'mic-recording' : 'mic-icon']" 
               class="mic-left-inside"
@@ -152,15 +171,6 @@
               class="mixtape-input" 
               placeholder="Search mixtapes..."
             />
-            <i class="fa-solid fa-list-ul sort-icon" @click="toggleSortDropdown"></i>
-          </div>
-          <div v-if="showSortDropdown" class="mixtape-sort-dropdown">
-            <select v-model="sortOption" @change="sortMixtapes">
-              <option value="az">Alphabetical (A–Z)</option>
-              <option value="za">Alphabetical (Z–A)</option>
-              <option value="newest">Date Added (Newest First)</option>
-              <option value="oldest">Date Added (Oldest First)</option>
-            </select>
           </div>
         </div>
   
@@ -169,12 +179,12 @@
           <div class="mixtape-detail-box">
             <span class="close-detail" @click="selectedMixtape = null">&times;</span>
             <img :src="getFullPhotoUrl(selectedMixtape.photo_url)" class="detail-img" />
-            <h2>{{ selectedMixtape.name }}</h2>
-            <p>{{ selectedMixtape.description }}</p>
+            <h2 class="mixtape-detail-name">{{ selectedMixtape.name }}</h2>
+            <p class="mixtape-detail-description">{{ selectedMixtape.description }}</p>
             <p>{{ selectedMixtape.bio }}</p>
             <ul class="song-detail-list">
-              <li v-for="(song, i) in selectedMixtape.songs" :key="i" style="display: flex; align-items: center; gap: 10px;">
-                <img v-if="song.artwork_url" :src="song.artwork_url" alt="Artwork" style="width:32px; height:32px; border-radius:4px;" />
+              <li v-for="(song, i) in selectedMixtape.songs" :key="i" style="display: flex; align-items: center; gap: 10px; padding-bottom: 1rem;">
+                <img v-if="song.artwork_url" :src="song.artwork_url" alt="Artwork" style="width:35px; height:35px; border-radius:4px;" />
                 <span style="flex:1;">{{ song.name }} - {{ song.artist }}</span>
                 <button
                   v-if="song.preview_url"
@@ -205,15 +215,15 @@
             style="position: relative;"
           >
             <img :src="getFullPhotoUrl(mix.photo_url)" alt="Mixtape Image" class="mixtape-img" />
-            <span>{{ mix.name }}</span>
+            <span class="mix-name">{{ mix.name }}</span>
             <!-- Three-dot menu -->
-            <div class="mixtape-menu-wrapper" @click.stop>
-              <i class="fa-solid fa-ellipsis-vertical mixtape-menu-icon" @click.stop="toggleMixtapeMenu(index)"></i>
-              <div v-if="openMenuIndex === index" class="mixtape-menu-dropdown">
-                <div @click="editMixtape(index)">Edit</div>
-                <div @click="deleteMixtape(index)">Delete</div>
+              <div class="mixtape-menu-wrapper" @click.stop>
+                <i class="fa-solid fa-ellipsis-vertical mixtape-menu-icon" @click.stop="toggleMixtapeMenu(index)"></i>
+                <div v-if="openMenuIndex === index" class="mixtape-menu-dropdown">
+                  <div @click="editMixtape(index)">Edit</div>
+                  <div @click="deleteMixtape(index)">Delete</div>
+                </div>
               </div>
-            </div>
           </div>
         </div>
       </div>
@@ -540,6 +550,12 @@ function sortMixtapes() {
   }
 }
 
+const selectSortOption = (option) => {
+  sortOption.value = option;
+  sortMixtapes();
+  showSortDropdown.value = false; // Close the dropdown after selection
+};
+
 // --- Drag and Drop Sorting ---
 let dragSourceIndex = null;
 
@@ -661,6 +677,7 @@ function editMixtape(index) {
   songs.value = mix.songs ? JSON.parse(JSON.stringify(mix.songs)) : [];
   photoUrl.value = mix.photo_url;
   editingMixtapeId.value = mix.id;
+  isEditing.value = true;
   showPopup.value = true;
   openMenuIndex.value = null;
 }
@@ -724,7 +741,7 @@ onBeforeUnmount(() => {
     box-sizing: border-box;
   }
   
-  .side-nav {
+.side-nav {
   position: fixed;
   top: 70px;
   left: 0;
@@ -736,7 +753,7 @@ onBeforeUnmount(() => {
   flex-direction: column;
   gap: 1rem;
   overflow: hidden;
-  z-index: 1;
+  z-index: 2000; /* Increased z-index */
 }
   
   .nav-section,
@@ -744,21 +761,28 @@ onBeforeUnmount(() => {
     background-color: #1f0d3e;
     padding: 2rem;
   }
+
+  .mixtape-section {
+    max-height: 20rem;
+  }
   
   .nav-item {
     display: flex;
     align-items: center;
     gap: 1.5rem;
-    color: #cec3c3;
+    color: #8d82b5;
     margin-bottom: 1.5rem;
     text-decoration: none;
-    transition: color 0.3s, font-weight 0.3s;
+    transition: color 0.4s ease, transform 0.4s ease;
+    font-weight: 500;
   }
   
   .nav-item.active,
   .nav-item.router-link-active {
-    font-weight: bold;
     color: white;
+    transform: scale(1.05);
+    transform: scale(1.03);
+    font-weight: 600;
   }
   
 .nav-item i {
@@ -803,7 +827,7 @@ onBeforeUnmount(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 1; 
+  z-index: 2; 
   background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
@@ -826,7 +850,7 @@ onBeforeUnmount(() => {
   .upload-box {
     background-color: #bebebe;
     width: 10rem;
-    height: 10rem;
+    height: 15rem;
     margin: 0 auto 1rem;
     border: 5px solid #fffefd;
     border-radius: 0.5rem;
@@ -1032,45 +1056,55 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   width: 100%;
+  flex-direction: row;
+    z-index: 1;
 }
 
 .mic-left-inside {
   position: absolute;
-  left: 10px;
-  z-index: 1;
+  left: 35px;
+  z-index: 0;
 }
 
 .input-with-mic .mixtape-input {
-  padding-left: 32px; /* to make space for the mic icon */
+  padding-left: 32px; 
 }
 
 .sort-icon {
   position: absolute;
-  right: 0;
   cursor: pointer;
   color: white;
   transition: color 0.2s;
+  z-index: 0;
 }
 
 .sort-icon:hover {
   color: #555;
 }
   
-  .mixtape-input {
-    width: 85%;
-    padding: 5px 35px;
-    background-color: #432775;
-    border: none;
-    border-radius: 30px;
-    color: white;
-    font-size: 12px;
-  }
+.mixtape-input {
+  width: 85%;
+  padding: 5px 35px;
+  background-color: #432775;
+  border: none;
+  border-radius: 30px;
+  color: white;
+  font-size: 12px;
+  margin-left: 10px;
+}
   
   .mixtape-list {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
     margin-top: 1rem;
+    max-height: 10rem;
+    overflow-y: auto;
+  }
+
+  .mixtape-list::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
   }
   
   .mixtape-item {
@@ -1086,6 +1120,13 @@ onBeforeUnmount(() => {
     width: 40px;
     object-fit: cover;
     border-radius: 6px;
+  }
+
+  .mix-name {
+    overflow: hidden;
+    white-space: nowrap;      
+    text-overflow: ellipsis;
+    max-width: 5.5rem;
   }
 
   .mixtape-name {
@@ -1181,7 +1222,7 @@ onBeforeUnmount(() => {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(20, 20, 20, 0.85);
+  background-color: rgba(20, 20, 20, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1189,7 +1230,7 @@ onBeforeUnmount(() => {
 }
 
 .mixtape-detail-box {
-  background-color: #1e1e1e;
+  background-color: #080d2a;
   padding: 2rem;
   border-radius: 1rem;
   width: 90%;
@@ -1197,6 +1238,21 @@ onBeforeUnmount(() => {
   text-align: center;
   color: white;
   position: relative;
+}
+
+.mixtape-detail-name {
+  padding-bottom: 0.7rem;
+}
+
+.song-detail-list {
+  margin-top: 1.3rem;
+  text-align: left;
+  border: 1px solid #dbb4d7;
+  background-color: #2c1a40;
+  padding: 0.7rem;
+  border-radius: 0.5rem;
+  max-height: 15rem;
+  overflow-y: auto;
 }
 
 .close-detail {
@@ -1213,12 +1269,19 @@ onBeforeUnmount(() => {
   object-fit: cover;
   border-radius: 0.5rem;
   margin-bottom: 1rem;
+  border: 2px solid #dbb4d7;
 }
 
 .song-details-flex {
   display: flex;
   align-items: center;
-  gap: 10px;
+}
+
+.song-text {
+  padding-left: 1rem ;
+  padding-right: 1rem;
+  text-align: left;
+  max-width: 20rem;
 }
 
 .mic-icon {
@@ -1271,27 +1334,28 @@ onBeforeUnmount(() => {
 
 .mixtape-menu-wrapper {
   position: absolute;
-  right: 10px;
+  right: 1px;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 1000;;
+  z-index: 998;
 }
 
 .mixtape-menu-icon {
   cursor: pointer;
   color: #dbb4d7;
   font-size: 18px;
-  padding: 4px;
+  padding-left: 10px;
+  z-index: 1;
 }
 
 .mixtape-menu-dropdown {
   position: absolute;
   right: 0;
-  top: 25px;
+  top: -1px;
+  border: 1px solid #dbb4d7;
   background: #2e1f45;
-  border-radius: 6px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  z-index: 1500;
+  border-radius: 10px;
+  z-index: 2000;
   min-width: 80px;
   text-align: left;
 }
@@ -1300,6 +1364,7 @@ onBeforeUnmount(() => {
   padding: 8px 16px;
   cursor: pointer;
   color: #fff;
+  z-index: 2000;
 }
 
 .mixtape-menu-dropdown div:hover {
@@ -1307,18 +1372,43 @@ onBeforeUnmount(() => {
   color: #1f0d3e;
 }
 
+.sort-wrapper {
+  position: relative;      
+  display: inline-block;   
+  z-index: 2000;  /* Ensure this is high enough */
+  margin-right: 17px; /* Add some space between the sort icon and the input */
+}
+
 .mixtape-sort-dropdown {
-  margin-bottom: 0.5rem;
-  text-align: right;
+  position: absolute;                       
+  top: 0;                   
+  margin-left: 0.5rem;    
+  border: 1px solid #dbb4d7;
+  background: #2e1f45;
+  border-radius: 10px;
+  padding: 10px;
+  width: 13rem;
 }
 
 .mixtape-sort-dropdown select {
-  padding: 0.3rem 0.7rem;
-  border-radius: 6px;
-  border: 1px solid #dbb4d7;
-  background: #2e1f45;
-  color: #fff;
-  font-size: 0.95rem;
+  padding: 0.5rem 1rem;     
+  border-radius: 6px;    
+  border: 1px solid #dbb4d7; 
+  background: #2e1f45;     
+  color: #fff;             
+  font-size: 0.95rem;      
+  width: 150px;             
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); 
+  z-index: 1000;  
 }
+
+.sort-option {
+  cursor: pointer; /* Change cursor to pointer */
+  padding: 5px; /* Add some padding for better click area */
+}
+.sort-option:hover {
+  background-color: #c2a6c2; /* Change background on hover for better visibility */
+}
+
 </style>
 

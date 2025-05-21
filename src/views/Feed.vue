@@ -12,40 +12,45 @@
             <h2>Poll</h2>
             <button class="close-btn" @click="closeCreatePollPopup">×</button>
           </div>
-        <input
-          class="poll-input"
-          v-model="newPollQuestion"
-          placeholder="Enter your poll question"
-        />
+          <input
+            class="poll-input"
+            v-model="newPollQuestion"
+            placeholder="Enter your poll question"
+          />
 
-        <div class="options-label">Options</div>
+          <div class="options-label">Options</div>
           <div class="options-inputs">
-          <div v-for="(option, index) in newPollOptions" :key="index" class="option-row">
-            <input
-              class="poll-option-input"
-              v-model="newPollOptions[index]"
-              placeholder="Enter option"
-            />
-            <button v-if="newPollOptions.length > 1" @click="removePollOption(index)">−</button>
+            <div v-for="(option, index) in newPollOptions" :key="index" class="option-row">
+              <input
+                class="poll-option-input"
+                v-model="newPollOptions[index]"
+                placeholder="Enter option"
+              />
+              <button v-if="newPollOptions.length > 1" @click="removePollOption(index)">−</button>
+            </div>
+            <button
+              v-if="newPollOptions.length < 5"
+              class="add-option-btn"
+              @click="addPollOption"
+            >
+              + Add Option
+            </button>
           </div>
-          <button
-            v-if="newPollOptions.length < 5"
-            class="add-option-btn"
-            @click="addPollOption"
-          >
-            + Add Option
-          </button>
-        </div>
 
-        <button class="submit-poll-btn" @click="createPoll">Create Poll</button>
+          <button class="submit-poll-btn" @click="createPoll">Create Poll</button>
+        </div>
       </div>
-    </div>
 
       <div class="poll-scroll">
-        <div class="poll-container">
-          <button class="nav-button left" @click="prevProfile">←</button>
-          <button class="nav-button right" @click="nextProfile">→</button>
+        <button 
+          class="nav-button left" 
+          @click="prevProfile" 
+          :disabled="currentIndex === 0 || hasVoted"
+        > 
+          <i class="fa-solid fa-circle-arrow-left"></i>
+        </button>
 
+        <div class="poll-container">
           <!-- Poll Container -->
           <div class="poll-content">
             <div class="poll-profile">
@@ -83,8 +88,15 @@
               <span>Number of Votes: {{ totalVotes }}</span>
             </div>
           </div>
-          
         </div>
+
+        <button 
+          class="nav-button right" 
+          @click="nextProfile" 
+          :disabled="currentIndex === profiles.length - 1 || hasVoted"
+        > 
+          <i class="fa-solid fa-circle-arrow-right"></i>
+        </button>
       </div>
     </div>
   </NavLayout>
@@ -93,7 +105,6 @@
 <script setup>
   import { ref, computed } from 'vue'
   import NavLayout from '../layouts/NavLayout.vue'
-
 
   // temporary placeholders 
   const profiles = ref([
@@ -214,45 +225,52 @@
   }
 
   function createPoll() {
-  const cleanedOptions = newPollOptions.value
-    .filter(opt => opt.trim() !== '')
-    .map(opt => ({
-      text: opt.trim(),
-      votes: 0,
-      voted: false
-    }))
+    const cleanedOptions = newPollOptions.value
+      .filter(opt => opt.trim() !== '')
+      .map(opt => ({
+        text: opt.trim(),
+        votes: 0,
+        voted: false
+      }))
 
-  if (!newPollQuestion.value.trim() || cleanedOptions.length < 2) {
-    alert('Please enter a question and at least two options.')
-    return
-  }
-
-  const newProfile = {
-    name: 'You',
-    age: 0,
-    gender: 'Unknown',
-    image: '/src/assets/default-profile.png',
-    poll: {
-      question: newPollQuestion.value.trim(),
-      options: cleanedOptions
+    if (!newPollQuestion.value.trim() || cleanedOptions.length < 2) {
+      alert('Please enter a question and at least two options.')
+      return
     }
+
+    const newProfile = {
+      name: 'You',
+      age: 0,
+      gender: 'Unknown',
+      image: '/src/assets/default-profile.png',
+      poll: {
+        question: newPollQuestion.value.trim(),
+        options: cleanedOptions
+      }
+    }
+
+    profiles.value.push(newProfile)
+    currentIndex.value = profiles.value.length - 1
+    resetVoteState()
+    closeCreatePollPopup()
   }
-
-  profiles.value.push(newProfile)
-  currentIndex.value = profiles.value.length - 1
-  resetVoteState()
-  closeCreatePollPopup()
-}
-
 </script>
-
 
 <style scoped>
 .poll-wrapper {
-  background-color: #ddb0d7;
-  height: calc(100vh - 60px);
-  overflow-y: auto;
-  padding: 2rem 1rem;
+  padding: 2rem;
+  background-color: #dbb4d7;
+  min-height: calc(100vh - 100px);
+  color: black;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+  margin-top: 80px;
+  margin-left: 270px;
+}
+
+.poll-container {
+   box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
 }
 
 .create-poll-container {
@@ -261,6 +279,7 @@
   gap: 7px;
   margin: 0 auto 0.5rem auto;
   width: 890px;
+  
 }
 
 .create-poll-container i {
@@ -343,7 +362,7 @@
   color: white;
 }
 
-.close-btn:hover{
+.close-btn:hover {
   color: #ddb0d7;
 }
 
@@ -416,6 +435,8 @@
 .poll-scroll {
   display: flex;
   justify-content: center;
+  align-items: center;
+  position: relative; /* Added for positioning nav buttons */
 }
 
 .poll-container {
@@ -430,53 +451,31 @@
 }
 
 .nav-button {
-  position: absolute;
   top: 50%;
-  transform: translateY(-50%);
-  background-color: transparent;
-  border: 2px solid #080d2a;
+  transform: translateY(-20%);
+  background: none;
+  border: none;
+  font-size: 2.5rem;
   color: #080d2a;
-  font-size: 2rem;
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
   cursor: pointer;
-  z-index: 10;
-  user-select: none;
+  z-index: 1;
+  flex-direction: column; 
+  gap: 1rem; 
 }
 
-.nav-button.left {
-  left: 15px;
+.nav-button {
+  outline: none;
+  box-shadow: none;
 }
 
-.nav-button.right {
-  right: 15px;
+.nav-button:focus {
+  outline: none;
+  box-shadow: none;
 }
 
-.poll-top {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-  color: #ffffff;
-  flex-grow: 0;
-}
-
-.refresh-label {
-  font-weight: bold;
-  font-size: 0.9rem;
-}
-
-.refresh-time {
-  font-size: 0.9rem;
-}
-
-.profile-count {
-  background-color: #1c1b2e;
-  padding: 0.3rem 0.7rem;
-  border-radius: 30px;
-  font-size: 0.8rem;
-  display: inline-block;
+.nav-button:active {
+  outline: none;
+  box-shadow: none;
 }
 
 .poll-content {
