@@ -13,7 +13,11 @@
           </button>
 
           <div class="profile-header">
-            <img :src="profile.image" alt="Profile Image" class="profile-pic" />
+            <img
+              :src="profile.image && profile.image.trim() !== '' ? profile.image : '/src/assets/default-profile.jpg'"
+              alt="Profile Image"
+              class="profile-pic"
+            />
             <div class="profile-info">
               <h2>{{ profile.name }}</h2>
               <p>{{ profile.age }}, {{ profile.gender }}</p>
@@ -23,37 +27,18 @@
           <hr class="separator" />
           
           <div class="mixtape-scroll">
-            <div class="mixtape-detail-overlay">
-              <div class="mixtape-detail-box">
-                <span class="close-detail" @click="selectedMixtape = null">&times;</span>
-                <img :src="getFullPhotoUrl(selectedMixtape.photo_url)" class="detail-img" />
-                <h2 class="mixtape-detail-name">{{ selectedMixtape.name }}</h2>
-                <p class="mixtape-detail-description">{{ selectedMixtape.description }}</p>
-                <p>{{ selectedMixtape.bio }}</p>
-                <ul class="song-detail-list">
-                  <li v-for="(song, i) in selectedMixtape.songs" :key="i" style="display: flex; align-items: center; gap: 10px; padding-bottom: 1rem;">
-                    <img v-if="song.artwork_url" :src="song.artwork_url" alt="Artwork" style="width:35px; height:35px; border-radius:4px;" />
-                    <span style="flex:1;">{{ song.name }} - {{ song.artist }}</span>
-                    <button
-                      v-if="song.preview_url"
-                      class="mini-audio-btn"
-                      @click="toggleSongPlay(i)"
-                      :aria-label="playingSongIndex === i ? 'Pause preview' : 'Play preview'"
-                      style="margin-left:8px;"
-                    >
-                      <i :class="playingSongIndex === i ? 'fa-solid fa-pause' : 'fa-solid fa-play'"></i>
-                    </button>
-                    <audio
-                      v-if="song.preview_url"
-                      ref="songAudioRefs"
-                      :src="song.preview_url"
-                      @ended="onSongAudioEnded"
-                      style="display:none;"
-                    ></audio>
-                  </li>
-                </ul>
+            <button
+              class="mixtape clickable-mixtape"
+              v-for="(mixtape, mIndex) in profile.mixtapes"
+              :key="mIndex"
+              @click="handleMixtapeClick(profile, mixtape)"
+            >
+              <img :src="mixtape.image" alt="Mixtape Image" class="mixtape-image" />
+              <div class="mixtape-details">
+                <h3>{{ mixtape.name }}</h3>
+                <p>{{ mixtape.description }}</p>
               </div>
-            </div>
+            </button>
           </div>
         </div>
       </div>
@@ -77,14 +62,30 @@
           <img :src="selectedMixtape.image" alt="Mixtape Image" class="mixtape-image" />
           <h3 class="mixtape-title-back">{{ selectedMixtape.name }}</h3>
           <ol v-if="selectedMixtape.songs && selectedMixtape.songs.length" class="song-list">
-            <li v-for="(song, index) in selectedMixtape.songs" :key="index">
+            <li v-for="(song, index) in selectedMixtape.songs" :key="index" class="song-list-item">
               <span class="song-number">{{ index + 1 }}. </span>
               <span class="song-title">{{ song.title }}</span> by <span class="artist-name">{{ song.artist }}</span>
+              <template v-if="song.artwork_url || song.preview_url">
+                <div style="display: flex; justify-content:left; align-items: center; margin-top: 5px;">
+                  <template v-if="song.artwork_url">
+                    <img :src="song.artwork_url" alt="Artwork" class="song-artwork" style="width: 40px; height: 40px; border-radius: 5px;" />
+                  </template>
+                  <template v-if="song.preview_url">
+                    <audio
+                      :src="song.preview_url"
+                      controls
+                      controlsList="nodownload noplaybackrate"
+                      style="height: 24px; margin-right: 6rem; align-items: center;"
+                    ></audio>
+                  </template>
+                </div>
+              </template>
             </li>
           </ol>
           <p v-else class="song-list">(No songs listed)</p>
         </div>
       </div>
+
     </div>
   </NavLayout>
 </template>
@@ -112,7 +113,7 @@ async function fetchFavorites() {
     console.log('Favorites API returned:', data);
     profiles.value = data;
   } catch (e) {
-    console.error('Favorites API error:', e); // <-- Add this line
+    console.error('Favorites API error:', e);
     profiles.value = [];
   }
 }
@@ -133,7 +134,6 @@ async function removeFavorite(index) {
     profiles.value.splice(index, 1);
   } catch (e) {
     console.error('Failed to remove favorite:', e);
-    // Optionally show an error message to the user
   }
 }
 
@@ -152,6 +152,7 @@ function closeMixtapePopup() {
 .favorites-wrapper {
   padding: 2rem;
   background-color: #dbb4d7;
+  min-height: 100vh;
   overflow: auto;
   color: black;
   display: flex;
@@ -159,7 +160,6 @@ function closeMixtapePopup() {
   margin-bottom: 1rem;
   margin-top: 80px;
   margin-left: 270px;
-  min-height: calc(100vh - 100px);
 }
 
 .favorites-title {
@@ -216,8 +216,8 @@ function closeMixtapePopup() {
 }
 
 .profile-pic {
-  width: 70px;
-  height: 70px;
+  width: 60px;
+  height: 60px;
   border-radius: 8px;
   object-fit: cover;
 }
@@ -235,67 +235,125 @@ function closeMixtapePopup() {
 }
 
 .mixtape-scroll {
-  max-height: 200px; 
+  max-height: 180px; 
   overflow-y: auto; 
   padding-right: 0.5rem;
   flex-grow: 0; 
   margin-top: 2rem;
 }
 
-.mixtape-detail-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(20, 20, 20, 0.5);
+.mixtape {
   display: flex;
-  justify-content: center;
-  align-items: center;
+  gap: 1rem; 
+  margin-bottom: 1rem;
+}
+
+.clickable-mixtape {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  text-align: left;
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  cursor: pointer;
+  color: inherit;
+}
+
+.clickable-mixtape:hover {
+  transform: scale(1.02);
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease-in-out;
+}
+
+.mixtape-image {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-left: 0.5rem;
+}
+
+.mixtape-details h3 {
+  font-size: 1rem;
+  margin: 0;
+}
+
+.mixtape-details p {
+  font-size: 0.85rem;
+  margin: 0.2rem 0 0 0;
+}
+
+.mixtape-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   z-index: 999;
-}
-
-.mixtape-detail-box {
   background-color: #080d2a;
-  padding: 2rem;
-  border-radius: 1rem;
-  width: 90%;
-  max-width: 600px;
-  text-align: center;
+  border-radius: 12px;
+  padding: 1.5rem;
+  width: 35rem;
+  height: 26rem;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
   color: white;
-  position: relative;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
 }
 
-.mixtape-detail-name {
-  padding-bottom: 0.7rem;
+.mixtape-popup img {
+  display: block;
+  margin: 0 auto 1rem auto;
+  height: 130px;
+  width: 130px;
 }
 
-.song-detail-list {
-  margin-top: 1.3rem;
+.song-list {
+  margin-top: 1rem;
+  overflow-y: auto; 
+  max-height: 180px; 
+  flex-grow: 1;
   text-align: left;
   border: 1px solid #dbb4d7;
-  background-color: #2c1a40;
-  padding: 0.7rem;
-  border-radius: 0.5rem;
-  max-height: 15rem;
-  overflow-y: auto;
+  padding: 10px;
+  border-radius: 10px;
 }
 
-.close-detail {
+.song-list li {
+  margin-bottom: 0.5rem;
+}
+
+.song-title {
+  font-weight: bold;
+}
+
+.song-artwork {
+  width: 40px;
+  height: 40px;
+  border-radius: 5px;
+}
+.song-audio-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 5px;
+  margin-left: 8px;
+}
+
+.exit-button {
   position: absolute;
-  top: 1rem;
+  top: 0.75rem;
   right: 1rem;
-  font-size: 2rem;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  color: white;
   cursor: pointer;
-}
-
-.detail-img {
-  width: 100px;
-  height: 100px;
-  object-fit: cover;
-  border-radius: 0.5rem;
-  margin-bottom: 1rem;
-  border: 2px solid #dbb4d7;
 }
 
 .modal-overlay {
