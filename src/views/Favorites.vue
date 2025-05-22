@@ -7,83 +7,86 @@
       </p>
 
       <div class="favorites-grid">
-          <div class="favorite-box" v-for="(profile, index) in profiles" :key="index">
-        <button class="heart-btn" @click="confirmRemove(index)">
-          <i class="fa-solid fa-heart"></i>
-        </button>
-
-        <div class="profile-header">
-          <img
-            :src="profile.image && profile.image.trim() !== '' ? profile.image : '/src/assets/default-profile.jpg'"
-            alt="Profile Image"
-            class="profile-pic"
-          />
-          <div class="profile-info">
-            <h2>{{ profile.name }}</h2>
-            <p>{{ profile.age }}, {{ profile.gender }}</p>
-          </div>
-        </div>
-
-        <hr class="separator" />
-        
-        <div class="mixtape-scroll">
-          <button
-            class="mixtape clickable-mixtape"
-            v-for="(mixtape, mIndex) in profile.mixtapes"
-            :key="mIndex"
-            @click="handleMixtapeClick(profile, mixtape)"
-          >
-            <img :src="mixtape.image" alt="Mixtape Image" class="mixtape-image" />
-            <div class="mixtape-details">
-              <h3>{{ mixtape.name }}</h3>
-              <p>{{ mixtape.description }}</p>
-            </div>
+        <div class="favorite-box" v-for="(profile, index) in profiles" :key="index">
+          <button class="heart-btn" @click="confirmRemove(index)">
+            <i class="fa-solid fa-heart"></i>
           </button>
-        </div>
-      </div>
 
-      </div>
-
-          <div v-if="showConfirmIndex !== null">
-            <div class="modal-overlay" @click="showConfirmIndex = null"></div>
-            <div class="confirm-popup">
-              <p>Are you sure you want to remove this user from your Favorites?</p>
-              <div class="confirm-buttons">
-                <button @click="removeFavorite(showConfirmIndex)">Confirm</button>
-                <button @click="showConfirmIndex = null">Decline</button>
-              </div>
+          <div class="profile-header">
+            <img
+              :src="profile.image && profile.image.trim() !== '' ? profile.image : '/src/assets/default-profile.jpg'"
+              alt="Profile Image"
+              class="profile-pic"
+            />
+            <div class="profile-info">
+              <h2>{{ profile.name }}</h2>
+              <p>{{ profile.age }}, {{ profile.gender }}</p>
             </div>
           </div>
 
-          <!-- Mixtape Popup -->
-          <div v-if="selectedMixtape" class="modal-overlay" @click="closeMixtapePopup"></div>
-          <div v-if="selectedMixtape" class="mixtape-popup">
-            <button class="exit-button" @click="closeMixtapePopup">✕</button>
-            <div class="back-mixtape">
-              <img :src="selectedMixtape.image" alt="Mixtape Image" class="mixtape-image" />
-              <h3 class="mixtape-title-back">{{ selectedMixtape.name }}</h3>
-              <ol v-if="selectedMixtape.songs && selectedMixtape.songs.length" class="song-list">
-                <li v-for="(song, index) in selectedMixtape.songs" :key="index" class="song-list-item">
-                  <span class="song-number">{{ index + 1 }}. </span>
-                  <span class="song-title">{{ song.title }}</span> by <span class="artist-name">{{ song.artist }}</span>
+          <hr class="separator" />
+          
+          <div class="mixtape-scroll">
+            <button
+              class="mixtape clickable-mixtape"
+              v-for="(mixtape, mIndex) in profile.mixtapes"
+              :key="mIndex"
+              @click="handleMixtapeClick(profile, mixtape)"
+            >
+              <img :src="mixtape.image" alt="Mixtape Image" class="mixtape-image" />
+              <div class="mixtape-details">
+                <h3>{{ mixtape.name }}</h3>
+                <p>{{ mixtape.description }}</p>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="showConfirmIndex !== null">
+        <div class="modal-overlay" @click="showConfirmIndex = null"></div>
+        <div class="confirm-popup">
+          <p>Are you sure you want to remove this user from your Favorites?</p>
+          <div class="confirm-buttons">
+            <button @click="removeFavorite(showConfirmIndex)">Confirm</button>
+            <button @click="showConfirmIndex = null">Decline</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mixtape Popup -->
+      <div v-if="selectedMixtape" class="modal-overlay" @click="closeMixtapePopup"></div>
+      <div v-if="selectedMixtape" class="mixtape-popup">
+        <button class="exit-button" @click="closeMixtapePopup">✕</button>
+        <div class="back-mixtape">
+          <img :src="selectedMixtape.image" alt="Mixtape Image" class="mixtape-image" />
+          <h3 class="mixtape-title-back">{{ selectedMixtape.name }}</h3>
+          <ol v-if="selectedMixtape.songs && selectedMixtape.songs.length" class="song-list">
+            <li v-for="(song, index) in selectedMixtape.songs" :key="index" class="song-list-item">
+              <span class="song-number">{{ index + 1 }}. </span>
+              <span class="song-title">{{ song.title }}</span> by <span class="artist-name">{{ song.artist }}</span>
+              <template v-if="song.artwork_url || song.preview_url">
+                <div style="display: flex; justify-content:left; align-items: center; margin-top: 5px;">
                   <template v-if="song.artwork_url">
-                    <img :src="song.artwork_url" alt="Artwork" class="song-artwork" style="width:32px;height:32px;margin-left:8px;vertical-align:middle;" />
+                    <img :src="song.artwork_url" alt="Artwork" class="song-artwork" style="width: 40px; height: 40px; border-radius: 5px;" />
                   </template>
                   <template v-if="song.preview_url">
                     <audio
                       :src="song.preview_url"
                       controls
                       controlsList="nodownload noplaybackrate"
-                      style="vertical-align:middle; margin-left:8px; height:24px;"
+                      style="height: 24px; margin-right: 6rem; align-items: center;"
                     ></audio>
                   </template>
-                </li>
-              </ol>
-              <p v-else class="song-list">(No songs listed)</p>
-            </div>
-          </div>
-
+                </div>
+              </template>
+            </li>
+          </ol>
+          <p v-else class="song-list">(No songs listed)</p>
+        </div>
       </div>
+
+    </div>
   </NavLayout>
 </template>
 
@@ -110,7 +113,7 @@ async function fetchFavorites() {
     console.log('Favorites API returned:', data);
     profiles.value = data;
   } catch (e) {
-    console.error('Favorites API error:', e); // <-- Add this line
+    console.error('Favorites API error:', e);
     profiles.value = [];
   }
 }
@@ -131,7 +134,6 @@ async function removeFavorite(index) {
     profiles.value.splice(index, 1);
   } catch (e) {
     console.error('Failed to remove favorite:', e);
-    // Optionally show an error message to the user
   }
 }
 
@@ -164,33 +166,32 @@ function closeMixtapePopup() {
   font-size: 2rem;
   font-weight: bold;
   color: black;
+  text-align: left;
 }
 
 .favorites-description {
   font-size: 1rem;
   margin-bottom: 2rem;
+  text-align: left;
 }
 
 .favorites-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
   gap: 1.5rem;
-  padding-right: 0.5rem;
-  padding-bottom: 2rem;
 }
 
 .favorite-box {
   background-color: #080d2a;
-  padding: 1rem;
-  border-radius: 10px;
   color: white;
-  position: relative;
-  overflow: hidden;
-  width: 400px;
-  height: 320px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  position: relative;
+  text-align: left;
+  box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
 }
 
 .heart-btn {
@@ -209,18 +210,14 @@ function closeMixtapePopup() {
   cursor: pointer;
 }
 
-.heart-btn.clicked {
-  transform: scale(1.2);
-}
-
 .profile-header {
   display: flex;
   gap: 1rem;
 }
 
 .profile-pic {
-  width: 70px;
-  height: 70px;
+  width: 60px;
+  height: 60px;
   border-radius: 8px;
   object-fit: cover;
 }
@@ -297,11 +294,11 @@ function closeMixtapePopup() {
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 999;
-  background-color: #1a1f4a;
+  background-color: #080d2a;
   border-radius: 12px;
   padding: 1.5rem;
   width: 35rem;
-  height: 25rem;
+  height: 26rem;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
   color: white;
   text-align: center;
@@ -322,6 +319,9 @@ function closeMixtapePopup() {
   max-height: 180px; 
   flex-grow: 1;
   text-align: left;
+  border: 1px solid #dbb4d7;
+  padding: 10px;
+  border-radius: 10px;
 }
 
 .song-list li {
@@ -330,6 +330,19 @@ function closeMixtapePopup() {
 
 .song-title {
   font-weight: bold;
+}
+
+.song-artwork {
+  width: 40px;
+  height: 40px;
+  border-radius: 5px;
+}
+.song-audio-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 5px;
+  margin-left: 8px;
 }
 
 .exit-button {
@@ -391,12 +404,5 @@ function closeMixtapePopup() {
   background: red;
   color: white;
   border: 1px solid #ebebeb;
-}
-
-.song-artwork {
-  border-radius: 4px;
-  object-fit: cover;
-  display: inline-block;
-  vertical-align: middle;
 }
 </style>

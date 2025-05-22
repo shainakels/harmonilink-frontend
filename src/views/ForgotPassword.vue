@@ -49,7 +49,7 @@ const handleForgotPassword = async () => {
 
     if (response.status === 200) {
       successMessage.value = 'A password reset link has been sent to your email.';
-      email.value = ''; // Clear the email input on success
+      email.value = ''; 
     }
   } catch (error) {
     if (error.response?.status === 404) {
@@ -233,7 +233,7 @@ button:disabled {
 }
 
 .success-message {
-  color: #4CAF50;
+  color: #38883b;
   font-size: 0.85rem;
   margin: 0.5rem 0;
   padding: 0.5rem;
@@ -252,7 +252,6 @@ button:disabled {
   border: 1px solid rgba(244, 67, 54, 0.2);
 }
 
-/* Dark mode styles for messages */
 @media (prefers-color-scheme: dark) {
   .success-message {
     color: #81c784;
