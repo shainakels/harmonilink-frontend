@@ -355,7 +355,7 @@ const handleSignup = async () => {
 .signup {
   width: 550px;
   padding: 20px 50px;
-  background: linear-gradient(to bottom, #c697bd, #dbb4d7 50%, #1f0d3e);
+  background: linear-gradient(to right, #c697bd, #dbb4d7, #1f0d3e 120%);
   text-align: center;
   position: absolute;
   top: 50%;
@@ -431,7 +431,7 @@ const handleSignup = async () => {
 
 h2 {
   margin-bottom: 1.5rem;
-  color: #ffffff;
+  color: #322848;
   font-size: 36px;
   font-weight: 700;
   letter-spacing: 2px;
@@ -444,7 +444,7 @@ h2 {
 }
 
 .input-group input {
-  width: 100%;
+  width: 95%;
   height: 42px;
   padding: 10px 40px 10px 15px;
   background: rgba(255, 255, 255, 0.35);
@@ -467,7 +467,7 @@ h2 {
 
 .input-group .icon {
   position: absolute;
-  right: 15px;
+  right: 26px;
   top: 50%;
   transform: translateY(-50%);
   color: #322848;
@@ -486,23 +486,24 @@ h2 {
   align-items: flex-start;
   gap: 8px;
   color: rgba(50, 40, 72, 0.8);
-  font-size: 13px;
+  font-size: 10px;
 }
 
 .checkbox-group input[type="checkbox"] {
   margin-top: 3px;
+  margin-left: 18px;
 }
 
 button {
-  width: 100%;
+  width: 90%;
   height: 45px;
   padding: 10px;
-  background: #1f0d3e;
-  color: #ffffff;
+  background: #322848;
+  color: #fff;
   border: none;
   border-radius: 25px;
   cursor: pointer;
-  margin-top: 15px;
+  margin-top: 12px;
   font-size: 16px;
   font-weight: 500;
   transition: all 0.3s ease;
@@ -510,14 +511,14 @@ button {
 }
 
 button:hover {
-  background: #2a1152;
+  background: #1f1a2e;
   transform: translateY(-1px);
 }
 
 .login-text {
-  margin-top: 10px;
-  font-size: 14px;
-  color: #ffffff;
+  margin-top: 13px;
+  font-size: 0.85rem;
+  color: #322848;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -526,7 +527,7 @@ button:hover {
 
 .signin-link {
   text-decoration: none;
-  color: #ffffff;
+  color: #322848;
   font-weight: 600;
 }
 
@@ -538,13 +539,14 @@ button:hover {
 }
 
 .error-message {
-  color: #ff3b3b;
+  color: #f44336;
   font-size: 12px;
-  margin-top: 5px;
-  text-align: left;
-  position: absolute;
-  left: 0;
-  bottom: -20px;
+  margin: 0.5rem 0 0.5rem 1rem;
+  padding: 0.5rem;
+  background: rgba(244, 67, 54, 0.1);
+  border-radius: 4px;
+  border: 1px solid rgba(244, 67, 54, 0.2);
+  width: 94%;
 }
 
 .input-group.invalid input {

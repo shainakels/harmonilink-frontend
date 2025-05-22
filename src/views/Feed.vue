@@ -131,7 +131,8 @@
             <div class="poll-votes">
               <span>
                 {{ totalVotes }} vote{{ totalVotes === 1 ? '' : 's' }} ·
-                {{ getTimeLeft(currentProfile.createdAt, currentProfile.pollLengthSeconds) }} left
+                {{ getTimeLeft(currentProfile.createdAt, currentProfile.pollLengthSeconds) }}
+                <span v-if="getTimeLeft(currentProfile.createdAt, currentProfile.pollLengthSeconds) !== 'Final results'"> left</span>
               </span>
             </div>
           </div>
@@ -157,7 +158,7 @@
   const currentVote = ref(null)
   const showCreatePoll = ref(false)
   const newPollQuestion = ref('')
-  const newPollOptions = ref(['', '']) // Start with 2 options
+  const newPollOptions = ref(['', '']) 
 
   const token = localStorage.getItem('token');
   let loggedInUserId = null;
@@ -179,7 +180,7 @@
       const { data } = await axios.get(`${API_URL}/api/feed`, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      // Transform backend data to match your UI structure
+     
       profiles.value = data.map(poll => ({
         name: poll.user.name,
         age: poll.user.birthday ? calculateAge(poll.user.birthday) : '',
@@ -190,8 +191,8 @@
               : `http://localhost:3000/${poll.user.profile_image.replace(/^\/+/, '').replace(/\\/g, '/')}`
           : '/src/assets/default-profile.jpg',
         userId: poll.user.id,
-        createdAt: poll.created_at, // add this
-        pollLengthSeconds: poll.poll_length_seconds, // add this
+        createdAt: poll.created_at, 
+        pollLengthSeconds: poll.poll_length_seconds,
         poll: {
           question: poll.question,
           options: poll.options.map(opt => ({
@@ -244,10 +245,10 @@
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      // Stay on the same poll after voting
+      
       const prevIndex = currentIndex.value;
       await fetchPolls();
-      currentIndex.value = prevIndex; // Restore index
+      currentIndex.value = prevIndex; 
       hasVoted.value = true;
       currentVote.value = optionIndex;
     } catch (e) {
@@ -304,7 +305,7 @@
       await axios.post(`${API_URL}/api/feed`, {
         question: newPollQuestion.value.trim(),
         options: cleanedOptions,
-        pollLengthSeconds // send this to backend
+        pollLengthSeconds 
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -383,6 +384,8 @@
     const now = new Date();
     let diff = Math.max(0, Math.floor((endTime - now) / 1000)); // in seconds
 
+    if (diff === 0) return 'Final results';
+
     const days = Math.floor(diff / 86400);
     diff %= 86400;
     const hours = Math.floor(diff / 3600);
@@ -393,7 +396,6 @@
     if (days > 0) parts.push(`${days} day${days > 1 ? 's' : ''}`);
     if (hours > 0) parts.push(`${hours} hour${hours > 1 ? 's' : ''}`);
     if (minutes > 0 && days === 0) parts.push(`${minutes} min${minutes > 1 ? 's' : ''}`);
-    if (parts.length === 0) return 'ended';
     return parts.join(' ');
   }
 
@@ -417,8 +419,6 @@
       .map((opt, idx) => (opt.votes === maxVotes && maxVotes > 0 ? idx : null))
       .filter(idx => idx !== null);
   });
-
-  
 </script>
 
 
@@ -804,5 +804,4 @@
   min-width: 38px;
   text-align: right;
 }
-
 </style>

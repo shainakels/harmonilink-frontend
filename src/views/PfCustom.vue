@@ -291,6 +291,7 @@ textarea {
   font-size: 1rem;
   border-radius: 5px;
   resize: none;
+  color: #080d2a;
 }
 
 .continue-button {

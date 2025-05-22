@@ -13,7 +13,11 @@
         </button>
 
         <div class="profile-header">
-          <img :src="profile.image" alt="Profile Image" class="profile-pic" />
+          <img
+            :src="profile.image && profile.image.trim() !== '' ? profile.image : '/src/assets/default-profile.jpg'"
+            alt="Profile Image"
+            class="profile-pic"
+          />
           <div class="profile-info">
             <h2>{{ profile.name }}</h2>
             <p>{{ profile.age }}, {{ profile.gender }}</p>

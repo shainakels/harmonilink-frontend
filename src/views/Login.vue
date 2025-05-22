@@ -198,7 +198,7 @@ const handleLogin = async () => {
 }
 
 .login img {
-  width: 4rem;
+  width: 5rem;
   margin-bottom: 0.5rem;
 }
 
@@ -206,14 +206,14 @@ h2 {
   margin-top: 0;
   margin-bottom: 0.5rem;
   color: #322848;
-  font-size: 2rem;
-  font-weight: 600;
+  font-size: 36px;
+  font-weight: 700;
 }
 
 .quote-text {
-  font-size: 0.75rem;
+  font-size: 10.5px;
   margin: 0.5rem 0 2rem;
-  color: #666;
+  color: #322848;
 }
 
 .input-group {
@@ -223,19 +223,23 @@ h2 {
 
 .input-group input {
   width: 100%;
-  height: 2.5rem;
-  padding: 0.5rem 2.5rem 0.5rem 1rem;
-  background: rgba(235, 235, 235, 0.8);
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 0.9rem;
-  color: #333;
+  height: 42px;
+  padding: 10px 40px 10px 15px;
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 8px;
+  font-size: 15px;
+  color: #322848;
+  transition: all 0.3s ease;
+}
+
+.input-group input::placeholder {
+  color: rgba(50, 40, 72, 0.6);
 }
 
 .input-group input:focus {
-  border-color: #322848;
   outline: none;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.45);
+  box-shadow: 0 4px 12px rgba(31, 13, 62, 0.08);
 }
 
 .input-group .icon {
@@ -252,7 +256,7 @@ h2 {
   right: 30px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 15px;
+  font-size: 14px;
   color: #888;
   pointer-events: none; 
 }
@@ -262,7 +266,7 @@ h2 {
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   margin: 1rem 0;
   color: #ebebeb;
 }
@@ -290,22 +294,23 @@ h2 {
 }
 
 button {
-  width: 100%;
+  width: 90%;
   height: 2.75rem;
   padding: 0.5rem;
   background: #322848;
   color: #fff;
   border: none;
-  border-radius: 5px;
+  border-radius: 25px;
   cursor: pointer;
   margin: 1.5rem 0;
   font-size: 1rem;
   font-weight: 500;
-  transition: background 0.2s;
+  transition: all 0.3s ease;
 }
 
 button:hover {
   background: #1f1a2e;
+  transform: translateY(-1px);
 }
 
 button:disabled {
@@ -380,7 +385,7 @@ button:disabled {
   }
   
   h2 {
-    font-size: 1.75rem;
+    font-size: 36px;
   }
   
   .input-group input {
@@ -393,9 +398,13 @@ button:disabled {
 }
 
 .success-message {
-  color: green;
-  font-size: 11px;
+  color: #4CAF50;
+  font-size: 12px;
   margin: 0.5rem 0;
+  padding: 0.5rem;
+  background: rgba(76, 175, 80, 0.1);
+  border-radius: 4px;
+  border: 1px solid rgba(76, 175, 80, 0.2);
 }
 
 
@@ -411,11 +420,16 @@ button:disabled {
   }
   
   .input-group input:focus {
-    border: 2px solid #1f0d3e;
-    background: rgba(235, 235, 235, 0.4);
+    outline: none;
+    background: rgba(255, 255, 255, 0.45);
+    box-shadow: 0 4px 12px rgba(31, 13, 62, 0.08);
   }
   
-  h2, .quote-text, .checkbox-container, .forgot-password a, .login-text, .signin-link {
+  h2, .quote-text {
+    color: #322848
+  }
+
+  .checkbox-container, .forgot-password a, .login-text, .signin-link {
     color: #ebebeb;
   }
 }
