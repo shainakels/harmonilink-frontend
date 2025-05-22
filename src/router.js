@@ -9,8 +9,7 @@ import Welcome from './views/Welcome.vue';
 import ResetPassword from './views/ResetPassword.vue';
 import Discover from './views/Discover.vue';
 import Favorites from './views/Favorites.vue';
-import Feed from './views/Feed.vue';
-import Achievements from './views/Achievements.vue';
+import Feed from './views/feed.vue';
 import Profile from './views/Profile.vue';
 
 const routes = [
@@ -42,7 +41,6 @@ const routes = [
   { path: '/reset-password', component: ResetPassword },
   { path: '/favorites', component: Favorites },
   { path: '/feed', component: Feed },
-  { path: '/achievements', component: Achievements },
   { path: '/profile', component: Profile },
 ];
 
