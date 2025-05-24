@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Signup from './views/Signup.vue';
 import Login from './views/Login.vue';
-import Terms from './views/Terms.vue';
 import ForgotPassword from './views/ForgotPassword.vue';
 import PfCustom from './views/PfCustom.vue';
 import PfMixtape from './views/PfMixtape.vue';
@@ -33,7 +32,6 @@ const routes = [
   { path: '/signup', component: Signup },
   { path: '/login', component: Login },
   { path: '/discover', component: () => import('./views/Discover.vue') },
-  { path: '/terms', component: Terms },
   { path: '/forgot-password', component: ForgotPassword }, 
   { path: '/pfcustom', component: PfCustom }, 
   { path: '/pfmixtape', component: PfMixtape },
