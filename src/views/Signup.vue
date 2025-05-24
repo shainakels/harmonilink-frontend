@@ -1,6 +1,5 @@
 <template>
   <!-- Background image -->
-  <img src="/src/assets/background.png" alt="background" class="background">
   <div class="background"></div>
 
   <!-- Logo -->
@@ -113,6 +112,12 @@
       <div class="star2 stars"></div>
       <div class="star3 stars"></div>
       <div class="star4 stars"></div>
+      <div class="star5 stars"></div>
+      <div class="star6 stars"></div>
+      <div class="star7 stars"></div>
+      <div class="star8 stars"></div>
+      <div class="star9 stars"></div>
+      <div class="star10 stars"></div>
       <img src="/src/assets/cd.png" alt="CD" class="cd" />
     </div>
   </div>
@@ -178,7 +183,6 @@ const validateUsername = (name) => {
   if (/\s/.test(name)) return 'Username cannot contain spaces.';
   if (/[@]/.test(name)) return 'Username cannot contain "@" or email domains.';
   if (name.toLowerCase().includes('@gmail.com')) return 'Username cannot include "@gmail.com".';
-  // Optional: restrict to alphanumeric, underscores, dots, and dashes only
   if (!/^[a-zA-Z0-9._-]+$/.test(name)) return 'Username can only contain letters, numbers, dots, underscores, or dashes.';
   if (name.length < 3) return 'Username must be at least 3 characters.';
   return '';
@@ -259,8 +263,8 @@ onMounted(() => {
 const handleSignup = async () => {
   usernameError.value = validateUsername(username.value);
   emailError.value = '';
-  confirmPasswordError.value = ''; // All relevant errors go here now
-  passwordError.value = ''; // Will no longer be shown visually
+  confirmPasswordError.value = '';
+  passwordError.value = '';
 
   if (!username.value.trim()) usernameError.value = 'Username is required!';
   if (!emailPattern.test(email.value)) emailError.value = 'Invalid email format!';
@@ -306,9 +310,8 @@ const handleSignup = async () => {
     loading.value = false;
   }
 };
-
 </script>
-  
+
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap');
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css');
@@ -323,12 +326,33 @@ const handleSignup = async () => {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-size: cover;
-  background-position: center;
+  background: linear-gradient(120deg, #e3b8ff 0%, #dbb4d7 25%, #c697bd 50%, #8a6bb8 75%, #322848 100%);
+  background-size: 300% 300%;
+  background-position: 0% 50%;
   background-repeat: no-repeat;
   display: flex;
   flex-direction: column;
   transform: none;
+  animation: gradientMove 12s ease-in-out infinite;
+  transition: background-position 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes gradientMove {
+  0% {
+    background-position: 0% 60%;
+  }
+  25% {
+    background-position: 50% 100%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  75% {
+    background-position: 50% 0%;
+  }
+  100% {
+    background-position: 0% 60%;
+  }
 }
 
 .logo {
@@ -355,7 +379,7 @@ const handleSignup = async () => {
 .signup {
   width: 550px;
   padding: 20px 50px;
-  background: linear-gradient(to right, #c697bd, #dbb4d7, #1f0d3e 120%);
+  background: rgba(255, 255, 255, 0.65); 
   text-align: center;
   position: absolute;
   top: 50%;
@@ -363,11 +387,21 @@ const handleSignup = async () => {
   transform: translate(-50%, -50%);
   color: #322848;
   z-index: 1;
-  border-radius: 25px 0 0 25px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(8px);
+  border-radius: 25px;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.25);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   height: auto;
-  min-height: 500px;
+  min-height: 580px;
+  transition: all 0.3s ease;
+}
+
+.signup:hover {
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.35);
+  backdrop-filter: blur(16px) saturate(200%);
+  -webkit-backdrop-filter: blur(16px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.25);
 }
 
 .signup-container {
@@ -383,15 +417,15 @@ const handleSignup = async () => {
   position: absolute;
   width: 45%;
   height: 545px;
-  background: #080d2a;
-  z-index: 2;
-  border-radius: 15px 0 0 15px;
+  background: #322848;
+  z-index: 0;
+  border-radius: 1px 0 0 1px;
   top: 50%;
-  right: 0;
+  left: 58%; 
   transform: translate(0, -50%);
   overflow: hidden;
-  margin-left: -120px;
 }
+
 
 .cd {
   position: absolute;
@@ -399,10 +433,27 @@ const handleSignup = async () => {
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 3;
-  width: 380px;
-  height: 380px;
-  animation: rotate 20s linear infinite;
-  filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.2));
+  width: 450px;
+  height: 450px;
+  animation: rotate 20s linear infinite, glow 2s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 25px rgba(138, 43, 226, 0.6)) 
+          drop-shadow(0 0 10px rgba(255, 255, 255, 0.4));
+}
+
+@keyframes glow {
+  from {
+    filter: drop-shadow(0 0 15px rgba(138, 43, 226, 0.4))
+            drop-shadow(0 0 5px rgba(255, 255, 255, 0.2));
+  }
+  to {
+    filter: drop-shadow(0 0 30px rgba(138, 43, 226, 0.6))
+            drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
 }
 
 .stars {
@@ -413,12 +464,20 @@ const handleSignup = async () => {
   border-radius: 50%;
   box-shadow: 0 0 4px #fff;
   z-index: 2;
+  animation: twinkle 2s infinite ease-in-out, float 4s infinite ease-in-out;
 }
 
-.star1 { top: 10%; right: 30%; }
-.star2 { top: 20%; right: 10%; }
-.star3 { bottom: 15%; right: 25%; }
-.star4 { bottom: 25%; right: 15%; }
+.star1 { top: 10%; right: 30%; width: 2px; height: 2px; }
+.star2 { top: 20%; right: 10%; width: 4px; height: 4px; }
+.star3 { bottom: 15%; right: 25%; width: 3px; height: 3px; }
+.star4 { bottom: 25%; right: 15%; width: 5px; height: 5px; }
+.star5 { top: 35%; right: 40%; width: 2.5px; height: 2.5px; }
+.star6 { top: 50%; left: 20%; width: 3.5px; height: 3.5px; }
+.star7 { top: 30%; left: 35%; width: 2px; height: 2px; }
+.star8 { top: 60%; left: 5%; width: 4px; height: 4px; }
+.star9 { bottom: 10%; left: 45%; width: 3px; left: 3px; }
+.star10 { top: 15%; left: 50%; width: 2.5px; left: 2.5px; }
+
 
 @keyframes rotate {
   from {
@@ -432,14 +491,14 @@ const handleSignup = async () => {
 h2 {
   margin-bottom: 1.5rem;
   color: #322848;
-  font-size: 36px;
+  font-size: 40px;
   font-weight: 700;
   letter-spacing: 2px;
 }
 
 .input-group {
   position: relative;
-  margin: 0.75rem 0;
+  margin: 0.90rem 0;
   width: 100%;
 }
 
@@ -447,8 +506,8 @@ h2 {
   width: 95%;
   height: 42px;
   padding: 10px 40px 10px 15px;
-  background: rgba(255, 255, 255, 0.35);
-  border: none;
+  background: rgba(255, 255, 255, 0.495);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 8px;
   font-size: 15px;
   color: #322848;
@@ -462,7 +521,7 @@ h2 {
 .input-group input:focus {
   outline: none;
   background: rgba(255, 255, 255, 0.45);
-  box-shadow: 0 4px 12px rgba(31, 13, 62, 0.08);
+  box-shadow: 0 8px 12px rgba(31, 13, 62, 0.08);
 }
 
 .input-group .icon {
@@ -508,12 +567,19 @@ button {
   font-weight: 500;
   transition: all 0.3s ease;
   letter-spacing: 0.5px;
+  outline: none; 
 }
 
 button:hover {
-  background: #1f1a2e;
+  background: #322848;
   transform: translateY(-1px);
+  box-shadow: 0 0 10px #8a6bb8, 0 0 20px #c697bd, 0 0 30px #dbb4d7;
 }
+
+button:focus {
+  outline: none; 
+}
+
 
 .login-text {
   margin-top: 13px;
@@ -612,7 +678,7 @@ button:hover {
   border-radius: 8px;
   width: 100%;
   max-width: 500px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 25px 5px rgba(50, 40, 72, 0.3); 
 }
 
 .modal-header {
@@ -623,7 +689,7 @@ button:hover {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 40px;
-  margin-left: 155px;
+  margin-left: 121px;
 }
 
 .modal-header .close {

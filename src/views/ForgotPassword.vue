@@ -1,5 +1,4 @@
 <template>
-  <img src="/src/assets/background.png" alt="background" class="background" />
   <div class="forgot-password-page">
     <h2>Forgot Password</h2>
     <img src="/src/assets/logo.png" alt="Harmonilink Logo">
@@ -26,6 +25,7 @@
       <router-link to="/login">Back to Login</router-link>
     </p>
   </div>
+  <div class="background"></div>
 </template>
 
 <script setup>
@@ -76,22 +76,31 @@ const handleForgotPassword = async () => {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-size: cover;
-  background-position: center;
+  background: linear-gradient(120deg, #e3b8ff 0%, #dbb4d7 25%, #c697bd 50%, #8a6bb8 75%, #322848 100%);
+  background-size: 300% 300%;
+  background-position: 0% 50%;
   background-repeat: no-repeat;
   display: flex;
   flex-direction: column;
-  transform: none;
+  animation: gradientMove var(--gradient-speed, 12s) ease-in-out infinite;
+  transition: --gradient-speed 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes gradientMove {
+  0% { background-position: 0% 60%; }
+  25% { background-position: 50% 100%; }
+  50% { background-position: 100% 50%; }
+  75% { background-position: 50% 0%; }
+  100% { background-position: 0% 60%; }
 }
 
 .forgot-password-page {
   width: 25rem;
-  height: auto;
   min-height: 28rem;
   padding: 2rem;
-  background: linear-gradient(to bottom, #c697bd, #dbb4d7 50%, #1f0d3e);
-  border-radius: 10px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.755); 
+  border-radius: 25px;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.25);
   text-align: center;
   position: absolute;
   top: 50%;
@@ -99,6 +108,10 @@ const handleForgotPassword = async () => {
   transform: translate(-50%, -50%);
   color: #322848;
   z-index: 1;
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transition: all 0.3s ease;
 }
 
 .forgot-password-page img {
@@ -116,8 +129,8 @@ h2 {
 
 .quote-text {
   font-size: 0.75rem;
-  margin: 0.5rem 0 2rem;
-  color: #666;
+  margin: 0.9rem 0 2rem;
+  color: #322848;
 }
 
 .input-group {
@@ -126,20 +139,25 @@ h2 {
 }
 
 .input-group input {
-  width: 100%;
-  height: 2.5rem;
-  padding: 0.5rem 2.5rem 0.5rem 1rem;
-  background: rgba(235, 235, 235, 0.8);
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 0.9rem;
-  color: #333;
+  width: 95%;
+  height: 42px;
+  padding: 10px 40px 10px 15px;
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  font-size: 15px;
+  color: #322848;
+  transition: all 0.3s ease;
+}
+
+.input-group input::placeholder {
+  color: rgba(50, 40, 72, 0.6);
 }
 
 .input-group input:focus {
-  border-color: #322848;
   outline: none;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.45);
+  box-shadow: 0 8px 12px rgba(31, 13, 62, 0.08);
 }
 
 .email-domain {
@@ -147,28 +165,36 @@ h2 {
   right: 30px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 15px;
-  color: #888;
+  font-size: 14px;
+  color: #322848;
   pointer-events: none;
 }
 
 button {
-  width: 100%;
-  height: 2.75rem;
-  padding: 0.5rem;
+  width: 90%;
+  height: 45px;
+  padding: 10px;
   background: #322848;
   color: #fff;
   border: none;
-  border-radius: 5px;
+  border-radius: 25px;
   cursor: pointer;
-  margin: 1.5rem 0;
-  font-size: 1rem;
+  margin-top: 12px;
+  font-size: 16px;
   font-weight: 500;
-  transition: background 0.2s;
+  transition: all 0.3s ease;
+  letter-spacing: 0.5px;
+  outline: none; 
 }
 
 button:hover {
-  background: #1f1a2e;
+  background: #322848;
+  transform: translateY(-1px);
+  box-shadow: 0 0 10px #8a6bb8, 0 0 20px #c697bd, 0 0 30px #dbb4d7;
+}
+
+button:focus {
+  outline: none;
 }
 
 button:disabled {
@@ -179,11 +205,11 @@ button:disabled {
 .back-to-login {
   margin-top: 1rem;
   font-size: 0.85rem;
-  color: #ebebeb;
+  color: #322848;
 }
 
 .back-to-login a {
-  color: #ebebeb;
+  color: #322848;
   text-decoration: none;
   font-weight: 600;
 }
@@ -193,19 +219,19 @@ button:disabled {
   .forgot-password-page {
     width: 90%;
     max-width: 25rem;
+    padding: 1.5rem;
+    min-height: 26rem;
   }
 }
 
 @media (max-width: 480px) {
   .forgot-password-page {
-    padding: 1.5rem;
-    min-height: 26rem;
+    padding: 1rem;
+    min-height: 22rem;
   }
-  
   h2 {
     font-size: 1.75rem;
   }
-  
   .input-group input {
     font-size: 0.85rem;
   }
@@ -214,21 +240,19 @@ button:disabled {
 /* Dark mode styles */
 @media (prefers-color-scheme: dark) {
   .forgot-password-page {
-    background: linear-gradient(to bottom, #c697bd, #dbb4d7 50%, #1f0d3e);
+    background: rgba(255,255,255,0.12);
+    color: #322848;
   }
-  
   .input-group input {
-    background: rgba(235, 235, 235, 0.4);
+    background: rgba(255,255,255,0.25);
     border: none;
+    color: #322848;
   }
-  
   .input-group input:focus {
-    border: 2px solid #1f0d3e;
-    background: rgba(235, 235, 235, 0.4);
+    background: rgba(255,255,255,0.25);
   }
-  
   h2, .quote-text, .back-to-login, .back-to-login a {
-    color: #ebebeb;
+    color: #322848;
   }
 }
 
