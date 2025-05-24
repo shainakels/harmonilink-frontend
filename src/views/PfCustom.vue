@@ -1,7 +1,8 @@
 <template>
   <transition name="fade">
     <div>
-      <img src="/src/assets/background.png" alt="background" class="background">
+      <!--REPLACED TO THIS-->
+      <div class="background"></div>
 
       <div class="setup-text">Let's set up your Profile</div>
 
@@ -38,7 +39,7 @@
           <button class="gender-button" :class="{ selected: selectedGender === 'Female' }" @click="selectGender('Female')">Female</button>
           <button class="gender-button" :class="{ selected: selectedGender === 'Male' }" @click="selectGender('Male')">Male</button>
           <button class="gender-button" :class="{ selected: selectedGender === 'Non-Binary' }" @click="selectGender('Non-Binary')">Non-Binary</button>
-          <button class="gender-button" :class="{ selected: selectedGender === 'Other' }" @click="selectGender('Other')">Other</button>
+          <button class="gender-button" :class="{ selected: selectedGender === 'Prefer not to say' }" @click="selectGender('Prefer not to say')">Prefer not to say</button>
         </div>
 
         <p>Tell People More About You!</p>
@@ -81,7 +82,7 @@ function isValidDate(y, m, d) {
 }
 
 function onMonthInput(e) {
-  let val = e.target.value.replace(/\D/g, ''); // allow digits only
+  let val = e.target.value.replace(/\D/g, ''); 
   if (val.length > 2) val = val.slice(0, 2);
 
   // Clamp month between 1 and 12 only if user has entered 2 digits
@@ -95,7 +96,7 @@ function onMonthInput(e) {
 }
 
 function onDayInput(e) {
-  let val = e.target.value.replace(/\D/g, ''); // digits only
+  let val = e.target.value.replace(/\D/g, ''); 
   if (val.length > 2) val = val.slice(0, 2);
 
   // Only clamp day if input length is 2 (user finished typing)
@@ -109,7 +110,7 @@ function onDayInput(e) {
 }
 
 function onYearInput(e) {
-  let val = e.target.value.replace(/\D/g, ''); // digits only
+  let val = e.target.value.replace(/\D/g, ''); 
   if (val.length > 4) val = val.slice(0, 4);
 
   // Only clamp year if input length is 4 (user finished typing)
@@ -121,8 +122,6 @@ function onYearInput(e) {
 
   year.value = val;
 }
-
-
 
 // Compute max day for the selected month/year (handles leap years)
 const maxDay = computed(() => {
@@ -191,20 +190,34 @@ const saveProfile = async () => {
   font-family: 'Fira Code', monospace;
 }
 
+/*CHANGED .background*/
 .background {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  background: linear-gradient(120deg, #e3b8ff 0%, #dbb4d7 25%, #c697bd 50%, #8a6bb8 75%, #322848 100%);
+  background-size: 200% 200%; 
   display: flex;
   flex-direction: column;
   transform: rotate(180deg);
+  animation: gradientMove 12s ease-in-out infinite;
+  transition: background-position 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/*ADDED THIS*/
+@keyframes gradientMove {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
 
 .fade-enter-active, .fade-leave-active {
   transition: opacity 1s ease-in-out; 
@@ -213,51 +226,84 @@ const saveProfile = async () => {
   opacity: 0;
 }
 
+/* added font weigtht */
 .setup-text {
   position: absolute;
   top: 3rem; 
   left: 50%;
   transform: translateX(-50%);
   font-size: 3rem;
-  color: #ffffff;
+  color: #322848;
   text-align: center;
+  font-weight: 425;
 }
 
+/* EDITED THIS FOR GLASSMORPHISM */
 .profile-setup {
-  background-color: #080d2a;
-  width: 35rem;
+  background: rgba(255, 255, 255, 0.55);
+  width: 42rem;
   height: 33rem;
   padding: 2rem;
   border-radius: 15px;
-  color: white;
+  color: #322848;
   position: absolute;
   top: 57%;
   left: 50%;
   transform: translate(-50%, -50%);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.25);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transition: all 0.3s ease;
+}
+
+/* ADDED HOVER EFFECT */
+.profile-setup:hover {
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.35);
+  backdrop-filter: blur(16px) saturate(200%);
+  -webkit-backdrop-filter: blur(16px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.25);
 }
 
 p {
   font-size: 1.5rem;
-  margin: 1rem;
+  margin: 0.1rem 1rem 1rem 1rem;
   margin-bottom: 1.2rem;
 }
 
+/*EDITED*/
 .birthday-inputs {
   display: flex;
   gap: 2.5rem;
   justify-content: center;
+  align-items: center;
   margin-bottom: 2rem;
 }
 
+/* EDITED */
 .birthday-inputs input {
-  background: rgba(235, 235, 235, 0.7);
-  border: none;
-  padding: 9px;
-  width: 7rem;
+  width: 95%;
+  height: 42px;
+  padding: 10px 15px;
+  background: rgba(255, 255, 255, 0.495);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  font-size: 15px;
+  color: #322848;
+  transition: all 0.3s ease;
+  margin: 0 0.5rem;
   text-align: center;
-  font-size: 1rem;
-  color: #080d2a;
-  border-radius: 5px;
+}
+/* ADDED */
+.birthday-inputs input::placeholder {
+  color: rgba(50, 40, 72, 0.6);
+}
+/* ADDED */
+.birthday-inputs input:focus {
+  outline: none;
+  background: #3228485a;
+  color: #fff;
+  box-shadow: 0 8px 12px rgba(31, 13, 62, 0.08);
 }
 
 .gender-options {
@@ -267,56 +313,93 @@ p {
   margin-bottom: 2rem;
 }
 
+/* EDITED */
 .gender-button {
-  background: rgba(235, 235, 235, 0.7);
+  background: rgba(255, 255, 255, 0.495);
   border: none;
   padding: 9px 25px;
   cursor: pointer;
   border-radius: 5px;
   font-size: 1rem;
+  color: #32284889;
+  font-weight: 400;
 }
 
-.gender-button.selected {
-  background-color: #dbb4d7;
-  color: #080d2a;
+/*EDITED*/
+.gender-button.selected,
+.gender-button:focus {
+  background-color: #3228485a !important;
+  color: #322848 !important;
+  border: none;
+  outline: none;
 }
 
+/* EDITED */
 textarea {
-  width: 470px !important;
+  width: 95% !important;
   height: 90px;
-  background: rgba(235, 235, 235, 0.7);
-  border: none;
-  padding: 10px;
-  margin-left: 2rem;
-  font-size: 1rem;
-  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.495);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  padding: 10px 15px;
+  font-size: 15px;
+  color: #322848;
+  transition: all 0.3s ease;
   resize: none;
-  color: #080d2a;
+  margin-left: 0;
 }
-
+/*ADDED*/
+textarea::placeholder {
+  color: rgba(50, 40, 72, 0.6);
+}
+/*ADDED*/
+textarea:focus {
+  outline: none;
+  background: #3228485a;
+  color: #fff;
+  box-shadow: 0 8px 12px rgba(31, 13, 62, 0.08);
+}
+/*EDITED*/
 .continue-button {
-  background: #dbb4d7;
-  color: #080d2a;
-  padding: 5px 30px;
+  width: 50%;
+  height: 45px;
+  padding: 10px;
+  background: #322848;
+  color: #fff;
   border: none;
-  border-radius: 5px;
-  font-size: 1rem;
+  border-radius: 25px;
   cursor: pointer;
   margin-top: 1rem;
-  display: block; 
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  letter-spacing: 0.5px;
+  outline: none;
+  display: block;
   margin-left: auto;
   margin-right: auto;
 }
-
+/*EDITED*/
 .continue-button:hover {
-  background: #080d2a;
+  background: #322848;
   color: #dbb4d7;
-  border: 1px solid #ebebeb;
+  transform: translateY(-1px);
+  box-shadow: 0 0 10px #8a6bb8, 0 0 20px #c697bd, 0 0 30px #dbb4d7;
+  border: none;
+}
+/*ADDED*/
+.continue-button:focus {
+  outline: none;
+}
+/*ADDED*/
+.continue-button:disabled {
+  background: #888;
+  cursor: not-allowed;
 }
 
 input:focus,
 textarea:focus {
   outline: none;
-  background-color: #dbb4d7;
+  background-color: #3228485a;
 }
 </style>
