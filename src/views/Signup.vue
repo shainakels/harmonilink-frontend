@@ -1,6 +1,7 @@
 <template>
   <!-- Background image -->
-  <img src="/src/assets/background.png" alt="background" class="background" />
+  <img src="/src/assets/background.png" alt="background" class="background">
+  <div class="background"></div>
 
   <!-- Logo -->
   <div class="logo">
@@ -8,108 +9,112 @@
     <p>armonilink</p>
   </div>
 
-  <!-- CD -->
-  <div class="cd">
-    <img src="/src/assets/cd.png" alt="CD" class="CD" />
-    <img src="/src/assets/cdbg.png" alt="CD Background" class="cdbg" />
-  </div>
-
-  <!-- Signup form -->
-  <div class="signup">
-    <h2>SIGN UP</h2>
-    <form @submit.prevent="handleSignup">
-      <!-- Username -->
-      <div class="input-group" :class="{ invalid: usernameError }">
-        <input
-          type="text"
-          v-model="username"
-          placeholder="Username"
-          required
-          autofocus
-          autocomplete="off"
-        />
-        <span class="icon"><i class="fa-solid fa-user"></i></span>
-      </div>
-      <p v-if="usernameError" class="error-message">{{ usernameError }}</p>
-
-      <!-- Email -->
-      <div class="input-group" :class="{ invalid: emailError }">
-        <input
-          type="email"
-          v-model="email"
-          placeholder="Email"
-          required
-          autocomplete="off"
-        />
-        <span class="icon"><i class="fa-solid fa-envelope"></i></span>
-      </div>
-      <p v-if="emailError" class="error-message">{{ emailError }}</p>
-
-      <!-- Password -->
-      <div class="input-group" :class="{ invalid: passwordError }">
-        <input
-          :type="showPassword ? 'text' : 'password'"
-          v-model="password"
-          placeholder="Password"
-          required
-          autocomplete="off"
-          @focus="showPasswordPopup = true"
-          @blur="hidePasswordPopup"
-        />
-        <span class="icon" @click="togglePasswordVisibility('password')">
-          <i :class="showPassword ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'"></i>
-        </span>
-
-        <!-- Password Validation Popup -->
-        <div v-if="showPasswordPopup" class="password-popup">
-          <p v-for="(criteria, index) in passwordCriteria" :key="index" :class="{ met: criteria.met }">
-            <i :class="criteria.met ? 'fa-solid fa-check' : 'fa-solid fa-times'"></i>
-            {{ criteria.message }}
-          </p>
+  <!-- Main container -->
+  <div class="signup-container">
+    <!-- Signup form -->
+    <div class="signup">
+      <h2>SIGN UP</h2>
+      <form @submit.prevent="handleSignup">
+        <!-- Username -->
+        <div class="input-group" :class="{ invalid: usernameError }">
+          <input
+            type="text"
+            v-model="username"
+            placeholder="Username"
+            required
+            autofocus
+            autocomplete="off"
+          />
+          <span class="icon"><i class="fa-solid fa-user"></i></span>
         </div>
-      </div>
+        <p v-if="usernameError" class="error-message">{{ usernameError }}</p>
 
-      <!-- Confirm Password -->
-      <div class="input-group" :class="{ invalid: confirmPasswordError }">
-        <input
-          :type="showConfirmPassword ? 'text' : 'password'"
-          v-model="confirmPassword"
-          placeholder="Confirm Password"
-          required
-          autocomplete="off"
-        />
-        <span class="icon" @click="togglePasswordVisibility('confirm')">
-          <i :class="showConfirmPassword ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'"></i>
-        </span>
-      </div>
-      <p v-if="confirmPasswordError" class="error-message">{{ confirmPasswordError }}</p>
+        <!-- Email -->
+        <div class="input-group" :class="{ invalid: emailError }">
+          <input
+            type="email"
+            v-model="email"
+            placeholder="Email"
+            required
+            autocomplete="off"
+          />
+          <span class="icon"><i class="fa-solid fa-envelope"></i></span>
+        </div>
+        <p v-if="emailError" class="error-message">{{ emailError }}</p>
 
-      <!-- Terms checkbox -->
-      <div class="checkbox-group">
-        <input type="checkbox" id="terms" v-model="termsAccepted" required />
-        <label for="terms">
-          By checking this box, you are agreeing to our
-          <span class="terms" @click="showTermsPopup = true">Terms of Service.</span>
-        </label>
-      </div>
+        <!-- Password -->
+        <div class="input-group" :class="{ invalid: passwordError }">
+          <input
+            :type="showPassword ? 'text' : 'password'"
+            v-model="password"
+            placeholder="Password"
+            required
+            autocomplete="off"
+            @focus="showPasswordPopup = true"
+            @blur="hidePasswordPopup"
+          />
+          <span class="icon" @click="togglePasswordVisibility('password')">
+            <i :class="showPassword ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'"></i>
+          </span>
+          <!-- Password Validation Popup -->
+          <div v-if="showPasswordPopup" class="password-popup">
+            <p v-for="(criteria, index) in passwordCriteria" :key="index" :class="{ met: criteria.met }">
+              <i :class="criteria.met ? 'fa-solid fa-check' : 'fa-solid fa-times'"></i>
+              {{ criteria.message }}
+            </p>
+          </div>
+        </div>
 
-      <!-- reCAPTCHA -->
-      <div class="recaptcha-wrapper">
-        <div id="recaptcha-container"></div>
-      </div>
+        <!-- Confirm Password -->
+        <div class="input-group" :class="{ invalid: confirmPasswordError }">
+          <input
+            :type="showConfirmPassword ? 'text' : 'password'"
+            v-model="confirmPassword"
+            placeholder="Confirm Password"
+            required
+            autocomplete="off"
+          />
+          <span class="icon" @click="togglePasswordVisibility('confirm')">
+            <i :class="showConfirmPassword ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'"></i>
+          </span>
+        </div>
+        <p v-if="confirmPasswordError" class="error-message">{{ confirmPasswordError }}</p>
 
+        <!-- Terms checkbox -->
+        <div class="checkbox-group">
+          <input type="checkbox" id="terms" v-model="termsAccepted" required />
+          <label for="terms">
+            By checking this box, you are agreeing to our
+            <span class="terms" @click="showTermsPopup = true">Terms of Service.</span>
+          </label>
+        </div>
 
-      <!-- Signup button -->
-       <button type="submit" :disabled="loading">
-        {{ loading ? 'Signing up...' : 'Sign Up' }}
-      </button>
+        <!-- reCAPTCHA -->
+        <div class="recaptcha-wrapper">
+          <div id="recaptcha-container"></div>
+        </div>
 
-      <!-- Login redirect -->
-      <p class="login-text">
-        Already have an account?
-        <router-link to="/login" class="signin-link">Sign In</router-link>
-      </p>
-    </form>
+        <!-- Signup button -->
+        <button type="submit" :disabled="loading">
+          {{ loading ? 'Signing up...' : 'Sign Up' }}
+        </button>
+
+        <!-- Login redirect -->
+        <p class="login-text">
+          Already have an account?
+          <router-link to="/login" class="signin-link">Sign In</router-link>
+        </p>
+      </form>
+    </div>
+
+    <!-- CD Background with stars -->
+    <div class="cdbg">
+      <div class="star1 stars"></div>
+      <div class="star2 stars"></div>
+      <div class="star3 stars"></div>
+      <div class="star4 stars"></div>
+      <img src="/src/assets/cd.png" alt="CD" class="cd" />
+    </div>
   </div>
 
   <!-- Terms of Service Popup -->
@@ -143,7 +148,7 @@
     </div>
   </div>
 </template>
-  
+
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
@@ -305,7 +310,6 @@ const handleSignup = async () => {
 </script>
   
 <style scoped>
- 
 @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap');
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css');
 
@@ -319,188 +323,302 @@ const handleSignup = async () => {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-size: cover;
-  background-position: center;
+  background: linear-gradient(120deg, #e3b8ff 0%, #dbb4d7 25%, #c697bd 50%, #8a6bb8 75%, #322848 100%);
+  background-size: 300% 300%;
+  background-position: 0% 50%;
   background-repeat: no-repeat;
   display: flex;
   flex-direction: column;
+  transform: none;
+  animation: gradientMove 12s ease-in-out infinite;
+  transition: background-position 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes gradientMove {
+  0% {
+    background-position: 0% 60%;
+  }
+  25% {
+    background-position: 50% 100%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  75% {
+    background-position: 50% 0%;
+  }
+  100% {
+    background-position: 0% 60%;
+  }
 }
 
 .logo {
   display: flex;
   align-items: center;
-  position: absolute;
-  top: 30px;
-  left: 30px;
+  position: fixed;
+  top: 20px;
+  left: 20px;
   gap: 5px;
+  z-index: 2;
 }
 
 .logo img {
-  width: 40px;
-  height: 40px;
+  width: 30px;
+  height: 30px;
 }
 
 .logo p {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: bold;
-}
-
-.cdbg {
-  display: flex;
-  align-items: center;
-  position: absolute;
-  top: 4.5rem;
-  right: 0px;
-  height: 38rem;
-  width: 50rem;
-  border-radius: 10px;
-}
-
-.CD {
-  position: fixed;
-  top: 8rem;
-  right: 8rem;
-  z-index: 10;
-  height: 30rem;
-  animation: rotate 20s linear infinite;
-}
-
-@keyframes rotate {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  color: #322848;
 }
 
 .signup {
-  width: 30rem;
-  height: 33rem;
-  padding: 20px;
-  background: linear-gradient(to right, #c697bd, #dbb4d7 80%, #1f0d3e);
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  width: 550px;
+  padding: 20px 50px;
+  background: rgba(255, 255, 255, 0.65); 
   text-align: center;
   position: absolute;
   top: 50%;
-  left: 610px;
+  left: 40%;
   transform: translate(-50%, -50%);
   color: #322848;
+  z-index: 1;
+  border-radius: 25px;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.25);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  height: auto;
+  min-height: 580px;
+  transition: all 0.3s ease;
+}
+
+.signup:hover {
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.35);
+  backdrop-filter: blur(16px) saturate(200%);
+  -webkit-backdrop-filter: blur(16px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.signup-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+
+  top: 0;
+  left: 0;
+}
+
+.cdbg {
+  position: absolute;
+  width: 45%;
+  height: 545px;
+  background: #322848;
+  z-index: 0;
+  border-radius: 1px 0 0 1px;
+  top: 50%;
+  left: 58%; 
+  transform: translate(0, -50%);
+  overflow: hidden;
+}
+
+
+.cd {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+  width: 450px;
+  height: 450px;
+  animation: rotate 20s linear infinite, glow 2s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 25px rgba(138, 43, 226, 0.6)) 
+          drop-shadow(0 0 10px rgba(255, 255, 255, 0.4));
+}
+
+@keyframes glow {
+  from {
+    filter: drop-shadow(0 0 15px rgba(138, 43, 226, 0.4))
+            drop-shadow(0 0 5px rgba(255, 255, 255, 0.2));
+  }
+  to {
+    filter: drop-shadow(0 0 30px rgba(138, 43, 226, 0.6))
+            drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+.stars {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 0 4px #fff;
+  z-index: 2;
+  animation: twinkle 2s infinite ease-in-out, float 4s infinite ease-in-out;
+}
+
+.star1 { top: 10%; right: 30%; width: 2px; height: 2px; }
+.star2 { top: 20%; right: 10%; width: 4px; height: 4px; }
+.star3 { bottom: 15%; right: 25%; width: 3px; height: 3px; }
+.star4 { bottom: 25%; right: 15%; width: 5px; height: 5px; }
+.star5 { top: 35%; right: 40%; width: 2.5px; height: 2.5px; }
+.star6 { top: 50%; left: 20%; width: 3.5px; height: 3.5px; }
+.star7 { top: 30%; left: 35%; width: 2px; height: 2px; }
+.star8 { top: 60%; left: 5%; width: 4px; height: 4px; }
+.star9 { bottom: 10%; left: 45%; width: 3px; left: 3px; }
+.star10 { top: 15%; left: 50%; width: 2.5px; left: 2.5px; }
+
+
+@keyframes rotate {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
 }
 
 h2 {
-  margin-bottom: 3rem;
+  margin-bottom: 1.5rem;
   color: #322848;
   font-size: 40px;
+  font-weight: 700;
+  letter-spacing: 2px;
 }
 
 .input-group {
   position: relative;
-  margin: 1rem 0;
+  margin: 0.90rem 0;
+  width: 100%;
 }
 
 .input-group input {
-  width: 24rem;
-  height: 1.5rem;
-  padding: 8px;
-  padding-right: 40px;
-  background: rgba(235, 235, 235, 0.4);
-  border: none;
-  border-radius: 5px;
+  width: 95%;
+  height: 42px;
+  padding: 10px 40px 10px 15px;
+  background: rgba(255, 255, 255, 0.495);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
   font-size: 15px;
-  color: #333;
+  color: #322848;
+  transition: all 0.3s ease;
+}
+
+.input-group input::placeholder {
+  color: rgba(50, 40, 72, 0.6);
 }
 
 .input-group input:focus {
-  border: 2px solid #1f0d3e;
   outline: none;
+  background: rgba(255, 255, 255, 0.45);
+  box-shadow: 0 8px 12px rgba(31, 13, 62, 0.08);
 }
 
 .input-group .icon {
   position: absolute;
-  right: 2.8rem;
+  right: 26px;
   top: 50%;
   transform: translateY(-50%);
-  color: #080d2a;
+  color: #322848;
+  opacity: 0.6;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.input-group input:focus + .icon {
+  opacity: 0.8;
 }
 
 .checkbox-group {
-  display: flex;
-  align-items: center;
-  font-size: 10px;
   margin: 10px 0;
-  margin-left: 36px;
-}
-
-.checkbox-group input {
-  margin-right: 8px;
-}
-
-.recaptcha-container {
-  margin-top: 10px;
   display: flex;
-  justify-content: center;
-  transform: scale(0.9); 
-  transform-origin: top left; 
-  color: red;
+  align-items: flex-start;
+  gap: 8px;
+  color: rgba(50, 40, 72, 0.8);
+  font-size: 10px;
 }
 
-.recaptcha-wrapper {
-  display: flex;
-  justify-content: center;
-  margin: 1rem 0;
-  transform: scale(0.85); 
-  transform-origin: center; 
+.checkbox-group input[type="checkbox"] {
+  margin-top: 3px;
+  margin-left: 18px;
 }
 
 button {
-  width: 20rem;
-  height: 2.5rem;
+  width: 90%;
+  height: 45px;
   padding: 10px;
-  background: #1f0d3e;
-  color: #ebebeb;
+  background: #322848;
+  color: #fff;
   border: none;
-  border-radius: 40px;
+  border-radius: 25px;
   cursor: pointer;
-  margin-top: 10px;
-  font-size: 18px;
-  font-weight: bold;
+  margin-top: 12px;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  letter-spacing: 0.5px;
+  outline: none; 
 }
 
 button:hover {
-  background: #14092b;
+  background: #322848;
+  transform: translateY(-1px);
+  box-shadow: 0 0 10px #8a6bb8, 0 0 20px #c697bd, 0 0 30px #dbb4d7;
 }
 
+button:focus {
+  outline: none; 
+}
+
+
 .login-text {
-  margin-top: 15px;
-  font-size: 13px;
+  margin-top: 13px;
+  font-size: 0.85rem;
+  color: #322848;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
 }
 
 .signin-link {
-  text-decoration: underline;
+  text-decoration: none;
   color: #322848;
-  cursor: pointer;
-  font-weight: bold;
+  font-weight: 600;
 }
 
 .terms {
-  text-decoration: solid;
-  color: #322848;
+  color: inherit;
   cursor: pointer;
-  font-weight: bold;
-}
-
-.input-group.invalid input {
-  border: 2px solid red;
+  font-weight: 600;
+  text-decoration: none;
 }
 
 .error-message {
-  color: red;
-  font-size: 11px;
-  margin-top: -3px;
-  text-align: left;
-  margin-left: 30px;
+  color: #f44336;
+  font-size: 12px;
+  margin: 0.5rem 0 0.5rem 1rem;
+  padding: 0.5rem;
+  background: rgba(244, 67, 54, 0.1);
+  border-radius: 4px;
+  border: 1px solid rgba(244, 67, 54, 0.2);
+  width: 94%;
+}
+
+.input-group.invalid input {
+  background: rgba(255, 235, 235, 0.4);
+}
+
+.input-group.invalid .icon {
+  color: #ff3b3b;
+  opacity: 0.8;
 }
 
 .password-popup {
@@ -557,7 +675,7 @@ button:hover {
   border-radius: 8px;
   width: 100%;
   max-width: 500px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 25px 5px rgba(50, 40, 72, 0.3); 
 }
 
 .modal-header {
@@ -568,7 +686,7 @@ button:hover {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 40px;
-  margin-left: 155px;
+  margin-left: 121px;
 }
 
 .modal-header .close {
@@ -593,22 +711,131 @@ button:hover {
   margin-bottom: 5px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1400px) {
   .signup {
-    width: 90%;
-    height: auto;
-    padding: 20px;
-    top: 50%;
+    left: 37%;
+  }
+}
+
+@media (max-width: 1200px) {
+  .signup {
+    left: 45%;
+  }
+
+}
+
+@media (max-width: 768px) {
+  .cdbg {
+    display: none;
+  }
+
+  .cd {
+    display: none;
+  }
+
+  .signup {
+    border-radius: 25px;
     left: 50%;
-    transform: translate(-50%, -50%);
+    width: 90%;
+  }
+
+  .modal-box {
+    width: 90%;
+    margin: 0 1rem;
+  }
+
+  .modal-header {
+    margin-left: 0;
+    justify-content: center;
+  }
+
+  .modal-header .close {
+    position: absolute;
+    right: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .signup {
+    padding: 25px 40px;
+    width: 90%;
+  }
+
+  h2 {
+    font-size: 32px;
+    margin-bottom: 2rem;
   }
 
   .input-group input {
-    width: 100%;
+    height: 40px;
+    font-size: 14px;
+  }
+
+  .checkbox-group {
+    font-size: 11px;
   }
 
   button {
-    width: 100%;
+    height: 42px;
+    font-size: 15px;
   }
+
+  .password-validation {
+    font-size: 11px;
+    padding: 12px;
+  }
+
+  .password-validation p {
+    margin: 6px 0;
+  }
+}
+
+@media (max-height: 700px) {
+  .signup {
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+}
+
+.password-popup {
+  position: absolute;
+  top: 110%;
+  left: 0;
+  width: 87%;
+  margin-left: 27px;
+  background: rgba(255, 255, 255, 0.9); 
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  font-size: 12px;
+  color: #333;
+}
+
+.password-popup p {
+  margin: 5px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.password-popup p.met {
+  color: green;
+}
+
+.password-popup p:not(.met) {
+  color: red;
+}
+
+.password-popup i {
+  font-size: 14px;
+}
+
+.recaptcha-wrapper {
+  display: flex;
+  justify-content: center;
+  margin: 0.75rem 0;
+  transform: scale(0.85);
+  transform-origin: center;
 }
 </style>

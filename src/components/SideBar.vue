@@ -1,6 +1,15 @@
 <template>
-    <div class="side-nav">
-      <div class="nav-section">
+  <div class="side-nav-hidden" v-if="show">
+    <div class="nav-section sidebar_burger" @click="show = !show">
+        <i class="fa-solid fa-bars fa-2x"></i>
+      </div>
+  </div>
+    <div class="side-nav" v-if="!show">
+
+       <div class="nav-section sidebar_burger" @click="show = !show">
+        <i class="fa-solid fa-bars fa-2x"></i>
+      </div>
+      <div class="nav-section" >
         <router-link
           v-for="(item, index) in navItems"
           :key="index"
@@ -10,7 +19,7 @@
           exact
         >
           <i :class="item.icon"></i>
-          <span>{{ item.text }}</span>
+          <span >{{ item.text }}</span>
         </router-link>
       </div>
   
@@ -18,14 +27,13 @@
         <div class="mixtape-header">
           <i class="fa-solid fa-compact-disc"></i>
           <span>My Mixtapes</span>
-          <i class="fa-solid fa-plus add-icon" @click="togglePopup"></i>
+          <i class="fa-solid fa-plus add-icon" @click="togglePopup();createAction=!createAction" ></i>
         </div>
   
         <!--START OF POPUP FOR CREATE MIXTAPE-->
         <div v-if="showPopup" class="popup-overlay">
           <div class="popup-box">
-            <h2>Create your Mixtape</h2>
-            
+            <h2 v-if="createAction">Your Mixtape</h2>
             <div class="upload-box" @click="triggerPhotoUpload">
               <img v-if="photoUrl" :src="photoUrl" class="photo-preview" />
               <span v-else>Add photo</span>
@@ -38,7 +46,7 @@
               />
             </div>
   
-            <input type="text" v-model="mixtapeName" placeholder="Mixtape Name" class="mixtape-name" />
+            <input type="text"  placeholder="Mixtape Name"  class="mixtape-name"  v-model="mixtapeName"/>
             <textarea
               v-model="mixtapeDescription"
               placeholder="Say something about your mixtape"
@@ -48,7 +56,7 @@
             <div class="song-list-scroll">
               <div v-for="(song, index) in songs" :key="index" class="song-item song-item-flex">
                 <div class="song-details-flex">
-                  <img v-if="song.artwork_url" :src="song.artwork_url" alt="Artwork" class="search-artwork" />
+                  <img v-if="song.artwork_url" :src="song.artwork_url" alt="Artwork" class="search-artwork"/>
                   <div class="song-text">
                     <div>{{ song.name }} - {{ song.artist }}</div>
                   </div>
@@ -83,9 +91,7 @@
             </div>
 
             <div class="popup-buttons">
-              <button @click="createMixtape">
-                {{ isEditing ? 'Save Changes' : 'Create Mixtape' }}
-              </button>
+              <button @click="createMixtape">Save Mixtape</button>
               <button @click="showConfirmCancel = true">Cancel</button>
             </div>
           </div>
@@ -143,23 +149,6 @@
   
         <div class="mixtape-search">
           <div class="input-wrapper input-with-mic">
-            <div class="sort-wrapper">
-              <i class="fa-solid fa-list-ul sort-icon" @click="toggleSortDropdown"></i>
-              <div v-if="showSortDropdown" class="mixtape-sort-dropdown">
-                <div class="sort-option" @click="selectSortOption('az')">
-                  Alphabetical (A–Z)
-                </div>
-                <div class="sort-option" @click="selectSortOption('za')">
-                  Alphabetical (Z–A)
-                </div>
-                <div class="sort-option" @click="selectSortOption('newest')">
-                  Date Added (Newest First)
-                </div>
-                <div class="sort-option" @click="selectSortOption('oldest')">
-                  Date Added (Oldest First)
-                </div>
-              </div>
-            </div>
             <i 
               :class="['fa-solid', 'fa-microphone', micActive ? 'mic-recording' : 'mic-icon']" 
               class="mic-left-inside"
@@ -171,6 +160,15 @@
               class="mixtape-input" 
               placeholder="Search mixtapes..."
             />
+            <i class="fa-solid fa-list-ul sort-icon" @click="toggleSortDropdown"></i>
+          </div>
+          <div v-if="showSortDropdown" class="mixtape-sort-dropdown">
+            <select v-model="sortOption" @change="sortMixtapes">
+              <option value="az">Alphabetical (A–Z)</option>
+              <option value="za">Alphabetical (Z–A)</option>
+              <option value="newest">Date Added (Newest First)</option>
+              <option value="oldest">Date Added (Oldest First)</option>
+            </select>
           </div>
         </div>
   
@@ -178,13 +176,13 @@
           <div v-if="selectedMixtape" class="mixtape-detail-overlay">
           <div class="mixtape-detail-box">
             <span class="close-detail" @click="selectedMixtape = null">&times;</span>
-            <img :src="getFullPhotoUrl(selectedMixtape.photo_url)" class="detail-img" />
-            <h2 class="mixtape-detail-name">{{ selectedMixtape.name }}</h2>
-            <p class="mixtape-detail-description">{{ selectedMixtape.description }}</p>
+            <img :src="getFullPhotoUrl(selectedMixtape.cover)" class="detail-img" />
+            <h2>{{ selectedMixtape.name }}</h2>
+            <p>{{ selectedMixtape.description }}</p>
             <p>{{ selectedMixtape.bio }}</p>
             <ul class="song-detail-list">
-              <li v-for="(song, i) in selectedMixtape.songs" :key="i" style="display: flex; align-items: center; gap: 10px; padding-bottom: 1rem;">
-                <img v-if="song.artwork_url" :src="song.artwork_url" alt="Artwork" style="width:35px; height:35px; border-radius:4px;" />
+              <li v-for="(song, i) in selectedMixtape.songs" :key="i" style="display: flex; align-items: center; gap: 10px;">
+                <img v-if="song.artwork_url" :src="song.artwork_url" alt="Artwork" style="width:32px; height:32px; border-radius:4px;" />
                 <span style="flex:1;">{{ song.name }} - {{ song.artist }}</span>
                 <button
                   v-if="song.preview_url"
@@ -214,22 +212,37 @@
             @click="selectedMixtape = mix"
             style="position: relative;"
           >
-            <img :src="getFullPhotoUrl(mix.photo_url)" alt="Mixtape Image" class="mixtape-img" />
-            <span class="mix-name">{{ mix.name }}</span>
+            <img :src="getFullPhotoUrl(mix.cover)" alt="Mixtape Image" class="mixtape-img" />
+            <span>{{ mix.name }}</span>
             <!-- Three-dot menu -->
-              <div class="mixtape-menu-wrapper" @click.stop>
-                <i class="fa-solid fa-ellipsis-vertical mixtape-menu-icon" @click.stop="toggleMixtapeMenu(index)"></i>
-                <div v-if="openMenuIndex === index" class="mixtape-menu-dropdown">
-                  <div @click="editMixtape(index)">Edit</div>
-                  <div @click="deleteMixtape(index)">Delete</div>
-                </div>
+            <div class="mixtape-menu-wrapper" @click.stop>
+              <i class="fa-solid fa-ellipsis-vertical mixtape-menu-icon" @click.stop="toggleMixtapeMenu(index)"></i>
+              <div v-if="openMenuIndex === index" class="mixtape-menu-dropdown">
+                <div @click="editMixtape(index)">Edit</div>
+                <div @click="deleteMixtape(index)">Delete</div>
               </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
+
+
+
+
+
+     
   </template>
-  
+<script> //FOR SIDEBAR
+export default {
+  data() {
+    return { show: true };
+    return { createAction: false };
+    return { updateAction: false };
+  }
+}
+</script>
+
 <script setup>
 import { ref, onMounted, watch, nextTick, onBeforeUnmount } from 'vue';
 import axios from 'axios';
@@ -241,7 +254,6 @@ const showConfirmCancel = ref(false);
 const navItems = [
   { icon: 'fa-solid fa-user-plus', text: 'Discover', route: '/discover' },
   { icon: 'fa-solid fa-pen', text: 'Feed', route: '/feed' },
-  { icon: 'fa-solid fa-trophy', text: 'Achievements', route: '/achievements' },
   { icon: 'fa-solid fa-heart', text: 'Favorites', route: '/favorites' }
 ];
 
@@ -252,7 +264,8 @@ const mixtapeDescription = ref('');
 const songName = ref('');
 const artistName = ref('');
 const songs = ref([]);
-const photoUrl = ref(null);
+const photoUrl = ref(null); // for preview (can be blob or backend url)
+const photoPath = ref(null); // always the backend relative path
 const photoInput = ref(null);
 const selectedMixtape = ref(null); 
 
@@ -281,6 +294,7 @@ const closePopup = () => {
   mixtapeDescription.value = '';
   songs.value = [];
   photoUrl.value = null;
+  photoPath.value = null;
   editingMixtapeId.value = null;
 };
 
@@ -310,11 +324,13 @@ async function handlePhotoUpload(event) {
           },
         }
       );
-      // Use getFullPhotoUrl to convert the returned imageUrl to a full URL
+      // Save backend path for DB, and full URL for preview
+      photoPath.value = response.data.imageUrl;
       photoUrl.value = getFullPhotoUrl(response.data.imageUrl);
     } catch (err) {
       alert(err.response?.data?.error || 'Failed to upload image.');
       photoUrl.value = null;
+      photoPath.value = null;
     }
   }
 }
@@ -329,39 +345,40 @@ const createMixtape = async () => {
     return;
   }
 
-  console.log('Songs being sent:', songs.value); // <-- Add this line
+  // Use photoPath (backend relative path) for DB
+  let photoForDb = photoPath.value || null;
 
-  let photoPath = photoUrl.value;
-  // Remove base URL if present
-  if (photoPath && photoPath.startsWith(import.meta.env.VITE_API_URL)) {
-    photoPath = photoPath.replace(import.meta.env.VITE_API_URL.replace(/\/$/, '') + '/', '');
-  }
+  // Ensure all songs have artwork_url and preview_url
+  const songsForDb = songs.value.map(song => ({
+    name: song.name,
+    artist: song.artist,
+    preview_url: song.preview_url || null,
+    artwork_url: song.artwork_url || null,
+  }));
 
   try {
     const token = localStorage.getItem('token');
     if (editingMixtapeId.value) {
-      // Update existing mixtape
       await axios.put(
         `${import.meta.env.VITE_API_URL}/api/mixtapes/${editingMixtapeId.value}`,
         {
           name: mixtapeName.value,
           description: mixtapeDescription.value,
-          photoUrl: photoPath,
-          songs: songs.value,
+          photoUrl: photoForDb,
+          songs: songsForDb,
         },
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
     } else {
-      // Create new mixtape
       await axios.post(
         `${import.meta.env.VITE_API_URL}/api/create-mixtape`,
         {
           name: mixtapeName.value,
           description: mixtapeDescription.value,
-          photoUrl: photoPath,
-          songs: songs.value,
+          photoUrl: photoForDb,
+          songs: songsForDb,
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -371,6 +388,7 @@ const createMixtape = async () => {
     await fetchUserMixtapes();
     closePopup();
     editingMixtapeId.value = null;
+    photoPath.value = null;
   } catch (error) {
     alert('Failed to save mixtape.');
   }
@@ -426,7 +444,7 @@ const addSongFromResult = (result) => {
     isEditing.value = false;
     editingIndex.value = null;
   } else {
-    songs.value.push(newSong); // <-- NO LIMIT
+    songs.value.push(newSong);
   }
   closeSongModal();
 };
@@ -544,17 +562,11 @@ function sortMixtapes() {
       break;
     case 'oldest':
       mixtapes.value.sort((a, b) => {
-        return (a.created_at || a.id) - (b.created_at || b.id);
+        return (a.created_at || a.id) - (b.created_at || a.id);
       });
       break;
   }
 }
-
-const selectSortOption = (option) => {
-  sortOption.value = option;
-  sortMixtapes();
-  showSortDropdown.value = false; // Close the dropdown after selection
-};
 
 // --- Drag and Drop Sorting ---
 let dragSourceIndex = null;
@@ -648,7 +660,15 @@ async function fetchUserMixtapes() {
         Authorization: `Bearer ${token}`,
       },
     });
-    mixtapes.value = response.data;
+    console.log('Mixtapes API response:', response.data); // <--- Add this line
+    mixtapes.value = (response.data || []).map(mix => ({
+      ...mix,
+      songs: (mix.songs || []).map(song => ({
+        ...song,
+        preview_url: song.preview_url || song.url || null,
+        artwork_url: song.artwork_url || null,
+      })),
+    }));
     sortMixtapes(); // <-- sort after fetching
   } catch (error) {
     console.error('Failed to fetch mixtapes:', error);
@@ -670,14 +690,19 @@ function toggleMixtapeMenu(index) {
 }
 
 function editMixtape(index) {
-  // Populate popup with mixtape data for editing
   const mix = mixtapes.value[index];
   mixtapeName.value = mix.name;
-  mixtapeDescription.value = mix.bio || '';
-  songs.value = mix.songs ? JSON.parse(JSON.stringify(mix.songs)) : [];
-  photoUrl.value = mix.photo_url;
+  mixtapeDescription.value = mix.description || mix.bio || '';
+  // Deep copy all fields, including artwork_url and preview_url
+  songs.value = (mix.songs || []).map(song => ({
+    name: song.name,
+    artist: song.artist,
+    preview_url: song.preview_url || song.previewUrl || null,
+    artwork_url: song.artwork_url || song.artworkUrl100 || null,
+  }));
+  photoUrl.value = getFullPhotoUrl(mix.cover); // for preview
+  photoPath.value = mix.cover; // backend path
   editingMixtapeId.value = mix.id;
-  isEditing.value = true;
   showPopup.value = true;
   openMenuIndex.value = null;
 }
@@ -740,8 +765,16 @@ onBeforeUnmount(() => {
     padding: 0;
     box-sizing: border-box;
   }
+
+   html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background-color: #dbb4d7;
+    overflow-x: hidden;
+  }
   
-.side-nav {
+  .side-nav {
   position: fixed;
   top: 70px;
   left: 0;
@@ -753,36 +786,47 @@ onBeforeUnmount(() => {
   flex-direction: column;
   gap: 1rem;
   overflow: hidden;
-  z-index: 2;
+  z-index: 10;
 }
-  
+
+  .side-nav-hidden {
+  position: absolute;
+  top: 90px;
+  margin-left: 4px;
+  height: 50px;
+  width: 50px;
+  padding:10px;
+  padding-top:9px;
+  padding-left:11px;
+  border-radius: 10px;
+  background-color: #080d2a;
+
+  display: flex;
+  overflow: hidden;
+  z-index: 10;
+}
+
   .nav-section,
   .mixtape-section {
     background-color: #1f0d3e;
     padding: 2rem;
-  }
 
-  .mixtape-section {
-    max-height: 20rem;
   }
   
   .nav-item {
     display: flex;
     align-items: center;
     gap: 1.5rem;
-    color: #8d82b5;
+    color: #cec3c3;
     margin-bottom: 1.5rem;
     text-decoration: none;
-    transition: color 0.4s ease, transform 0.4s ease;
-    font-weight: 500;
+    transition: color 0.3s, font-weight 0.3s;
   }
   
   .nav-item.active,
   .nav-item.router-link-active {
+    font-weight: bold;
     color: white;
-    transform: scale(1.05);
-    transform: scale(1.03);
-    font-weight: 600;
   }
   
 .nav-item i {
@@ -827,13 +871,12 @@ onBeforeUnmount(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 999; 
   background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 1000;
 }
-
   
   .popup-box {
     background-color: #080d2a;
@@ -844,13 +887,12 @@ onBeforeUnmount(() => {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-     z-index: 10000;
   }
   
   .upload-box {
     background-color: #bebebe;
     width: 10rem;
-    height: 15rem;
+    height: 10rem;
     margin: 0 auto 1rem;
     border: 5px solid #fffefd;
     border-radius: 0.5rem;
@@ -950,7 +992,7 @@ onBeforeUnmount(() => {
     background-color: #dbb4d7;
     padding: 1.5rem;
     border-radius: 1rem;
-    width: 30rem;
+    width: 350px;
     text-align: center;
     color: #1f0d3e;
     position: relative;
@@ -1056,55 +1098,47 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   width: 100%;
-  flex-direction: row;
-    z-index: 1;
 }
 
 .mic-left-inside {
   position: absolute;
-  left: 35px;
-  z-index: 0;
+  left: 10px;
+  z-index: 1;
 }
 
 .input-with-mic .mixtape-input {
-  padding-left: 32px; 
+  padding-left: 32px; /* to make space for the mic icon */
 }
 
 .sort-icon {
   position: absolute;
+  right: 0;
   cursor: pointer;
   color: white;
   transition: color 0.2s;
-  z-index: 0;
 }
 
 .sort-icon:hover {
   color: #555;
 }
   
-.mixtape-input {
-  width: 85%;
-  padding: 5px 35px;
-  background-color: #432775;
-  border: none;
-  border-radius: 30px;
-  color: white;
-  font-size: 12px;
-  margin-left: 10px;
-}
-  
+  .mixtape-input {
+    width: 85%;
+    padding: 5px 35px;
+    background-color: #432775;
+    border: none;
+    border-radius: 30px;
+    color: white;
+    font-size: 12px;
+  }
+
   .mixtape-list {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
     margin-top: 1rem;
-    max-height: 10rem;
-    overflow-y: auto;
-  }
-
-  .mixtape-list::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+        overflow: auto;
+        height: 130px;
   }
   
   .mixtape-item {
@@ -1120,13 +1154,6 @@ onBeforeUnmount(() => {
     width: 40px;
     object-fit: cover;
     border-radius: 6px;
-  }
-
-  .mix-name {
-    overflow: hidden;
-    white-space: nowrap;      
-    text-overflow: ellipsis;
-    max-width: 5.5rem;
   }
 
   .mixtape-name {
@@ -1158,9 +1185,10 @@ onBeforeUnmount(() => {
 }
 
 .popup-box {
-  max-height: 90vh;
+  max-height: 85vh;
   overflow-y: auto;
   padding-right: 1rem;
+  margin-top:60px;
 }
 
 .song-item + .song-item {
@@ -1222,7 +1250,7 @@ onBeforeUnmount(() => {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(20, 20, 20, 0.5);
+  background-color: rgba(20, 20, 20, 0.85);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1230,7 +1258,7 @@ onBeforeUnmount(() => {
 }
 
 .mixtape-detail-box {
-  background-color: #080d2a;
+  background-color: #1e1e1e;
   padding: 2rem;
   border-radius: 1rem;
   width: 90%;
@@ -1238,21 +1266,6 @@ onBeforeUnmount(() => {
   text-align: center;
   color: white;
   position: relative;
-}
-
-.mixtape-detail-name {
-  padding-bottom: 0.7rem;
-}
-
-.song-detail-list {
-  margin-top: 1.3rem;
-  text-align: left;
-  border: 1px solid #dbb4d7;
-  background-color: #2c1a40;
-  padding: 0.7rem;
-  border-radius: 0.5rem;
-  max-height: 15rem;
-  overflow-y: auto;
 }
 
 .close-detail {
@@ -1269,19 +1282,12 @@ onBeforeUnmount(() => {
   object-fit: cover;
   border-radius: 0.5rem;
   margin-bottom: 1rem;
-  border: 2px solid #dbb4d7;
 }
 
 .song-details-flex {
   display: flex;
   align-items: center;
-}
-
-.song-text {
-  padding-left: 1rem ;
-  padding-right: 1rem;
-  text-align: left;
-  max-width: 20rem;
+  gap: 10px;
 }
 
 .mic-icon {
@@ -1334,28 +1340,28 @@ onBeforeUnmount(() => {
 
 .mixtape-menu-wrapper {
   position: absolute;
-  right: 1px;
+  right: 10px;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 998;
+  z-index: 1000;;
 }
 
 .mixtape-menu-icon {
   cursor: pointer;
   color: #dbb4d7;
   font-size: 18px;
-  padding-left: 10px;
-  z-index: 1;
+  padding: 4px;
 }
 
 .mixtape-menu-dropdown {
   position: absolute;
   right: 0;
-  top: -1px;
-  border: 1px solid #dbb4d7;
+  top:0;
+  /* top: 25px; */
   background: #2e1f45;
-  border-radius: 10px;
-  z-index: 2000;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  z-index: 1500;
   min-width: 80px;
   text-align: left;
 }
@@ -1364,7 +1370,6 @@ onBeforeUnmount(() => {
   padding: 8px 16px;
   cursor: pointer;
   color: #fff;
-  z-index: 2000;
 }
 
 .mixtape-menu-dropdown div:hover {
@@ -1372,43 +1377,68 @@ onBeforeUnmount(() => {
   color: #1f0d3e;
 }
 
-.sort-wrapper {
-  position: relative;      
-  display: inline-block;   
-  z-index: 2000;  /* Ensure this is high enough */
-  margin-right: 17px; /* Add some space between the sort icon and the input */
-}
-
 .mixtape-sort-dropdown {
-  position: absolute;                       
-  top: 0;                   
-  margin-left: 0.5rem;    
-  border: 1px solid #dbb4d7;
-  background: #2e1f45;
-  border-radius: 10px;
-  padding: 10px;
-  width: 13rem;
+  margin-bottom: 0.5rem;
+  text-align: right;
 }
 
 .mixtape-sort-dropdown select {
-  padding: 0.5rem 1rem;     
-  border-radius: 6px;    
-  border: 1px solid #dbb4d7; 
-  background: #2e1f45;     
-  color: #fff;             
-  font-size: 0.95rem;      
-  width: 150px;             
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); 
-  z-index: 1000;  
+  padding: 0.3rem 0.7rem;
+  border-radius: 6px;
+  border: 1px solid #dbb4d7;
+  background: #2e1f45;
+  color: #fff;
+  font-size: 11pt;
+  width:100%;
+}
+.sidebar_burger{
+  text-align: right;
+  background-color: unset;
+  padding:0;
+  padding-right: 5px;
 }
 
-.sort-option {
-  cursor: pointer; /* Change cursor to pointer */
-  padding: 5px; /* Add some padding for better click area */
-}
-.sort-option:hover {
-  background-color: #c2a6c2; /* Change background on hover for better visibility */
-}
+/* Responsive styles */
+@media (max-width: 768px) {
+  .mixtape-header span{
+    text-align: left;
+  }
+  .side-nav {
+     width: 100%;
+    height: auto; /* Allow height to adjust */
+    position: relative; /* Change position to relative */
+  }
+  /* .nav-section, */
+  .mixtape-section {
+    padding: 1rem; /* Adjust padding for smaller screens */
+  }
+  .nav-item span {
+    font-size: 1rem;
+  }
+  .nav-item {
+    flex-direction: row; /* Ensure items are in a row */
+    justify-content: left; /* Align items to the start */
+  }
+ /* .mixtape-header span {
+  display: none;
+ } */
+  .add-icon {
+  margin-left: 0; /* Remove margin for smaller screens */
+    }
+  }
+  /* Additional styles for very small screens */
+  @media (max-width: 480px) {
+      .side-nav {
+    width: 100%;
+    height: auto; /* Allow height to adjust */
+    position: relative; /* Change position to relative */
+  }
+    .nav-item {
+      font-size: 0.9rem; /* Smaller font size */
+    }
+    .mixtape-input {
+      font-size: 0.8rem; /* Smaller input font size */
+    }
+  }
 
 </style>
-

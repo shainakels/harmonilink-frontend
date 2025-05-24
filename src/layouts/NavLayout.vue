@@ -5,7 +5,7 @@
       <div class="layout-container">
         <SideNav />
         <div class="page-content">
-          <slot />
+          <slot/>
         </div>
       </div>
     </div>
@@ -17,6 +17,7 @@
   </script>
   
   <style scoped>
+  
   .layout-wrapper {
     display: flex;
     flex-direction: column;
@@ -24,11 +25,11 @@
   }
   
 .layout-container {
-  display: flex;
+
   flex: 1; 
-  overflow: hidden;
-  position: relative; /* Ensure positioning context for absolute elements */
-  z-index: 3; /* Set a lower z-index */
+  overflow: auto;
+  position: relative;
+  z-index: 9;
 }
   
   .page-content {
