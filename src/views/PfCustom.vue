@@ -224,7 +224,6 @@ const saveProfile = async () => {
 }
 .fade-enter, .fade-leave-to {
   opacity: 0;
-<<<<<<< HEAD
 }
 
 /* added font weigtht */
@@ -282,64 +281,6 @@ p {
   margin-bottom: 2rem;
 }
 
-=======
-}
-
-/* added font weigtht */
-.setup-text {
-  position: absolute;
-  top: 3rem; 
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 3rem;
-  color: #322848;
-  text-align: center;
-  font-weight: 425;
-}
-
-/* EDITED THIS FOR GLASSMORPHISM */
-.profile-setup {
-  background: rgba(255, 255, 255, 0.55);
-  width: 42rem;
-  height: 33rem;
-  padding: 2rem;
-  border-radius: 15px;
-  color: #322848;
-  position: absolute;
-  top: 57%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.25);
-  backdrop-filter: blur(12px) saturate(180%);
-  -webkit-backdrop-filter: blur(12px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  transition: all 0.3s ease;
-}
-
-/* ADDED HOVER EFFECT */
-.profile-setup:hover {
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.35);
-  backdrop-filter: blur(16px) saturate(200%);
-  -webkit-backdrop-filter: blur(16px) saturate(200%);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-}
-
-p {
-  font-size: 1.5rem;
-  margin: 0.1rem 1rem 1rem 1rem;
-  margin-bottom: 1.2rem;
-}
-
-/*EDITED*/
-.birthday-inputs {
-  display: flex;
-  gap: 2.5rem;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 2rem;
-}
-
->>>>>>> main
 /* EDITED */
 .birthday-inputs input {
   width: 95%;
@@ -367,12 +308,7 @@ p {
 }
 
 .gender-options {
-<<<<<<< HEAD
   display: block;
-=======
-  display: flex;
-  gap: 1rem;
->>>>>>> main
   justify-content: center;
   margin-bottom: 2rem;
 }
@@ -387,10 +323,7 @@ p {
   font-size: 1rem;
   color: #32284889;
   font-weight: 400;
-<<<<<<< HEAD
   margin:5px;
-=======
->>>>>>> main
 }
 
 /*EDITED*/
@@ -470,7 +403,6 @@ textarea:focus {
   outline: none;
   background-color: #3228485a;
 }
-<<<<<<< HEAD
 
 
 /* Responsive styles */
@@ -491,6 +423,4 @@ textarea:focus {
     font-size: 15pt;
   }
   }
-=======
->>>>>>> main
 </style>

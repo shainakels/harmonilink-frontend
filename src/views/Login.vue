@@ -106,6 +106,7 @@ const handleLogin = async () => {
     const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/login`, {
       email: email.value,
       password: password.value,
+      rememberMe: keepLoggedIn.value, 
     });
 
     if (response.status === 200) {

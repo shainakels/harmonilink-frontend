@@ -54,7 +54,6 @@
         </div>
 
         <div class="poll-length-section">
-<<<<<<< HEAD
           <label>Poll Length:</label><br>
           <select v-model="pollDays" class="poll-length-select">
             <option v-for="d in daysOptions" :key="d" :value="d">{{ d }} day{{ d === 1 ? '' : 's' }}</option>
@@ -66,19 +65,6 @@
             <option v-for="m in minutesOptions" :key="m" :value="m">{{ m }} minute{{ m === 1 ? '' : 's' }}</option>
           </select>
         </div><br>
-=======
-          <label>Poll Length:</label>
-          <select v-model="pollDays">
-            <option v-for="d in daysOptions" :key="d" :value="d">{{ d }} day{{ d === 1 ? '' : 's' }}</option>
-          </select>
-          <select v-model="pollHours">
-            <option v-for="h in hoursOptions" :key="h" :value="h">{{ h }} hour{{ h === 1 ? '' : 's' }}</option>
-          </select>
-          <select v-model="pollMinutes">
-            <option v-for="m in minutesOptions" :key="m" :value="m">{{ m }} minute{{ m === 1 ? '' : 's' }}</option>
-          </select>
-        </div>
->>>>>>> main
 
         <button class="submit-poll-btn" @click="createPoll">Create Poll</button>
       </div>
@@ -86,7 +72,6 @@
 
 
       <div class="poll-scroll">
-<<<<<<< HEAD
 
       <div style="display: flex; padding:10px;">
         <i class="fa-solid fa-square-poll-horizontal fa-2x" style="color:#080d2a; margin-right: 5px;"></i>
@@ -94,11 +79,6 @@
       </div>
 
         <div v-if="currentProfile" class="poll-container">
-=======
-        <div v-if="currentProfile" class="poll-container">
-          <button class="nav-button left" @click="prevProfile">←</button>
-          <button class="nav-button right" @click="nextProfile">→</button>
->>>>>>> main
 
           <!-- Poll Container -->
           <div class="poll-content">
@@ -125,18 +105,7 @@
                   Posted: {{ formatDateTime(currentProfile.createdAt) }} ({{ timeAgo(currentProfile.createdAt) }})
                 </span>
               </div>
-<<<<<<< HEAD
              
-=======
-              <button
-                v-if="currentProfile.userId === loggedInUserId"
-                class="delete-poll-btn"
-                @click="deletePoll"
-                style="margin-left: auto; background: #ff4d4f; color: white; border: none; border-radius: 6px; padding: 8px 16px; cursor: pointer;"
-              >
-                Delete Poll
-              </button>
->>>>>>> main
             </div>
 
             <div class="poll-description">
@@ -172,7 +141,6 @@
                     {{ option.text }}
                     <span v-if="option.voted" style="color: #080d2a; margin-left: 6px;">✔</span>
                   </p>
-<<<<<<< HEAD
                   <!-- <span class="poll-percentage">{{ calculatePercentage(index) }}%</span> -->
 
 
@@ -191,19 +159,6 @@
 
                 </div>
                
-=======
-                  <span class="poll-percentage">{{ calculatePercentage(index) }}%</span>
-                </div>
-                <div class="poll-progress-bar-wrapper">
-                  <div class="poll-progress-bar-bg">
-                    <div
-                      class="poll-progress-bar-fill"
-                      :style="{ width: calculatePercentage(index) + '%' }"
-                    ></div>
-                  </div>
-                  <span class="poll-progress-bar-label">{{ calculatePercentage(index) }}%</span>
-                </div>
->>>>>>> main
               </div>
             </div>
             
@@ -222,7 +177,6 @@
         <div v-else class="no-polls-message">
           <p>No polls available yet. Be the first to create one!</p>
         </div>
-<<<<<<< HEAD
       </div>
         </div>
 
@@ -236,8 +190,6 @@
               </button>
           </div>
 
-=======
->>>>>>> main
       </div>
   </NavLayout>
 </template>
@@ -255,6 +207,7 @@
   const showCreatePoll = ref(false)
   const newPollQuestion = ref('')
   const newPollOptions = ref(['', '']) 
+  const isFlipped = ref(false);
 
   const token = localStorage.getItem('token');
   let loggedInUserId = null;
@@ -519,7 +472,6 @@
 
 
 <style scoped>
-<<<<<<< HEAD
 .side-nav{
   z-index:unset;
 }
@@ -545,19 +497,6 @@
 
 .poll-container {
    box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
-=======
-.poll-wrapper {
-  background-color: #ddb0d7;
-  padding: 2rem;
-  min-height: 100vh;
-  overflow: auto;
-  color: black;
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 1rem;
-  margin-top: 80px;
-  margin-left: 270px;
->>>>>>> main
 }
 
 .create-poll-container {
@@ -919,11 +858,7 @@
 .poll-progress-bar-bg {
   background: #e0e0e0;
   border-radius: 8px;
-<<<<<<< HEAD
   width: 100%;
-=======
-  width: 120px;
->>>>>>> main
   height: 16px;
   margin-right: 8px;
   overflow: hidden;
@@ -943,7 +878,6 @@
   min-width: 38px;
   text-align: right;
 }
-<<<<<<< HEAD
 
 
 
@@ -1064,6 +998,3 @@
 
 
 </style>
-=======
-</style>
->>>>>>> main

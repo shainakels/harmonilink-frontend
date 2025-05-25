@@ -1,9 +1,6 @@
 <template>
   <!-- Background image -->
-<<<<<<< HEAD
   <img src="/src/assets/background.png" alt="background" class="background">
-=======
->>>>>>> main
   <div class="background"></div>
 
   <!-- Logo -->
@@ -116,15 +113,6 @@
       <div class="star2 stars"></div>
       <div class="star3 stars"></div>
       <div class="star4 stars"></div>
-<<<<<<< HEAD
-=======
-      <div class="star5 stars"></div>
-      <div class="star6 stars"></div>
-      <div class="star7 stars"></div>
-      <div class="star8 stars"></div>
-      <div class="star9 stars"></div>
-      <div class="star10 stars"></div>
->>>>>>> main
       <img src="/src/assets/cd.png" alt="CD" class="cd" />
     </div>
   </div>
@@ -413,15 +401,9 @@ const handleSignup = async () => {
 
 .signup-container {
   position: relative;
-<<<<<<< HEAD
   width: 100%;
   height: 100vh;
 
-=======
-  width: 100vw;
-  height: 100vh;
-  position: absolute;
->>>>>>> main
   top: 0;
   left: 0;
 }
@@ -728,7 +710,6 @@ button:focus {
 }
 
 @media (max-width: 1400px) {
-<<<<<<< HEAD
   .signup {
     left: 37%;
   }
@@ -754,69 +735,6 @@ button:focus {
     border-radius: 25px;
     left: 50%;
     width: 90%;
-=======
-  .signup {
-    left: 37%;
-  }
-}
-
-@media (max-width: 1200px) {
-  .signup {
-    left: 45%;
-  }
-  
-  .cdbg {
-    margin-left: -100px;
-  }
-}
-
-@media (max-width: 992px) {
-  .signup {
-    width: 90%;
-    max-width: 550px;
-    left: 50%;
-    padding: 25px 40px;
-    border-radius: 25px;
-  }
-  
-  .cdbg {
-    width: 100%;
-    height: 100%;
-    opacity: 0.8;
-    border-radius: 15px;
-    margin-left: 0;
-  }
-  
-  .cd {
-    right: 50%;
-    transform: translate(50%, -50%);
-    width: 300px;
-    height: 300px;
-    opacity: 0.7;
-  }
-  
-  .input-group {
-    margin: 1.5rem 0;
-  }
-  
-  .input-group input {
-    height: 42px;
-  }
-}
-
-@media (max-width: 768px) {
-  .cdbg {
-    display: none;
-  }
-
-  .cd {
-    display: none;
-  }
-
-  .signup {
-    border-radius: 25px;
-    left: 50%;
->>>>>>> main
   }
 
   .modal-box {
@@ -838,10 +756,7 @@ button:focus {
 @media (max-width: 480px) {
   .signup {
     padding: 25px 40px;
-<<<<<<< HEAD
     width: 90%;
-=======
->>>>>>> main
   }
 
   h2 {
@@ -861,7 +776,6 @@ button:focus {
   button {
     height: 42px;
     font-size: 15px;
-<<<<<<< HEAD
   }
 
   .password-validation {
@@ -871,8 +785,6 @@ button:focus {
 
   .password-validation p {
     margin: 6px 0;
-=======
->>>>>>> main
   }
 
   .password-validation {

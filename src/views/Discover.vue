@@ -1,195 +1,232 @@
 <template>
   <transition name="fade">
-  <NavLayout>
-    
-    <div class="favorites-wrapper">
-      <h1 class="favorites-title">Discover</h1>
-      <p class="favorites-description">
-        Find your link in the harmony! Dive into mixtapes that vibe with you.
-      </p>
+    <NavLayout>
+      <div class="favorites-wrapper">
+        <h1 class="favorites-title">Discover</h1>
+        <p class="favorites-description">
+          Find your link in the harmony! Dive into mixtapes that vibe with you.
+        </p>
 
-
-
- <div class="grid-container">
-
-<div class="left-column">
-
-         <!-- Navigation Buttons -->
-          <button 
-            class="nav-button" 
-            @click="prevProfile" 
-            :disabled="currentIndex === 0 || isFlipped"
-          > <i class="fa-solid fa-circle-arrow-left"></i>
-          </button>
-</div>
-
-
-<div class="main-column">
-          <div class="discover-container" :class="{ flipped: isFlipped }">
-
-          <!-- No Profiles Message -->
-          <div v-if="profiles.length === 0" class="no-profiles">
-            <p>No profiles available. Please check back later.</p>
+        <div class="grid-container">
+          <div class="left-column">
+            <!-- Navigation Buttons -->
+            <button
+              class="nav-button"
+              @click="prevProfile"
+              :disabled="currentIndex === 0 || isFlipped"
+            >
+              <i class="fa-solid fa-circle-arrow-left"></i>
+            </button>
           </div>
 
-          <!-- Front Side (Profile Details) -->
-          <div class="front" v-if="currentProfile">
-            <div class="discover-top">
-              <div class="refresh-wrapper">
-                <span class="refresh-label">Next Refresh:</span><br />
-                <span class="refresh-time">{{ refreshTime }}</span>
+          <div class="main-column">
+            <div class="discover-container" :class="{ flipped: isFlipped }">
+              <!-- No Profiles Message -->
+              <div v-if="filteredProfiles.length === 0" class="no-profiles">
+                <p>No profiles available. Please check back later.</p>
               </div>
-              <div class="profile-count-wrapper">
-                <span class="profile-count">Profiles Viewed: {{ viewedProfiles }}/10</span>
+              <!-- Front Side (Profile Details) -->
+              <div class="front" v-if="currentProfile">
+                <div class="discover-top">
+                  <div class="refresh-wrapper">
+                    <span class="refresh-label">Next Refresh:</span><br />
+                    <span class="refresh-time">{{ refreshTime }}</span>
+                  </div>
+                  <div class="profile-count-wrapper">
+                    <span class="profile-count"
+                      >Profiles Viewed: {{ viewedProfiles }}/10</span
+                    >
+                  </div>
+                </div>
+
+                <div class="profile-card">
+                  <h2 class="profile-name">{{ currentProfile.username }}</h2>
+                  <p class="profile-info">
+                    {{ currentProfile.age }} years old,
+                    {{ currentProfile.gender }}
+                  </p>
+                  <img
+                    :src="
+                      getFullPhotoUrl(currentProfile.mixtapes[0]?.photo_url)
+                    "
+                    class="mixtape-image"
+                  />
+                  <h2 class="mixtape-title-front">
+                    {{ currentProfile.mixtapes[0]?.name }}
+                  </h2>
+                  <p class="mixtape-description">
+                    {{ currentProfile.mixtapes[0]?.bio }}
+                  </p>
+
+                  <!-- Unpack Button -->
+                  <button
+                    class="unpack-button"
+                    :class="{ unpacked: currentProfile.viewed }"
+                    @click="flipCard"
+                  >
+                    {{ currentProfile.viewed ? "Unpacked" : "Unpack" }}
+                    <span
+                      v-if="currentProfile.favorited"
+                      class="heart-indicator"
+                      >❤️</span
+                    >
+                  </button>
+                </div>
               </div>
-            </div>
 
-            <div class="profile-card">
-              <h2 class="profile-name">{{ currentProfile.username }}</h2>
-              <p class="profile-info">{{ currentProfile.age }} years old, {{ currentProfile.gender }}</p>
-              <img :src="getFullPhotoUrl(currentProfile.mixtapes[0]?.photo_url)" class="mixtape-image" />
-              <h2 class="mixtape-title-front">{{ currentProfile.mixtapes[0]?.name }}</h2>
-              <p class="mixtape-description">{{ currentProfile.mixtapes[0]?.bio }}</p>
+              <!-- Back Side (Mixtape Details) -->
+              <div class="back" v-if="currentProfile">
+                <div class="back-button" @click="flipCard">
+                  <i class="fa-solid fa-arrow-left"></i>
+                </div>
 
-              <!-- Unpack Button -->
-              <button 
-                class="unpack-button" 
-                :class="{ unpacked: currentProfile.viewed }" 
-                @click="flipCard"
-              >
-                {{ currentProfile.viewed ? 'Unpacked' : 'Unpack' }}
-                <span v-if="currentProfile.favorited" class="heart-indicator">❤️</span>
-              </button>
+                <!-- Show mixtape details if available -->
+                <div
+                  class="back-mixtape"
+                  v-if="currentProfile.mixtapes?.length > 0"
+                >
+                  <img
+                    :src="getFullPhotoUrl(currentProfile.mixtapes[0].photo_url)"
+                    class="mixtape-image"
+                  />
+                  <h3 class="mixtape-title-back">
+                    {{ currentProfile.mixtapes[0].name }}
+                  </h3>
+                  <ul class="song-list">
+                    <li
+                      v-for="(song, index) in currentProfile.mixtapes[0].songs"
+                      :key="index"
+                      class="song-item"
+                    >
+                      <img
+                        v-if="song.artwork_url"
+                        :src="song.artwork_url"
+                        alt="Artwork"
+                        class="song-artwork"
+                        style="
+                          width: 40px;
+                          height: 40px;
+                          margin-right: 0.5rem;
+                          border-radius: 6px;
+                        "
+                      />
+
+                      <span style="width: 200px"
+                        >{{ song.song_name }} by {{ song.artist_name }}</span
+                      >
+
+                      <audio
+                        v-if="song.preview_url"
+                        ref="discoverAudioRefs"
+                        :src="song.preview_url"
+                        @ended="onDiscoverAudioEnded"
+                        style="display: none"
+                      ></audio>
+                      &nbsp;
+                      <button
+                        v-if="song.preview_url"
+                        class="mini-audio-btn"
+                        @click.stop="toggleDiscoverPlay(index)"
+                        :aria-label="
+                          discoverPlayingIndex === index
+                            ? 'Pause preview'
+                            : 'Play preview'
+                        "
+                        style="margin-right: 0.5rem"
+                      >
+                        <i
+                          :class="
+                            discoverPlayingIndex === index
+                              ? 'fa-solid fa-pause'
+                              : 'fa-solid fa-play'
+                          "
+                        ></i>
+                      </button>
+                      <span
+                        v-else
+                        class="no-preview"
+                        style="margin-left: 0.5rem"
+                        >No preview</span
+                      >
+                    </li>
+                  </ul>
+                </div>
+
+                <!-- Fallback message if no mixtapes are available -->
+                <div class="no-mixtape-message" v-else>
+                  <p>No mixtapes yet. Wanna give them a chance?</p>
+                </div>
+
+                <!-- Action Section -->
+                <div class="action-section">
+                  <div class="buttons">
+                    <!-- Heart Button -->
+                    <button
+                      class="heart-btn"
+                      :class="{ clicked: currentProfile.favorited }"
+                      @click="animateHeart"
+                      title="Add to Favorites"
+                    >
+                      <i class="fa-solid fa-heart"></i>
+                    </button>
+
+                    <!-- Discard Button -->
+                    <button
+                      class="x-btn"
+                      @click="animateX"
+                      :disabled="currentProfile.favorited"
+                      title="Discard Profile"
+                    >
+                      <i class="fa-solid fa-x"></i>
+                    </button>
+                  </div>
+                  <p class="action-message">
+                    If you both vibe with each other, tap the heart button!
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 
-          <!-- Back Side (Mixtape Details) -->
-          <div class="back" v-if="currentProfile">
-            <div class="back-button" @click="flipCard">
-              <i class="fa-solid fa-arrow-left"></i>
-            </div>
-
-            <!-- Show mixtape details if available -->
-            <div class="back-mixtape" v-if="currentProfile.mixtapes?.length > 0">
-              <img :src="getFullPhotoUrl(currentProfile.mixtapes[0].photo_url)" class="mixtape-image" />
-              <h3 class="mixtape-title-back">{{ currentProfile.mixtapes[0].name }}</h3>
-              <ul class="song-list">
-            <li v-for="(song, index) in currentProfile.mixtapes[0].songs" :key="index" class="song-item">
-              <img
-                v-if="song.artwork_url"
-                :src="song.artwork_url"
-                alt="Artwork"
-                class="song-artwork"
-                style="width: 40px; height: 40px; margin-right: 0.5rem; border-radius: 6px;"
-              />
-
-
-              <span style="width: 200px;">{{ song.song_name }} by {{ song.artist_name }}</span>
-
-              <audio
-                v-if="song.preview_url"
-                ref="discoverAudioRefs"
-                :src="song.preview_url"
-                @ended="onDiscoverAudioEnded"
-                style="display: none;"
-              ></audio> &nbsp;
-              <button
-                v-if="song.preview_url"
-                class="mini-audio-btn"
-                @click.stop="toggleDiscoverPlay(index)"
-                :aria-label="discoverPlayingIndex === index ? 'Pause preview' : 'Play preview'"
-                style="margin-right: 0.5rem;"
-              >
-                <i :class="discoverPlayingIndex === index ? 'fa-solid fa-pause' : 'fa-solid fa-play'"></i>
-              </button>
-              <span v-else class="no-preview" style="margin-left: 0.5rem;">No preview</span>
-            </li>
-          </ul>
-            </div>
-
-            <!-- Fallback message if no mixtapes are available -->
-            <div class="no-mixtape-message" v-else>
-              <p>No mixtapes yet. Wanna give them a chance?</p>
-            </div>
-
-            <!-- Action Section -->
-            <div class="action-section">
-              <div class="buttons">
-                <!-- Heart Button -->
-                <button 
-                  class="heart-btn" 
-                  :class="{ clicked: currentProfile.favorited }" 
-                  @click="animateHeart"
-                  title="Add to Favorites"
-                >
-                  <i class="fa-solid fa-heart"></i>
-                </button>
-
-                <!-- Discard Button -->
-                <button 
-                  class="x-btn" 
-                  @click="animateX" 
-                  :disabled="currentProfile.favorited"
-                  title="Discard Profile"
-                >
-                  <i class="fa-solid fa-x"></i>
-                </button>
-              </div>
-              <p class="action-message">
-                If you both vibe with each other, tap the heart button!
-              </p>
-            </div>
+          <div class="right-column">
+            <!-- Navigation Buttons -->
+            <button
+              class="nav-button right"
+              @click="nextProfile"
+              :disabled="currentIndex === profiles.length - 1 || isFlipped"
+            >
+              <i class="fa-solid fa-circle-arrow-right"></i>
+            </button>
           </div>
         </div>
-</div>
-
-<div class="right-column"> 
-    <!-- Navigation Buttons -->
-          <button 
-            class="nav-button right" 
-            @click="nextProfile" 
-            :disabled="currentIndex === profiles.length - 1 || isFlipped"
-          > <i class="fa-solid fa-circle-arrow-right"></i>
-          </button>
-
-</div>
-
-
-
       </div>
-
-
-
-
-
-
-
-</div>
-
-   
-  </NavLayout>
+    </NavLayout>
   </transition>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
-import NavLayout from '../layouts/NavLayout.vue';
-import axios from 'axios';
-import { useRouter } from 'vue-router';
+import { ref, computed, onMounted, onUnmounted, watch } from "vue";
+import NavLayout from "../layouts/NavLayout.vue";
+import axios from "axios";
+import { useRouter, useRoute } from "vue-router";
 
 const router = useRouter();
+const route = useRoute();
 
 // Profiles data
 const profiles = ref([]);
+const filteredProfiles = ref([]); // <-- move this up!
 const currentIndex = ref(0);
-const currentProfile = computed(() => profiles.value[currentIndex.value] || null);
+const currentProfile = computed(
+  () => filteredProfiles.value[currentIndex.value] || null
+);
 const isFlipped = ref(false);
 
 // Current user data
 const currentUser = ref(null);
 
 // Timer for profile refresh
-const refreshTime = ref('03:00:00');
+const refreshTime = ref("03:00:00");
 let refreshInterval;
 
 // Tracks the number of profiles unpacked
@@ -236,56 +273,63 @@ watch(
 // Fetch current user profile
 async function fetchCurrentUser() {
   try {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem("authToken");
     if (!token) {
-      console.error('No auth token found.');
+      console.error("No auth token found.");
       return;
     }
 
-    const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/auth/current-user`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const response = await axios.get(
+      `${import.meta.env.VITE_API_URL}/api/auth/current-user`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
     currentUser.value = response.data;
   } catch (error) {
-    console.error('Error fetching current user:', error);
+    console.error("Error fetching current user:", error);
     if (error.response?.status === 401 || error.response?.status === 403) {
-      alert('Session expired. Please log in again.');
-      router.push('/login');
+      alert("Session expired. Please log in again.");
+      router.push("/login");
     }
   }
 }
 
 // Fetch profiles from the backend and shuffle them
 async function fetchProfiles() {
-  const token = localStorage.getItem('authToken');
+  const token = localStorage.getItem("authToken");
   if (!token) {
-    console.error('No auth token found.');
+    console.error("No auth token found.");
     return;
   }
 
   if (profiles.value.length > 0) {
-    console.log('Using saved profiles from localStorage.');
-    return; // Use the saved profiles
+    console.log("Using saved profiles from localStorage.");
+    filterProfiles(); // <-- Always filter after loading
+    return;
   }
 
   try {
-    const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/discover`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const response = await axios.get(
+      `${import.meta.env.VITE_API_URL}/api/discover`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
 
-    profiles.value = response.data.map(profile => ({
+    profiles.value = response.data.map((profile) => ({
       ...profile,
-      viewed: false, // Add a viewed property to each profile
+      viewed: false,
     }));
-    currentIndex.value = 0; // Reset to the first profile
-    viewedProfiles.value = 0; // Reset the viewed profiles count
-
-    saveStateToLocalStorage(); // Save the fetched profiles to localStorage
+    currentIndex.value = 0;
+    viewedProfiles.value = 0;
+    saveStateToLocalStorage();
+    filterProfiles(); // <-- Always filter after fetching
   } catch (error) {
-    console.error('Error fetching profiles:', error);
+    console.error("Error fetching profiles:", error);
     if (error.response?.status === 401 || error.response?.status === 403) {
-      alert('Session expired. Please log in again.');
-      router.push('/login');
+      alert("Session expired. Please log in again.");
+      router.push("/login");
     }
   }
 }
@@ -303,7 +347,7 @@ function shuffleArray(array) {
 function nextProfile() {
   pauseAllPreviews();
   if (profiles.value.length === 0) {
-    alert('No more profiles available.');
+    alert("No more profiles available.");
     return;
   }
 
@@ -343,7 +387,7 @@ function flipCard() {
 // Start the refresh timer
 function startRefreshTimer() {
   if (!currentUser.value || !currentUser.value.id) {
-    console.error('User ID is not available. Cannot start the timer.');
+    console.error("User ID is not available. Cannot start the timer.");
     return;
   }
 
@@ -366,7 +410,9 @@ function startRefreshTimer() {
     const minutes = Math.floor((timeLeft % 3600) / 60);
     const seconds = timeLeft % 60;
 
-    refreshTime.value = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    refreshTime.value = `${String(hours).padStart(2, "0")}:${String(
+      minutes
+    ).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 
     if (timeLeft <= 0) {
       clearInterval(refreshInterval);
@@ -386,13 +432,13 @@ function startRefreshTimer() {
 // Save state to localStorage
 function saveStateToLocalStorage() {
   if (!currentUser.value || !currentUser.value.id) {
-    console.error('User ID is not available. Cannot save state.');
+    console.error("User ID is not available. Cannot save state.");
     return;
   }
 
   const stateKey = `discoverState_${currentUser.value.id}`; // Unique key for each user
   const state = {
-    profiles: profiles.value.map(profile => ({
+    profiles: profiles.value.map((profile) => ({
       ...profile,
       favorited: profile.favorited || false,
       viewed: profile.viewed || false,
@@ -406,7 +452,7 @@ function saveStateToLocalStorage() {
 // Load state from localStorage
 function loadStateFromLocalStorage() {
   if (!currentUser.value || !currentUser.value.id) {
-    console.error('User ID is not available. Cannot load state.');
+    console.error("User ID is not available. Cannot load state.");
     return;
   }
 
@@ -435,7 +481,7 @@ function clearState() {
 
 // Pause all audio previews
 function pauseAllPreviews() {
-  discoverAudioRefs.value.forEach(audio => {
+  discoverAudioRefs.value.forEach((audio) => {
     if (audio) {
       audio.pause();
       audio.currentTime = 0;
@@ -451,9 +497,9 @@ const animateHeart = async () => {
 
   if (favoriteProfile) {
     try {
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem("authToken");
       if (!token) {
-        alert('You must be logged in to add favorites.');
+        alert("You must be logged in to add favorites.");
         return;
       }
 
@@ -468,10 +514,10 @@ const animateHeart = async () => {
       favoriteProfile.favorited = true;
 
       saveStateToLocalStorage(); // Save the updated state
-      alert('Profile added to favorites!');
+      alert("Profile added to favorites!");
     } catch (error) {
-      console.error('Error adding to favorites:', error);
-      alert('Failed to add to favorites. Please try again.');
+      console.error("Error adding to favorites:", error);
+      alert("Failed to add to favorites. Please try again.");
     }
   }
 };
@@ -483,9 +529,9 @@ const animateX = async () => {
 
   if (discardedProfile) {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (!token) {
-        alert('You must be logged in to discard profiles.');
+        alert("You must be logged in to discard profiles.");
         return;
       }
 
@@ -508,20 +554,70 @@ const animateX = async () => {
       isFlipped.value = false;
 
       saveStateToLocalStorage(); // Save the updated state
-      alert('Profile discarded.');
+      alert("Profile discarded.");
     } catch (error) {
-      console.error('Error discarding profile:', error); // Log the error
-      alert('Failed to discard profile. Please try again.');
+      console.error("Error discarding profile:", error); // Log the error
+      alert("Failed to discard profile. Please try again.");
     }
   }
 };
 
+// Search filter
+const searchFilter = ref("");
+
+watch(
+  () => route.query.search,
+  (newVal) => {
+    searchFilter.value = newVal || "";
+    filterProfiles();
+    currentIndex.value = 0;
+  },
+  { immediate: true }
+);
+
+function filterProfiles() {
+  if (!searchFilter.value) {
+    filteredProfiles.value = profiles.value;
+    return;
+  }
+  const q = searchFilter.value.toLowerCase();
+  filteredProfiles.value = profiles.value.filter((profile) => {
+    // Match username
+    if (profile.username && profile.username.toLowerCase().includes(q))
+      return true;
+    // Match mixtape name
+    if (
+      profile.mixtapes &&
+      profile.mixtapes.some(
+        (mix) => mix.name && mix.name.toLowerCase().includes(q)
+      )
+    )
+      return true;
+    // Match song name
+    if (
+      profile.mixtapes &&
+      profile.mixtapes.some(
+        (mix) =>
+          mix.songs &&
+          mix.songs.some(
+            (song) => song.song_name && song.song_name.toLowerCase().includes(q)
+          )
+      )
+    )
+      return true;
+    return false;
+  });
+}
+
 // Utility function to get full photo URL
 function getFullPhotoUrl(url) {
-  if (!url) return '';
-  if (url.startsWith('http')) return url;
+  if (!url) return "";
+  if (url.startsWith("http")) return url;
   // Always ensure exactly one slash between base and path
-  return `${import.meta.env.VITE_API_URL.replace(/\/$/, '')}/${url.replace(/^\/?/, '')}`;
+  return `${import.meta.env.VITE_API_URL.replace(/\/$/, "")}/${url.replace(
+    /^\/?/,
+    ""
+  )}`;
 }
 
 // Lifecycle hook
@@ -544,14 +640,15 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-
-button{
-  padding:0;
+button {
+  padding: 0;
 }
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 1s ease-in-out; 
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 1s ease-in-out;
 }
-.fade-enter, .fade-leave-to {
+.fade-enter,
+.fade-leave-to {
   opacity: 0;
 }
 
@@ -564,8 +661,7 @@ button{
   text-align: center;
   /* height: calc(100% - 80px); 
   width: calc(100% - 270px); */
-  width:100%;
-  
+  width: 100%;
 }
 
 .discover-container {
@@ -573,17 +669,15 @@ button{
   border-radius: 12px;
   /* padding-top: 3rem; */
   transition: opacity 0.5s ease; /* Smooth transition for opacity */
-  opacity: 1; 
-  width:100%;
+  opacity: 1;
+  width: 100%;
   height: 480px;
   position: relative;
   user-select: none;
   z-index: 0;
-  box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
-<<<<<<< HEAD
-
-=======
->>>>>>> main
+  box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px,
+    rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px,
+    rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
 }
 
 .nav-button {
@@ -597,7 +691,6 @@ button{
   box-shadow: none;
 }
 
-
 .nav-button:focus {
   outline: none;
   box-shadow: none;
@@ -609,7 +702,8 @@ button{
 }
 
 /* front and back container */
-.front, .back {
+.front,
+.back {
   width: 100%;
   height: 100%;
   border-radius: 12px;
@@ -624,9 +718,9 @@ button{
   align-items: center;
   justify-content: flex-start;
   padding-left: 3rem;
-   padding-right: 3rem;
-   padding-top: 1rem;
-   padding-bottom: 1rem;
+  padding-right: 3rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
   box-sizing: border-box;
   transition: transform 0.5s ease;
 }
@@ -766,7 +860,7 @@ button{
   color: red;
 }
 
-.back-button{
+.back-button {
   position: absolute;
   top: 30px;
   left: 30px;
@@ -799,7 +893,6 @@ button{
   border-radius: 8px;
   margin: 0 auto;
   margin-top: 1rem;
-  
 }
 
 .mixtape-title-front {
@@ -814,14 +907,14 @@ button{
 }
 
 .mixtape-title-back {
-  position: absolute; 
-  top: 175px; 
+  position: absolute;
+  top: 175px;
   left: 0;
   width: 100%;
   text-align: center;
   font-size: 1.2rem;
   font-weight: bold;
-  margin: 0; 
+  margin: 0;
 }
 
 .song-list {
@@ -831,8 +924,8 @@ button{
   line-height: 1.4;
   height: 100px;
   overflow-y: auto;
-  margin: 5rem auto 0; 
-  padding: 0 1.5rem; 
+  margin: 5rem auto 0;
+  padding: 0 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -892,7 +985,8 @@ button{
   margin-bottom: 0.5rem;
 }
 
-.heart-btn, .x-btn {
+.heart-btn,
+.x-btn {
   width: 4rem;
   height: 4rem;
   border-radius: 50%;
@@ -901,12 +995,13 @@ button{
   color: white;
   cursor: pointer;
   transition: transform 0.2s ease;
-  display: flex; 
-  align-items: center; 
+  display: flex;
+  align-items: center;
   justify-content: center;
 }
 
-.heart-btn:hover, .x-btn:hover {
+.heart-btn:hover,
+.x-btn:hover {
   transform: scale(1.1);
 }
 
@@ -941,7 +1036,7 @@ button{
 .action-message {
   font-size: 14px;
   color: #fff;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
 }
 
 .arrow {
@@ -963,18 +1058,17 @@ button{
   margin-right: 0.5rem;
   vertical-align: middle;
 }
-
-<<<<<<< HEAD
 </style>
 
 
 <!-- Style from Favorites -->
 <style scoped>
-
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 1s ease-in-out; 
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 1s ease-in-out;
 }
-.fade-enter, .fade-leave-to {
+.fade-enter,
+.fade-leave-to {
   opacity: 0;
 }
 
@@ -991,9 +1085,9 @@ button{
   margin-bottom: 1rem;
   margin-top: 80px;
   /* margin-left: 270px; */
-  width:100%;
-  margin-left:auto;
-  margin-right:auto;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .favorites-title {
@@ -1017,61 +1111,57 @@ button{
   display: grid;
   grid-template-columns: 10% 80% 10%; /* 10-80-10 ratio */
   height: auto; /* Full viewport height */
-  gap: 10px;;
+  gap: 10px;
 }
 
-.left-column, .right-column {
-   display: flex;              /* Enables flex centering */
-  flex-direction: column;     /* Stacks children vertically */
-  justify-content: center;    /* Centers vertically */
-  align-items: center;        /* Centers horizontally */
+.left-column,
+.right-column {
+  display: flex; /* Enables flex centering */
+  flex-direction: column; /* Stacks children vertically */
+  justify-content: center; /* Centers vertically */
+  align-items: center; /* Centers horizontally */
   padding: 15px;
   height: 480px;
 }
 
 .main-column {
-  /* padding: 20px; */
+  padding: 20px;
 }
-
-
 
 /* Responsive styles */
 @media (max-width: 768px) {
-    .profile-card {
-      width: 98%;
-    }
-    .front{
-       padding-left: 20px;
-        padding-right: 20px;
-        padding-top: 10px;
-        padding-bottom: 10px;
-    }
-    .discover-top{
-      padding:15px;
-    }
-    .action-section {
-      width:100%;
-    }
+  .profile-card {
+    width: 98%;
   }
-  /* Additional styles for very small screens */
-  @media (max-width: 480px) {
-    .profile-card {
-     width: 100%;
-    }
-    .front{
-              padding-left: 20px;
-        padding-right: 20px;
-        padding-top: 10px;
-        padding-bottom: 10px;
-    }
-    .discover-top{
-      padding:15px;
-    }
-    .action-section {
-      width:100%;
-    }
+  .front {
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 10px;
+    padding-bottom: 10px;
   }
-
-=======
->>>>>>> main
+  .discover-top {
+    padding: 15px;
+  }
+  .action-section {
+    width: 100%;
+  }
+}
+/* Additional styles for very small screens */
+@media (max-width: 480px) {
+  .profile-card {
+    width: 100%;
+  }
+  .front {
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+  .discover-top {
+    padding: 15px;
+  }
+  .action-section {
+    width: 100%;
+  }
+}
 </style>

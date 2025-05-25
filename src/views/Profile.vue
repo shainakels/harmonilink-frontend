@@ -70,6 +70,7 @@
               <option value="">Select Gender</option>
               <option value="Male">Male</option>
               <option value="Female">Female</option>
+              <option value="Non-Binary">Non-Binary</option>
               <option value="Others">Prefer not to say</option>
             </select>
             <input
@@ -109,8 +110,19 @@
 
     <div class="profile-search-filter">
       <div class="search-input-wrapper">
-        <i class="fa-solid fa-magnifying-glass search-icon"></i>
-        <input type="text" v-model="searchQuery" class="search-input" />
+        <i
+          class="fa-solid fa-microphone search-icon"
+          :style="{ color: recognizing ? 'red' : '', cursor: 'pointer', pointerEvents: 'auto' }"
+          @click="startVoiceSearch"
+          tabindex="0"
+          aria-label="Start voice search"
+        ></i>
+        <input
+          type="text"
+          v-model="searchQuery"
+          class="search-input"
+          placeholder="Search in your library"
+        />
       </div>
       <i class="fa-solid fa-list-ul filter-icon" @click="toggleSortDropdown"></i>
       <div v-if="showSortDropdown" class="mixtape-sort-dropdown">
@@ -139,57 +151,58 @@
       <p class="mixtape-desc">{{ mixtape.description }}</p>
     </div>
     <div class="mixtape-actions-top-right">
-      <button @click="startEditMixtape(mixtape)">Edit</button>
-      <button @click="deleteMixtape(mixtape)">Delete</button>
+      <button 
+        @click="startEditMixtape(mixtape)" 
+        :disabled="mixtape.id === firstMixtapeId"
+        v-if="mixtape.id !== firstMixtapeId"
+      >Edit</button>
+      <button 
+        @click="deleteMixtape(mixtape)" 
+        :disabled="mixtape.id === firstMixtapeId"
+        v-if="mixtape.id !== firstMixtapeId"
+      >Delete</button>
     </div>
   </div>
   <div v-else class="mixtape-edit-form">
-<<<<<<< HEAD
-    <input v-model="editMixtapeName" placeholder="Mixtape Name" class="mixtape-desc"/>
-    <textarea v-model="editMixtapeDescription" placeholder="Description" class ="mixtape-desc"></textarea>
-=======
-    <input v-model="editMixtapeName" placeholder="Mixtape Name" />
-    <textarea v-model="editMixtapeDescription" placeholder="Description"></textarea>
->>>>>>> main
+    <input v-model="editableMixtape.name" placeholder="Mixtape Name" class="mixtape-desc"/>
+    <textarea v-model="editableMixtape.description" placeholder="Description" class="mixtape-desc"></textarea>
     <div class="edit-songs-section">
-      <h4>Edit Songs</h4>
-      <div v-for="(song, idx) in editableMixtape.songs" :key="idx" class="edit-song-row">
-        <input
-          v-model="song.name"
-          placeholder="Song Name"
-          class="edit-song-input"
-          style="width: 30%; margin-right: 8px;"
+      <h4>Songs</h4>
+      <div v-for="(song, idx) in editableMixtape.songs" :key="idx" class="song-item song-item-flex">
+        <img
+          v-if="song.artwork_url"
+          :src="song.artwork_url"
+          alt="Artwork"
+          style="width: 40px; height: 40px; border-radius: 6px; margin-right: 0.5rem;"
         />
-        <input
-          v-model="song.artist"
-          placeholder="Artist"
-          class="edit-song-input"
-          style="width: 30%; margin-right: 8px;"
-        />
-        <input
-          v-model="song.artwork_url"
-          placeholder="Artwork URL"
-          class="edit-song-input"
-          style="width: 25%; margin-right: 8px;"
-        />
-        <input
-          v-model="song.preview_url"
-          placeholder="Preview URL"
-          class="edit-song-input"
-          style="width: 25%; margin-right: 8px;"
-        />
-        <button @click="removeSongFromEditable(idx)" style="background: #e74c3c; color: #fff; border-radius: 6px;">Delete</button>
+        <div style="flex:1;">
+          <span>{{ song.name }} - {{ song.artist }}</span>
+        </div>
+        <button
+          v-if="song.preview_url"
+          class="mini-audio-btn"
+          @click="playPreview(song.preview_url, idx)"
+          :aria-label="playingIndex === idx ? 'Pause preview' : 'Play preview'"
+          style="margin-left: 0.5rem;"
+        >
+          <i :class="playingIndex === idx ? 'fa-solid fa-pause' : 'fa-solid fa-play'"></i>
+        </button>
+        <div class="song-actions-buttons">
+          <i class="fa-solid fa-trash delete-icon" @click="removeSongFromEditable(idx)"></i>
+        </div>
       </div>
-      <button @click="addEmptySongToEditable" style="margin-top: 10px; background: #6a4fcf; color: #fff; border-radius: 6px;">Add Song</button>
+      <!-- Add Song Button -->
+      <button
+        class="add-song-btn"
+        @click="openEditSongModal"
+        style="margin-top: 1rem;"
+      >
+        <i class="fa-solid fa-circle-plus"></i> Add Song
+      </button>
     </div>
-<<<<<<< HEAD
     <button @click="saveEditMixtape(editableMixtape)" style="background: rgb(106, 79, 207); color: #fff; border-radius: 6px;">Save</button>
     &nbsp;&nbsp;&nbsp;
-    <button @click="editingMixtapeId = null" style="background: rgb(106, 79, 207); color: #fff; border-radius: 6px;">Cancel</button>
-=======
-    <button @click="saveEditMixtape(editableMixtape)">Save</button>
-    <button @click="editingMixtapeId = null">Cancel</button>
->>>>>>> main
+    <button @click="cancelEditMixtape" style="background: rgb(106, 79, 207); color: #fff; border-radius: 6px;">Cancel</button>
   </div>
   <transition name="fade">
     <div v-if="expandedMixtapeId === mixtape.id" class="expanded-songs">
@@ -229,7 +242,15 @@
         <div v-for="(song, index) in songs" :key="index" class="song-item song-item-flex">
           <img v-if="song.artwork_url" :src="song.artwork_url" style="width: 40px; height: 40px; border-radius: 6px; margin-right: 0.5rem;" />
           <span>{{ song.name }} - {{ song.artist }}</span>
-          <audio v-if="song.preview_url" :src="song.preview_url" controls style="margin-left: 0.5rem; width: 80px; height: 28px;" />
+          <button
+            v-if="song.preview_url"
+            class="mini-audio-btn"
+            @click.stop="playPreview(song.preview_url, idx)"
+            :aria-label="playingIndex === idx ? 'Pause preview' : 'Play preview'"
+            style="margin-left: auto;"
+          >
+            <i :class="playingIndex === idx ? 'fa-solid fa-pause' : 'fa-solid fa-play'"></i>
+          </button>
           <div class="song-actions-buttons">
             <i class="fa-solid fa-trash delete-icon" @click="deleteSong(index)"></i>
           </div>
@@ -256,11 +277,7 @@
   <div v-if="showSongModal" class="modal-overlay">
     <div class="song-popup-box">
       <span class="exit-btn" @click="closeSongModal">×</span>
-<<<<<<< HEAD
       <h3>Song Search</h3>
-=======
-      <h3>Add Song</h3>
->>>>>>> main
       <input
         type="text"
         v-model="songSearchQuery"
@@ -269,7 +286,6 @@
         autocomplete="off"
       />
       <div v-if="isSearchingSongs" style="margin: 0.5rem 0;">Searching...</div>
-<<<<<<< HEAD
       <ul v-if="songSearchResults.length" 
       style="margin-top: 1rem;
             max-height: 150px;
@@ -278,9 +294,6 @@
             padding: 0.5rem;
             border-radius: 0.5rem;
             color: #dbb4d7;">
-=======
-      <ul v-if="songSearchResults.length" style="max-height: 200px; overflow-y: auto; margin: 0; padding: 0;">
->>>>>>> main
         <li
           v-for="(song, idx) in songSearchResults"
           :key="idx"
@@ -295,12 +308,8 @@
           <audio v-if="song.preview_url" :src="song.preview_url" controls style="margin-left: auto; width: 80px; height: 28px;" />
         </li>
       </ul>
-<<<<<<< HEAD
-      <div v-if="!isSearchingSongs && !songSearchResults.length && songSearchQuery" style="color: #888; margin: 0.5rem 0;">No results found.</div>  
-=======
       <div v-if="!isSearchingSongs && !songSearchResults.length && songSearchQuery" style="color: #888; margin: 0.5rem 0;">No results found.</div>
       <button v-if="!songSearchQuery" @click="showSongModal = false">Cancel</button>
->>>>>>> main
     </div>
   </div>
 
@@ -345,6 +354,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import axios from 'axios'
 import NavLayout from '../layouts/NavLayout.vue'
 import { onBeforeUnmount } from 'vue';
+import { useRoute } from 'vue-router';
 
 const DEFAULT_PROFILE_IMAGE = '/src/assets/default-profile.jpg';
 
@@ -511,14 +521,14 @@ const selectedMixtape = ref(null)
 
 const mixtapes = ref([]); // Remove the hardcoded array, keep as empty array
 
-const editingMixtapeId = ref(null)
+const editingMixtapeId = ref(null);
 const editableMixtape = ref({
   id: null,
   name: '',
   description: '',
   cover: null,
   songs: [],
-})
+});
 
 //creating new mixtape
 const mixtapeName = ref('')
@@ -542,6 +552,25 @@ const sortOption = ref('az');
 const filteredMixtapes = computed(() => {
   if (!mixtapes.value) return [];
   let arr = [...mixtapes.value];
+
+  // Filter by search query (mixtape name or any song name/artist)
+  const query = searchQuery.value.trim().toLowerCase();
+  if (query) {
+    arr = arr.filter(mix => {
+      // Check mixtape name
+      if (mix.name && mix.name.toLowerCase().includes(query)) return true;
+      // Check any song name or artist
+      if (Array.isArray(mix.songs)) {
+        return mix.songs.some(song =>
+          (song.name && song.name.toLowerCase().includes(query)) ||
+          (song.artist && song.artist.toLowerCase().includes(query))
+        );
+      }
+      return false;
+    });
+  }
+
+  // Sorting
   switch (sortOption.value) {
     case 'az':
       arr.sort((a, b) => a.name.localeCompare(b.name));
@@ -550,10 +579,10 @@ const filteredMixtapes = computed(() => {
       arr.sort((a, b) => b.name.localeCompare(a.name));
       break;
     case 'newest':
-      arr.sort((a, b) => (b.created_at || b.id) - (a.created_at || a.id));
+      arr.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       break;
     case 'oldest':
-      arr.sort((a, b) => (a.created_at || a.id) - (b.created_at || a.id));
+      arr.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
       break;
   }
   return arr;
@@ -582,21 +611,47 @@ const handlePhotoUpload = (e) => {
   }
 }
 
-const createMixtape = () => {
+const createMixtape = async () => {
   if (!mixtapeName.value.trim()) {
-    alert('Please enter a mixtape name')
-    return
+    alert('Please enter a mixtape name');
+    return;
   }
-  mixtapes.value.push({
-    id: Date.now(),
-    name: mixtapeName.value,
-    description: mixtapeDescription.value,
-    cover: photoUrl.value,
-    songs: [...songs.value],
-  })
-  resetCreateForm()
-  showPopup.value = false
-}
+  if (songs.value.length < 1) {
+    alert('Please add at least one song');
+    return;
+  }
+  try {
+    const token = localStorage.getItem('token');
+    const coverPath = await uploadCoverIfNeeded();
+
+    // Map songs to ensure correct keys
+    const formattedSongs = songs.value.map(song => ({
+      name: song.name,
+      artist: song.artist,
+      preview_url: song.preview_url || song.url || '',
+      artwork_url: song.artwork_url || '',
+    }));
+
+    await axios.post(
+      `${import.meta.env.VITE_API_URL}/api/mixtapes`,
+      {
+        name: mixtapeName.value,
+        description: mixtapeDescription.value,
+        cover: coverPath, // Use backend path
+        songs: formattedSongs,
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    await fetchMixtapes(); // Refresh mixtape list
+    resetCreateForm();
+    showPopup.value = false;
+  } catch (error) {
+    alert('Failed to create mixtape.');
+    console.error(error);
+  }
+};
 
 const resetCreateForm = () => {
   mixtapeName.value = ''
@@ -636,7 +691,8 @@ const addSong = () => {
   const newSong = {
     name: songName.value.trim(),
     artist: artistName.value.trim(),
-    url: songUrl.value.trim() || '#',
+    preview_url: songUrl.value.trim() || '', // <-- use preview_url
+    artwork_url: '', // <-- allow user to set or leave blank
   }
 
   if (editingMixtapeId.value !== null) {
@@ -705,37 +761,43 @@ const saveEditedSong = () => {
   closeEditSongModal();
 }
 
-const startEditMixtape = (mixtape) => {
-  editingMixtapeId.value = mixtape.id
-  editableMixtape.value = JSON.parse(JSON.stringify(mixtape)) // Deep copy
+function startEditMixtape(mixtape) {
+  if (mixtape.id === firstMixtapeId.value) return;
+  editingMixtapeId.value = mixtape.id;
+  editableMixtape.value = JSON.parse(JSON.stringify(mixtape));
 }
 
-const saveEditedMixtape = () => {
-  const index = mixtapes.value.findIndex((m) => m.id === editingMixtapeId.value)
-  if (index !== -1) {
-    mixtapes.value[index] = { ...editableMixtape.value }
+async function saveEditMixtape(mixtape) {
+  try {
+    const token = localStorage.getItem('token');
+    await axios.put(
+      `${import.meta.env.VITE_API_URL}/api/mixtapes/${mixtape.id}`,
+      {
+        name: editableMixtape.value.name,
+        description: editableMixtape.value.description,
+        photoUrl: editableMixtape.value.cover,
+        songs: editableMixtape.value.songs,
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    await fetchMixtapes();
+    editingMixtapeId.value = null;
+  } catch (error) {
+    alert('Failed to update mixtape.');
   }
-  editingMixtapeId.value = null
+}
+
+function cancelEditMixtape() {
+  editingMixtapeId.value = null;
   editableMixtape.value = {
     id: null,
     name: '',
     description: '',
     cover: null,
     songs: [],
-  }
-}
-
-const cancelEditMixtape = () => {
-  editingMixtapeId.value = null
-  editableMixtape.value = {
-    id: null,
-    name: '',
-    description: '',
-    cover: null,
-    songs: [],
-  }
-  editingSongIndex.value = null
-  showEditSongModal.value = false
+  };
 }
 
 const confirmDeleteMixtape = (mixtape) => {
@@ -809,29 +871,8 @@ const songSearchQuery = ref('');
 const songSearchResults = ref([]);
 const isSearchingSongs = ref(false);
 
-async function saveEditMixtape(mixtape) {
-  try {
-    const token = localStorage.getItem('token');
-    await axios.put(
-      `${import.meta.env.VITE_API_URL}/api/mixtapes/${mixtape.id}`,
-      {
-        name: editMixtapeName.value,
-        description: editMixtapeDescription.value,
-        photoUrl: mixtape.cover,
-        songs: editableMixtape.value.songs, // send full song objects
-      },
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
-    await fetchMixtapes();
-    editingMixtapeId.value = null;
-  } catch (error) {
-    alert('Failed to update mixtape.');
-  }
-}
-
 async function deleteMixtape(mixtape) {
+  if (mixtape.id === firstMixtapeId.value) return;
   if (!confirm('Are you sure you want to delete this mixtape?')) return;
   try {
     const token = localStorage.getItem('token');
@@ -883,13 +924,97 @@ function selectSongFromSearch(song) {
   showSongModal.value = false;
 }
 
-function addEmptySongToEditable() {
-  editableMixtape.value.songs.push({
-    name: '',
-    artist: '',
-    artwork_url: '',
-    preview_url: '',
-  });
+function addSongToEditableMixtape(song) {
+  if (editingSongIndex.value === null) {
+    editableMixtape.value.songs.push(song);
+  } else {
+    editableMixtape.value.songs[editingSongIndex.value] = song;
+  }
+  showEditSongModal.value = false;
+  editingSongIndex.value = null;
+}
+
+const firstMixtapeId = computed(() => {
+  if (!mixtapes.value.length) return null;
+  return Math.min(...mixtapes.value.map(m => m.id));
+});
+
+async function uploadCoverIfNeeded() {
+  if (!photoUrl.value || photoUrl.value.startsWith('http')) {
+    // Already a real URL or not set
+    return photoUrl.value;
+  }
+  // If it's a blob URL, upload the file
+  const fileInput = photoInput.value;
+  if (fileInput && fileInput.files && fileInput.files[0]) {
+    const formData = new FormData();
+    formData.append('photo', fileInput.files[0]);
+    const response = await axios.post(
+      `${import.meta.env.VITE_API_URL}/api/upload`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    // Return the backend path (not full URL)
+    return response.data.imageUrl;
+  }
+  return '';
+}
+
+// Speech recognition setup
+const recognizing = ref(false);
+let recognition = null;
+
+if ('webkitSpeechRecognition' in window) {
+  recognition = new window.webkitSpeechRecognition();
+  recognition.continuous = false;
+  recognition.interimResults = false;
+  recognition.lang = 'en-US';
+
+  recognition.onstart = () => {
+    recognizing.value = true;
+  };
+  recognition.onend = () => {
+    recognizing.value = false;
+  };
+  recognition.onresult = (event) => {
+    if (event.results.length > 0) {
+      searchQuery.value = event.results[0][0].transcript;
+    }
+    recognizing.value = false;
+  };
+}
+
+function startVoiceSearch() {
+  if (recognition) {
+    recognition.start();
+  } else {
+    alert('Voice recognition not supported in this browser.');
+  }
+}
+
+const playingIndex = ref(null);
+const audioRef = ref(null);
+
+function playPreview(url, idx) {
+  if (audioRef.value) {
+    audioRef.value.pause();
+    audioRef.value.currentTime = 0;
+  }
+  if (playingIndex.value === idx) {
+    playingIndex.value = null;
+    return;
+  }
+  audioRef.value = new Audio(url);
+  playingIndex.value = idx;
+  audioRef.value.play();
+  audioRef.value.onended = () => {
+    playingIndex.value = null;
+  };
 }
 </script>
 
@@ -917,11 +1042,7 @@ function addEmptySongToEditable() {
   flex-direction: column;
   margin-bottom: 1rem;
   margin-top: 80px;
-<<<<<<< HEAD
   /* margin-left: 270px; */
-=======
-  margin-left: 270px;
->>>>>>> main
 }
 
 .page-title {
@@ -1694,7 +1815,6 @@ button:hover {
   border: 1px solid #ccc;
   font-size: 0.95rem;
 }
-<<<<<<< HEAD
   .add-icon { 
     background-color:#1f0d3e;
     color:  #dbb4d7;
@@ -1717,6 +1837,4 @@ button:hover {
     font-size: 11pt;
     width: 100%;
 }
-=======
->>>>>>> main
 </style>

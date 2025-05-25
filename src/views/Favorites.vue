@@ -86,10 +86,6 @@
           <p v-else class="song-list">(No songs listed)</p>
         </div>
       </div>
-<<<<<<< HEAD
-=======
-
->>>>>>> main
     </div>
   </NavLayout>
   </transition>
@@ -173,13 +169,9 @@ function closeMixtapePopup() {
   flex-direction: column;
   margin-bottom: 1rem;
   margin-top: 80px;
-<<<<<<< HEAD
   margin-left: auto;
   margin-right: auto;
   /* margin-left: 270px; */
-=======
-  margin-left: 270px;
->>>>>>> main
 }
 
 .favorites-title {
@@ -211,11 +203,7 @@ function closeMixtapePopup() {
   flex-direction: column;
   position: relative;
   text-align: left;
-<<<<<<< HEAD
   
-=======
-  box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
->>>>>>> main
 }
 
 .heart-btn {
@@ -321,11 +309,7 @@ function closeMixtapePopup() {
   background-color: #080d2a;
   border-radius: 12px;
   padding: 1.5rem;
-<<<<<<< HEAD
   width: 45%;
-=======
-  width: 35rem;
->>>>>>> main
   height: 26rem;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
   color: white;

@@ -26,44 +26,12 @@
 
     <p v-if="mixtapeBioError" class="error-message">{{ mixtapeBioError }}</p>
 
-<<<<<<< HEAD
 
 
     <!-- SONGS AREA (keep this) -->
     <div class="songs-area-label">
       Add 3 songs to create your first mixtape
     </div>
-=======
-    <!-- REMOVE THIS OLD SONG LIST AREA -->
-    <!--
-    <div v-for="(song, index) in songs" :key="index" class="song-entry song-item-flex">
-      <div class="song-details-flex">
-        <img v-if="song.artwork" :src="song.artwork" alt="Artwork" class="song-artwork" />
-        <div class="song-text">
-          <div>{{ song.name }} - {{ song.artist }}</div>
-        </div>
-        <button v-if="song.previewUrl" class="mini-audio-btn" @click="togglePlay(index)"
-          :aria-label="playingIndex === index ? 'Pause preview' : 'Play preview'">
-          <i :class="playingIndex === index ? 'fa-solid fa-pause' : 'fa-solid fa-play'"></i>
-        </button>
-        <div v-else class="no-preview">No preview available</div>
-        <audio v-if="song.previewUrl" ref="audioRefs" :src="song.previewUrl" @ended="onAudioEnded"
-          style="display: none;"></audio>
-      </div>
-      <div class="song-actions-buttons">
-        <i class="fa-solid fa-pen edit-icon" @click="editSong(index)"></i>
-        <i class="fa-solid fa-trash delete-icon" @click="deleteSong(index)"></i>
-      </div>
-    </div>
-    -->
-
-    <!-- REMOVE song-count and add-song-row -->
-
-    <!-- SONGS AREA (keep this) -->
-    <div class="songs-area-label">
-      Add 3 songs to create your first mixtape
-    </div>
->>>>>>> main
     <div class="songs-area">
       <div
   v-for="i in 3"
@@ -113,11 +81,7 @@
     <p v-if="showSongError" class="error-message">You need to add at least 3 songs.</p>
     <button class="create-button" :class="{ 'gradient-active': gradientActive, 'twinkle-effect': twinkleActive }"
       :disabled="isSubmitting" @click="handleFinish">
-<<<<<<< HEAD
       {{ isSubmitting ? 'Creating...' : 'Create Mixtape' }}
-=======
-      <span>{{ isSubmitting ? 'Creating...' : 'Create Mixtape' }}</span>
->>>>>>> main
     </button>
 
     <!-- Song Modal IS EDITED -->
@@ -492,14 +456,9 @@ watch(songs, () => {
 
 /*EDITED*/
 .create-text {
-<<<<<<< HEAD
   width:100%;
   position: absolute;
   top: 2rem;
-=======
-  position: absolute;
-  top: 3rem;
->>>>>>> main
   left: 50%;
   transform: translateX(-50%);
   font-size: 3rem;
@@ -513,15 +472,9 @@ watch(songs, () => {
 .main-box {
   background: rgba(255, 255, 255, 0.55);
   /* glassmorphism */
-<<<<<<< HEAD
   width: 40%;
   height: auto;
   padding: 0.5rem;
-=======
-  width: 35rem;
-  height: 33rem;
-  padding: 2rem;
->>>>>>> main
   border-radius: 15px;
   color: #322848;
   position: absolute;
@@ -549,13 +502,8 @@ watch(songs, () => {
 /* EDITED */
 .upload-box {
   background-color: #3228485a;
-<<<<<<< HEAD
   width: 7rem;
   height: 7rem;
-=======
-  width: 10rem;
-  height: 10rem;
->>>>>>> main
   margin: 0 auto 1rem;
   border: 2px solid #322848;
   border-radius: 0.5rem;
@@ -633,11 +581,7 @@ watch(songs, () => {
 }
 
 .textarea {
-<<<<<<< HEAD
   height: 40px;
-=======
-  height: 90px;
->>>>>>> main
   resize: none;
 }
 
@@ -710,13 +654,8 @@ watch(songs, () => {
 /*EDITED AND ADDED EVERYTHING ABOUT BUTTON BELOW*/
 .create-button {
   width: 50%;
-<<<<<<< HEAD
   height: 35px;
   padding: 5px;
-=======
-  height: 45px;
-  padding: 10px;
->>>>>>> main
   background: #322848;
   color: #fff;
   border: none;
@@ -732,10 +671,6 @@ watch(songs, () => {
   margin-left: auto;
   margin-right: auto;
   position: relative;
-<<<<<<< HEAD
-=======
-  overflow: hidden;
->>>>>>> main
   z-index: 1;
 }
 
@@ -743,10 +678,10 @@ watch(songs, () => {
 .create-button.gradient-active::after {
   content: "";
   position: absolute;
-  left: -50%;
-  top: -50%;
-  width: 200%;
-  height: 200%;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
   background: linear-gradient(120deg, #e3b8ff 0%, #dbb4d7 25%, #c697bd 50%, #8a6bb8 75%, #322848 100%);
   background-size: 200% 200%;
   animation: buttonGradientMove 2s linear infinite;
@@ -1062,11 +997,7 @@ watch(songs, () => {
 .songs-area {
   display: flex;
   flex-direction: column;
-<<<<<<< HEAD
   gap: 0.5rem;
-=======
-  gap: 1rem;
->>>>>>> main
   margin-top: 0.5rem;
 }
 
@@ -1276,7 +1207,6 @@ watch(songs, () => {
   padding: 0;
   line-height: 1;
 }
-<<<<<<< HEAD
 
 /* Responsive styles */
 @media (max-width: 1024px) {
@@ -1299,6 +1229,4 @@ watch(songs, () => {
     top: 80%;
   }
   }
-=======
->>>>>>> main
 </style>
