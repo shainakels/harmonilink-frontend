@@ -1,12 +1,9 @@
 <template>
   <transition name="fade">
     <NavLayout>
+      <div class="animated-background"></div>
       <div class="favorites-wrapper">
-        <h1 class="favorites-title">Discover</h1>
-        <p class="favorites-description">
-          Find your link in the harmony! Dive into mixtapes that vibe with you.
-        </p>
-
+        <!-- Removed Discover title and description below -->
         <div class="grid-container">
           <div class="left-column">
             <!-- Navigation Buttons -->
@@ -22,8 +19,11 @@
           <div class="main-column">
             <div class="discover-container" :class="{ flipped: isFlipped }">
               <!-- No Profiles Message -->
-              <div v-if="filteredProfiles.length === 0" class="no-profiles">
-                <p>No profiles available. Please check back later.</p>
+              <div
+                v-if="filteredProfiles.length === 0"
+                class="no-profiles-centered"
+              >
+                <p>It's a bit quiet here. New profiles will drop soon!</p>
               </div>
               <!-- Front Side (Profile Details) -->
               <div class="front" v-if="currentProfile">
@@ -97,7 +97,66 @@
                       v-for="(song, index) in currentProfile.mixtapes[0].songs"
                       :key="index"
                       class="song-item"
+                      style="
+                        display: flex;
+                        align-items: center;
+                        cursor: pointer;
+                      "
+                      @click="song.preview_url && toggleDiscoverPlay(index)"
+                      :aria-label="
+                        discoverPlayingIndex === index
+                          ? 'Pause preview'
+                          : 'Play preview'
+                      "
+                      tabindex="0"
                     >
+                      <!-- Animated Soundwave SVG -->
+                      <span
+                        class="soundwave"
+                        :class="{ active: discoverPlayingIndex === index }"
+                        v-if="song.preview_url"
+                        style="margin-right: 0.7rem"
+                      >
+                        <svg width="22" height="22" viewBox="0 0 22 22">
+                          <rect
+                            class="bar bar1"
+                            x="2"
+                            y="6"
+                            width="3"
+                            height="10"
+                            rx="1.5"
+                          />
+                          <rect
+                            class="bar bar2"
+                            x="7"
+                            y="3"
+                            width="3"
+                            height="16"
+                            rx="1.5"
+                          />
+                          <rect
+                            class="bar bar3"
+                            x="12"
+                            y="8"
+                            width="3"
+                            height="6"
+                            rx="1.5"
+                          />
+                          <rect
+                            class="bar bar4"
+                            x="17"
+                            y="5"
+                            width="3"
+                            height="12"
+                            rx="1.5"
+                          />
+                        </svg>
+                      </span>
+                      <span
+                        v-else
+                        style="width: 22px; margin-right: 0.7rem"
+                      ></span>
+
                       <img
                         v-if="song.artwork_url"
                         :src="song.artwork_url"
@@ -111,9 +170,9 @@
                         "
                       />
 
-                      <span style="width: 200px"
-                        >{{ song.song_name }} by {{ song.artist_name }}</span
-                      >
+                      <span style="width: 200px">
+                        {{ song.song_name }} by {{ song.artist_name }}
+                      </span>
 
                       <audio
                         v-if="song.preview_url"
@@ -122,26 +181,6 @@
                         @ended="onDiscoverAudioEnded"
                         style="display: none"
                       ></audio>
-                      &nbsp;
-                      <button
-                        v-if="song.preview_url"
-                        class="mini-audio-btn"
-                        @click.stop="toggleDiscoverPlay(index)"
-                        :aria-label="
-                          discoverPlayingIndex === index
-                            ? 'Pause preview'
-                            : 'Play preview'
-                        "
-                        style="margin-right: 0.5rem"
-                      >
-                        <i
-                          :class="
-                            discoverPlayingIndex === index
-                              ? 'fa-solid fa-pause'
-                              : 'fa-solid fa-play'
-                          "
-                        ></i>
-                      </button>
                       <span
                         v-else
                         class="no-preview"
@@ -209,6 +248,7 @@ import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import NavLayout from "../layouts/NavLayout.vue";
 import axios from "axios";
 import { useRouter, useRoute } from "vue-router";
+import confetti from "canvas-confetti";
 
 const router = useRouter();
 const route = useRoute();
@@ -370,15 +410,16 @@ function flipCard() {
   if (!isFlipped.value) {
     // Mark the profile as viewed
     if (!currentProfile.value.viewed) {
-      currentProfile.value.viewed = true; // Mark the profile as viewed
+      currentProfile.value.viewed = true;
       viewedProfiles.value++;
+      saveStateToLocalStorage();
 
-      saveStateToLocalStorage(); // Save the updated state
-
-      // Start the refresh timer if it hasn't started yet
-      if (!refreshInterval) {
-        startRefreshTimer();
-      }
+      // Confetti when unpacking for the first time
+      confetti({
+        particleCount: 120,
+        spread: 80,
+        origin: { y: 0.7 },
+      });
     }
   }
   isFlipped.value = !isFlipped.value;
@@ -640,6 +681,15 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+html,
+body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* This hides all scrollbars */
+}
+
 button {
   padding: 0;
 }
@@ -665,7 +715,10 @@ button {
 }
 
 .discover-container {
-  background-color: rgba(8, 13, 42, 0.85);
+  background: transparent;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  backdrop-filter: brightness(1.05);
+  -webkit-backdrop-filter: brightness(1.05);
   border-radius: 12px;
   /* padding-top: 3rem; */
   transition: opacity 0.5s ease; /* Smooth transition for opacity */
@@ -675,16 +728,13 @@ button {
   position: relative;
   user-select: none;
   z-index: 0;
-  box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px,
-    rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px,
-    rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
 }
 
 .nav-button {
   background: none;
   border: none;
   font-size: 2.5rem;
-  color: #080d2a;
+  color: #322848;
   cursor: pointer;
   z-index: 1;
   outline: none;
@@ -723,19 +773,44 @@ button {
   padding-bottom: 1rem;
   box-sizing: border-box;
   transition: transform 0.5s ease;
+  color: #322848;
+}
+
+/* Make sure all text elements inside the card also use #322848 */
+.profile-name,
+.profile-info,
+.mixtape-title-front,
+.mixtape-description,
+.mixtape-title-back,
+.song-list,
+.song-item,
+.no-mixtape-message {
+  color: #fff !important;
 }
 
 .front {
-  background-color: rgba(8, 13, 42, 0.85);
-  color: #fff;
+  background: #32284879;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.25);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  color: #322848;
   z-index: 2;
   transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   transform-style: preserve-3d;
 }
 
+.front:hover {
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.35);
+  backdrop-filter: blur(16px) saturate(200%);
+  -webkit-backdrop-filter: blur(16px) saturate(200%);
+}
+
 .back {
-  background-color: rgba(8, 13, 42, 0.85);
-  color: white;
+  background: #32284879;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.25);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  color: #322848;
   transform: rotateY(180deg);
   text-align: center;
   font-size: 2rem;
@@ -774,14 +849,16 @@ button {
 .refresh-label {
   font-weight: bold;
   font-size: 0.9rem;
+  color: #ffffff !important;
 }
 
 .refresh-time {
   font-size: 0.9rem;
+  color: #ffffff !important;
 }
 
 .profile-count {
-  background-color: #1c1b2e;
+  background-color: #28203ad2;
   padding: 0.3rem 0.7rem;
   border-radius: 30px;
   font-size: 0.8rem;
@@ -789,9 +866,17 @@ button {
 }
 
 .profile-card {
-  background-color: rgba(108, 119, 178, 0.35);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.05),
+    rgba(255, 255, 255, 0)
+  );
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); /* stronger shadow for depth */
+  backdrop-filter: blur(12px) brightness(1.05);
+  -webkit-backdrop-filter: blur(12px) brightness(1.05);
+  border: 1px solid rgba(255, 255, 255, 0.2); /* soft border */
   padding: 1.5rem;
-  border-radius: 10px;
+  border-radius: 16px;
   width: 50%;
   height: 450px;
   text-align: center;
@@ -799,7 +884,6 @@ button {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  /* margin-top: -60px; */
 }
 
 .profile-name {
@@ -827,7 +911,7 @@ button {
 }
 
 .unpack-button {
-  background-color: #080d2a;
+  background-color: #322848;
   color: white;
   width: 10rem;
   padding: 0.3rem;
@@ -844,14 +928,18 @@ button {
 }
 
 .unpack-button.unpacked {
-  background-color: #5c5e78;
+  background-color: #28203a;
   color: #ffffff;
   cursor: default;
 }
 
 .unpack-button:hover {
-  background-color: #dbb4d7;
-  color: #1f0d3e;
+  background: #28203a;
+}
+
+.unpack-button:focus {
+  outline: none;
+  box-shadow: none;
 }
 
 .heart-indicator {
@@ -864,18 +952,17 @@ button {
   position: absolute;
   top: 30px;
   left: 30px;
-  color: white;
+  color: #28203a;
   z-index: 1;
 }
 
 .back-button:hover {
-  color: #dbb4d7;
+  color: #28203a;
 }
 
 .back-mixtape {
-  background-color: rgba(108, 119, 178, 0.35);
+  background-color: #32284889;
   position: relative;
-
   border-radius: 10px;
   width: 60%;
   height: 380px;
@@ -923,7 +1010,6 @@ button {
   font-size: 0.9rem;
   line-height: 1.4;
   height: 100px;
-  overflow-y: auto;
   margin: 5rem auto 0;
   padding: 0 1.5rem;
   display: flex;
@@ -931,10 +1017,38 @@ button {
   gap: 0.5rem;
   overflow-y: auto;
   width: 90%;
-  border: 1px solid #dbb4d7;
+  border: 1px solid #ffffff;
   padding: 10px;
   border-radius: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: #28203a #f5f5fa;
 }
+
+/* Chrome, Edge, Safari */
+.song-list {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #28203a transparent; /* thumb color, track transparent */
+}
+
+/* Chrome, Edge, Safari */
+.song-list::-webkit-scrollbar {
+  width: 8px;
+  background: transparent;
+}
+
+.song-list::-webkit-scrollbar-thumb {
+  background: #28203a;
+  border-radius: 8px;
+  min-height: 30px;
+  box-shadow: 0 2px 8px rgba(122, 82, 155, 0.15);
+}
+
+.song-list::-webkit-scrollbar-thumb:hover {
+  background: #28203a; /* stays the same on hover */
+}
+
+/* ...existing code... */
 
 .mini-audio-btn {
   background: transparent;
@@ -949,8 +1063,9 @@ button {
   justify-content: center;
   padding: 0;
 }
+
 .mini-audio-btn:hover {
-  color: #dbb4d7;
+  color: #ffffff;
 }
 
 .no-mixtape-message {
@@ -971,8 +1086,10 @@ button {
 .action-section {
   margin-top: 1rem;
   padding: 8px;
-  background-color: #5c5e78;
-  border: 2px solid #a7a5a5c2;
+  background: #32284889;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  backdrop-filter: brightness(1.05);
+  -webkit-backdrop-filter: brightness(1.05);
   border-radius: 10px;
   text-align: center;
   width: 60%;
@@ -994,7 +1111,7 @@ button {
   font-size: 2rem;
   color: white;
   cursor: pointer;
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1003,6 +1120,7 @@ button {
 .heart-btn:hover,
 .x-btn:hover {
   transform: scale(1.1);
+  box-shadow: 0 0 12px 4px rgba(255, 0, 69, 0.6); /* glowing red for heart */
 }
 
 .heart-btn {
@@ -1015,6 +1133,8 @@ button {
   cursor: pointer;
   transition: transform 0.2s ease, border-color 0.2s ease;
   background: radial-gradient(circle, #ff0045, #ffffff);
+  border: 2px solid transparent;
+  animation: gradientMove 12s ease-in-out infinite;
 }
 
 .heart-btn.clicked {
@@ -1025,6 +1145,10 @@ button {
 
 .x-btn {
   background: radial-gradient(circle, #0075ff, #ffffff);
+}
+
+.x-btn:hover {
+  box-shadow: 0 0 12px 4px rgba(0, 117, 255, 0.6); /* glowing blue for x */
 }
 
 .x-btn:disabled {
@@ -1058,8 +1182,79 @@ button {
   margin-right: 0.5rem;
   vertical-align: middle;
 }
-</style>
 
+.soundwave {
+  display: inline-flex;
+  align-items: center;
+  user-select: none;
+  transition: opacity 0.2s;
+  opacity: 0.7;
+}
+.soundwave.active {
+  opacity: 1;
+}
+.soundwave svg .bar {
+  fill: #fff;
+  opacity: 0.7;
+  transition: height 0.2s;
+}
+.soundwave.active svg .bar1 {
+  animation: bar1Anim 1s infinite;
+}
+.soundwave.active svg .bar2 {
+  animation: bar2Anim 1s infinite;
+}
+.soundwave.active svg .bar3 {
+  animation: bar3Anim 1s infinite;
+}
+.soundwave.active svg .bar4 {
+  animation: bar4Anim 1s infinite;
+}
+@keyframes bar1Anim {
+  0%,
+  100% {
+    height: 10px;
+    y: 6;
+  }
+  50% {
+    height: 18px;
+    y: 2;
+  }
+}
+@keyframes bar2Anim {
+  0%,
+  100% {
+    height: 16px;
+    y: 3;
+  }
+  50% {
+    height: 8px;
+    y: 7;
+  }
+}
+@keyframes bar3Anim {
+  0%,
+  100% {
+    height: 6px;
+    y: 8;
+  }
+  50% {
+    height: 14px;
+    y: 4;
+  }
+}
+@keyframes bar4Anim {
+  0%,
+  100% {
+    height: 12px;
+    y: 5;
+  }
+  50% {
+    height: 20px;
+    y: 1;
+  }
+}
+</style>
 
 <!-- Style from Favorites -->
 <style scoped>
@@ -1073,21 +1268,17 @@ button {
 }
 
 .favorites-wrapper {
-  padding-left: 2rem;
-  padding-top: 2rem;
-  padding-right: 2rem;
-  background-color: #dbb4d7;
-  min-height: 100%;
-  overflow: auto;
+  padding: 2rem;
+  background: transparent;
+  background-size: 300% 300%;
+  min-height: 90vh; /* Use viewport height instead */
   color: black;
   display: flex;
   flex-direction: column;
-  margin-bottom: 1rem;
-  margin-top: 80px;
-  /* margin-left: 270px; */
   width: 100%;
-  margin-left: auto;
-  margin-right: auto;
+  margin: 80px auto 1rem auto;
+  overflow: hidden;
+  position: fixed;
 }
 
 .favorites-title {
@@ -1163,5 +1354,76 @@ button {
   .action-section {
     width: 100%;
   }
+}
+
+/* Base white background */
+.animated-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 100vh;
+  width: 100vw;
+  background-color: #ffffff;
+  z-index: -2;
+  pointer-events: none;
+}
+
+/* Animated vibrant gradient overlay */
+.animated-background::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at center,
+    rgba(204, 159, 255, 0.911),
+    rgba(122, 82, 155, 0.4),
+    rgba(238, 67, 141, 0.3),
+    rgba(143, 74, 203, 0.4)
+  );
+  background-size: 200% 200%;
+  animation: gradientDance 20s ease-in-out infinite;
+  z-index: -1;
+  pointer-events: none;
+}
+
+@keyframes gradientDance {
+  0% {
+    background-position: 0% 50%;
+  }
+  25% {
+    background-position: 50% 100%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  75% {
+    background-position: 50% 0%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+.animated-background::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  backdrop-filter: blur(5px);
+  pointer-events: none;
+}
+
+.no-profiles-centered {
+  position: absolute;
+  top: 48%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  text-align: center;
+  color: #322848df;
+  font-size: 1rem;
+  font-weight: 500;
+  z-index: 10;
+  pointer-events: none;
 }
 </style>
