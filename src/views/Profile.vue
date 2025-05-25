@@ -144,8 +144,13 @@
     </div>
   </div>
   <div v-else class="mixtape-edit-form">
+<<<<<<< HEAD
     <input v-model="editMixtapeName" placeholder="Mixtape Name" class="mixtape-desc"/>
     <textarea v-model="editMixtapeDescription" placeholder="Description" class ="mixtape-desc"></textarea>
+=======
+    <input v-model="editMixtapeName" placeholder="Mixtape Name" />
+    <textarea v-model="editMixtapeDescription" placeholder="Description"></textarea>
+>>>>>>> main
     <div class="edit-songs-section">
       <h4>Edit Songs</h4>
       <div v-for="(song, idx) in editableMixtape.songs" :key="idx" class="edit-song-row">
@@ -177,9 +182,14 @@
       </div>
       <button @click="addEmptySongToEditable" style="margin-top: 10px; background: #6a4fcf; color: #fff; border-radius: 6px;">Add Song</button>
     </div>
+<<<<<<< HEAD
     <button @click="saveEditMixtape(editableMixtape)" style="background: rgb(106, 79, 207); color: #fff; border-radius: 6px;">Save</button>
     &nbsp;&nbsp;&nbsp;
     <button @click="editingMixtapeId = null" style="background: rgb(106, 79, 207); color: #fff; border-radius: 6px;">Cancel</button>
+=======
+    <button @click="saveEditMixtape(editableMixtape)">Save</button>
+    <button @click="editingMixtapeId = null">Cancel</button>
+>>>>>>> main
   </div>
   <transition name="fade">
     <div v-if="expandedMixtapeId === mixtape.id" class="expanded-songs">
@@ -246,7 +256,11 @@
   <div v-if="showSongModal" class="modal-overlay">
     <div class="song-popup-box">
       <span class="exit-btn" @click="closeSongModal">×</span>
+<<<<<<< HEAD
       <h3>Song Search</h3>
+=======
+      <h3>Add Song</h3>
+>>>>>>> main
       <input
         type="text"
         v-model="songSearchQuery"
@@ -255,6 +269,7 @@
         autocomplete="off"
       />
       <div v-if="isSearchingSongs" style="margin: 0.5rem 0;">Searching...</div>
+<<<<<<< HEAD
       <ul v-if="songSearchResults.length" 
       style="margin-top: 1rem;
             max-height: 150px;
@@ -263,6 +278,9 @@
             padding: 0.5rem;
             border-radius: 0.5rem;
             color: #dbb4d7;">
+=======
+      <ul v-if="songSearchResults.length" style="max-height: 200px; overflow-y: auto; margin: 0; padding: 0;">
+>>>>>>> main
         <li
           v-for="(song, idx) in songSearchResults"
           :key="idx"
@@ -277,7 +295,12 @@
           <audio v-if="song.preview_url" :src="song.preview_url" controls style="margin-left: auto; width: 80px; height: 28px;" />
         </li>
       </ul>
+<<<<<<< HEAD
       <div v-if="!isSearchingSongs && !songSearchResults.length && songSearchQuery" style="color: #888; margin: 0.5rem 0;">No results found.</div>  
+=======
+      <div v-if="!isSearchingSongs && !songSearchResults.length && songSearchQuery" style="color: #888; margin: 0.5rem 0;">No results found.</div>
+      <button v-if="!songSearchQuery" @click="showSongModal = false">Cancel</button>
+>>>>>>> main
     </div>
   </div>
 
@@ -894,7 +917,11 @@ function addEmptySongToEditable() {
   flex-direction: column;
   margin-bottom: 1rem;
   margin-top: 80px;
+<<<<<<< HEAD
   /* margin-left: 270px; */
+=======
+  margin-left: 270px;
+>>>>>>> main
 }
 
 .page-title {
@@ -1667,6 +1694,7 @@ button:hover {
   border: 1px solid #ccc;
   font-size: 0.95rem;
 }
+<<<<<<< HEAD
   .add-icon { 
     background-color:#1f0d3e;
     color:  #dbb4d7;
@@ -1689,4 +1717,6 @@ button:hover {
     font-size: 11pt;
     width: 100%;
 }
+=======
+>>>>>>> main
 </style>

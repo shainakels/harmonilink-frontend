@@ -1,8 +1,9 @@
 <template>
-  <img src="/src/assets/background.png" alt="background" class="background"/>
+  <div class="background"></div>
   <div class="reset-password-page">
     <h2>Reset Password</h2>
-    <p>Make sure your new password is strong. Use a combination of letters, numbers, and symbols.</p>
+    <img src="/src/assets/logo.png" alt="Harmonilink Logo" class="logo-img">
+    <p class="quote-text">Make sure your new password is strong. Use a combination of letters, numbers, and symbols.</p>
     <form @submit.prevent="handleResetPassword">
       <!-- Password -->
       <div class="input-group">
@@ -18,7 +19,6 @@
         <span class="icon" @click="togglePasswordVisibility">
           <i :class="showPassword ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'"></i>
         </span>
-
         <!-- Password Validation Popup -->
         <div v-if="showPasswordPopup" class="password-popup">
           <p v-for="(criteria, index) in passwordCriteria" :key="index" :class="{ met: criteria.met }">
@@ -28,7 +28,6 @@
         </div>
         <p v-if="passwordError" class="error-message">{{ passwordError }}</p>
       </div>
-
       <!-- Confirm Password -->
       <div class="input-group">
         <input
@@ -43,7 +42,6 @@
         </span>
         <p v-if="confirmPasswordError" class="error-message">{{ confirmPasswordError }}</p>
       </div>
-
       <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
       <button type="submit" :disabled="loading">
         {{ loading ? 'Resetting...' : 'Reset Password' }}
@@ -137,81 +135,157 @@ const handleResetPassword = async () => {
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap');
+
+* {
+  font-family: 'Fira Code', monospace;
+}
+
 .background {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-size: cover;
-  background-position: center;
+  background: linear-gradient(120deg, #e3b8ff 0%, #dbb4d7 25%, #c697bd 50%, #8a6bb8 75%, #322848 100%);
+  background-size: 300% 300%;
+  background-position: 0% 50%;
   background-repeat: no-repeat;
-  z-index: -1;
+  display: flex;
+  flex-direction: column;
+  animation: gradientMove var(--gradient-speed, 12s) ease-in-out infinite;
+  transition: --gradient-speed 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes gradientMove {
+  0% { background-position: 0% 60%; }
+  25% { background-position: 50% 100%; }
+  50% { background-position: 100% 50%; }
+  75% { background-position: 50% 0%; }
+  100% { background-position: 0% 60%; }
 }
 
 .reset-password-page {
-  max-width: 400px;
-  margin: 50px auto;
-  padding: 25px;
-  background-color: #dbb4d7;
-  color: #1f0d3e;
-  border-radius: 8px;
-  box-shadow: 0 7px 10px rgba(0, 0, 0, 0.1);
+  width: 25rem;
+  min-height: 28rem;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.65);
+  border-radius: 25px;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.25);
   text-align: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #322848;
+  z-index: 1;
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transition: all 0.3s ease;
+}
+
+.logo-img {
+  width: 4rem;
+  margin-bottom: 0.5rem;
 }
 
 h2 {
-  margin-bottom: 18px;
-  color: #333;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  color: #322848;
+  font-size: 2rem;
+  font-weight: 600;
 }
 
-p {
-  margin-bottom: 16px;
-  font-size: 14px;
-  color: #666;
+.quote-text {
+  font-size: 0.75rem;
+  margin: 0.5rem 0 2rem;
+  color: #322848;
 }
 
 .input-group {
   position: relative;
-  margin-bottom: 20px;
+  margin: 1rem 0;
 }
 
 .input-group input {
-  width: 90%;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  width: 95%;
+  height: 42px;
+  padding: 10px 40px 10px 15px;
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  font-size: 15px;
+  color: #322848;
+  transition: all 0.3s ease;
+}
+
+.input-group input::placeholder {
+  color: rgba(50, 40, 72, 0.6);
+}
+
+.input-group input:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.45);
+  box-shadow: 0 8px 12px rgba(31, 13, 62, 0.08);
 }
 
 .input-group .icon {
   position: absolute;
-  right: 23px;
-  top: 46%;
+  right: 26px;
+  top: 50%;
   transform: translateY(-50%);
+  color: #322848;
+  opacity: 0.6;
+  transition: all 0.3s ease;
   cursor: pointer;
-  color: #666;
+}
+
+.input-group input:focus + .icon {
+  opacity: 0.8;
 }
 
 button {
-  width: 96%;
+  width: 90%;
+  height: 45px;
   padding: 10px;
-  background: #1f0d3e;
+  background: #322848;
   color: #fff;
   border: none;
-  border-radius: 4px;
+  border-radius: 25px;
   cursor: pointer;
+  margin-top: 12px;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  letter-spacing: 0.5px;
+  outline: none; 
+}
+
+button:hover {
+  background: #322848;
+  transform: translateY(-1px);
+  box-shadow: 0 0 10px #8a6bb8, 0 0 20px #c697bd, 0 0 30px #dbb4d7;
+}
+
+button:focus {
+  outline: none;
 }
 
 button:disabled {
-  background: #ccc;
+  background: #888;
   cursor: not-allowed;
 }
 
 .error-message {
-  color: red;
-  font-size: 12px;
-  margin-top: 5px;
-  text-align: left;
+  color: #f44336;
+  font-size: 0.85rem;
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  background: rgba(244, 67, 54, 0.1);
+  border-radius: 4px;
+  border: 1px solid rgba(244, 67, 54, 0.2);
 }
 
 .password-popup {
@@ -247,5 +321,47 @@ button:disabled {
 
 .password-popup i {
   font-size: 12px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .reset-password-page {
+    width: 90%;
+    max-width: 25rem;
+    padding: 1.5rem;
+    min-height: 26rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .reset-password-page {
+    padding: 1rem;
+    min-height: 22rem;
+  }
+  h2 {
+    font-size: 1.75rem;
+  }
+  .input-group input {
+    font-size: 0.85rem;
+  }
+}
+
+/* Dark mode styles */
+@media (prefers-color-scheme: dark) {
+  .reset-password-page {
+    background: rgba(255,255,255,0.12);
+    color: #322848;
+  }
+  .input-group input {
+    background: rgba(255,255,255,0.25);
+    border: none;
+    color: #322848;
+  }
+  .input-group input:focus {
+    background: rgba(255,255,255,0.25);
+  }
+  h2, .quote-text {
+    color: #322848;
+  }
 }
 </style>

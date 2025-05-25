@@ -2,7 +2,7 @@
     <div>
       <transition name="fade" @after-leave="navigateToNextPage">
         <div class="background" v-if="showPage">
-          <img src="/src/assets/welcomebg.png" alt="background" class="background">
+          <div class="pulse-bg"></div>
   
           <div class="logo">
             <img src="/src/assets/logo.png" alt="HarmoniLink Logo">
@@ -74,11 +74,10 @@
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+    background: none;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
   }
   
   .logo {
@@ -109,6 +108,9 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
+    background: none;
+    border: none;
+    box-shadow: none;
   }
   
   .welcome-text {
@@ -142,13 +144,26 @@
     align-items: center;
   }
   
-  .pulsing-image {
-    width: 20rem;
-    cursor: pointer;
-    animation: pulse 3s infinite ease-in-out;
-    position: relative;
-    top: -2rem;
-  }
+.pulsing-image {
+  width: 19rem;
+  cursor: pointer;
+  animation: pulse 3s infinite ease-in-out;
+  position: relative;
+  top: -2rem;
+  transition: filter 0.3s;
+  border-radius: 50%;
+  object-fit: cover;
+  aspect-ratio: 1 / 1;
+}
+
+.pulsing-image:hover {
+  filter:
+    brightness(1.75)
+    drop-shadow(0 0 12px #dbb4d7)
+    drop-shadow(0 0 24px #8a6bb8)
+    drop-shadow(0 0 36px #c697bd);
+}
+
   
   @keyframes pulse {
     0% {
@@ -170,5 +185,47 @@
   }
   .fade-enter, .fade-leave-to {
     opacity: 0;
+  }
+
+  /* Animated, circular, gradient pulse background */
+  .pulse-bg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 130vw;
+    height: 130vw;
+    max-width: 1600px;
+    max-height: 1600px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    z-index: -1; 
+    opacity: 0.92;
+    filter: blur(2px);
+    background: linear-gradient(120deg, #dbb4d7 0%, #c697bd 40%, #8a6bb8 70%, #322848 100%);
+    background-size: 300% 300%;
+    animation: animated-pulse-gradient 6s ease-in-out infinite;
+  }
+
+  @keyframes animated-pulse-gradient {
+    0% {
+      background-position: 0% 50%;
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 0.92;
+    }
+    40% {
+      background-position: 100% 50%;
+      transform: translate(-50%, -50%) scale(1.07);
+      opacity: 1;
+    }
+    60% {
+      background-position: 80% 50%;
+      transform: translate(-50%, -50%) scale(1.04);
+      opacity: 0.97;
+    }
+    100% {
+      background-position: 0% 50%;
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 0.92;
+    }
   }
   </style>

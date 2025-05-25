@@ -1,6 +1,6 @@
 <template>
   <!-- Background image -->
-  <img src="/src/assets/background.png" alt="background" class="background">
+  <div class="background"></div>
   <div class="cd">
     <img src="/src/assets/cd.png" alt="CD" class="CD">
   </div>
@@ -153,12 +153,32 @@ const handleLogin = async () => {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-size: cover;
-  background-position: center;
+  background: linear-gradient(120deg, #e3b8ff 0%, #dbb4d7 25%, #c697bd 50%, #8a6bb8 75%, #322848 100%);
+  background-size: 300% 300%;
+  background-position: 0% 50%;
   background-repeat: no-repeat;
   display: flex;
   flex-direction: column;
-  transform: none;
+  animation: gradientMove 12s ease-in-out infinite;
+  transition: background-position 0.3s ease;
+}
+
+@keyframes gradientMove {
+  0% {
+    background-position: 0% 60%;
+  }
+  25% {
+    background-position: 50% 100%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  75% {
+    background-position: 50% 0%;
+  }
+  100% {
+    background-position: 0% 60%;
+  }
 }
 
 .CD {
@@ -168,7 +188,20 @@ const handleLogin = async () => {
   height: 28rem;
   transform: translate(90%, -50%);
   z-index: 0;
-  animation: rotate 20s linear infinite;
+  animation: rotate 20s linear infinite, glow 2s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 25px rgba(138, 43, 226, 0.6)) 
+          drop-shadow(0 0 10px rgba(255, 255, 255, 0.4));
+}
+
+@keyframes glow {
+  from {
+    filter: drop-shadow(0 0 15px rgba(138, 43, 226, 0.4))
+            drop-shadow(0 0 5px rgba(255, 255, 255, 0.2));
+  }
+  to {
+    filter: drop-shadow(0 0 30px rgba(138, 43, 226, 0.6))
+            drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+  }
 }
 
 @keyframes rotate {
@@ -185,20 +218,32 @@ const handleLogin = async () => {
   height: auto;
   min-height: 32rem;
   padding: 2rem;
-  background: linear-gradient(to bottom, #c697bd, #dbb4d7 50%, #1f0d3e);
-  border-radius: 10px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  background: #ffffff; 
   text-align: center;
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  color: #322848;
+  color: #222222; 
   z-index: 1;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08); 
+  backdrop-filter: brightness(1.05); 
+  -webkit-backdrop-filter: brightness(1.05);
+  border: 1px solid #eeeeee; 
+  transition: all 0.3s ease;
+}
+
+
+.login:hover {
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.35);
+  backdrop-filter: blur(16px) saturate(200%);
+  -webkit-backdrop-filter: blur(16px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.25);
 }
 
 .login img {
-  width: 4rem;
+  width: 5rem;
   margin-bottom: 0.5rem;
 }
 
@@ -206,14 +251,14 @@ h2 {
   margin-top: 0;
   margin-bottom: 0.5rem;
   color: #322848;
-  font-size: 2rem;
-  font-weight: 600;
+  font-size: 40px;
+  font-weight: 700;
 }
 
 .quote-text {
-  font-size: 0.75rem;
+  font-size: 10.5px;
   margin: 0.5rem 0 2rem;
-  color: #666;
+  color: #322848;
 }
 
 .input-group {
@@ -222,29 +267,40 @@ h2 {
 }
 
 .input-group input {
-  width: 100%;
-  height: 2.5rem;
-  padding: 0.5rem 2.5rem 0.5rem 1rem;
-  background: rgba(235, 235, 235, 0.8);
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 0.9rem;
-  color: #333;
+  width: 95%;
+  height: 42px;
+  padding: 10px 40px 10px 15px;
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  font-size: 15px;
+  color: #322848;
+  transition: all 0.3s ease;
+}
+
+.input-group input::placeholder {
+  color: rgba(50, 40, 72, 0.6);
 }
 
 .input-group input:focus {
-  border-color: #322848;
   outline: none;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.45);
+  box-shadow: 0 8px 12px rgba(31, 13, 62, 0.08);
 }
 
 .input-group .icon {
   position: absolute;
-  right: 1rem;
+  right: 26px;
   top: 50%;
   transform: translateY(-50%);
-  color: #666;
+  color: #322848;
+  opacity: 0.6;
+  transition: all 0.3s ease;
   cursor: pointer;
+}
+
+.input-group input:focus + .icon {
+  opacity: 0.8;
 }
 
 .email-domain {
@@ -252,8 +308,8 @@ h2 {
   right: 30px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 15px;
-  color: #888;
+  font-size: 14px;
+  color: #3228489e;
   pointer-events: none; 
 }
 
@@ -262,9 +318,9 @@ h2 {
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   margin: 1rem 0;
-  color: #ebebeb;
+  color: #322848;
 }
 
 .checkbox-group {
@@ -280,32 +336,40 @@ h2 {
 .forgot-password {
   cursor: pointer;
   text-decoration: underline;
-  color: #ebebeb;
+  color: #322848;
 }
 
 .forgot-password a {
-  color: #ebebeb;
+  color: #322848;
   text-decoration: none;
   font-weight: 500;
 }
 
 button {
-  width: 100%;
-  height: 2.75rem;
-  padding: 0.5rem;
+  width: 90%;
+  height: 45px;
+  padding: 10px;
   background: #322848;
   color: #fff;
   border: none;
-  border-radius: 5px;
+  border-radius: 25px;
   cursor: pointer;
-  margin: 1.5rem 0;
-  font-size: 1rem;
+  margin-top: 12px;
+  font-size: 16px;
   font-weight: 500;
-  transition: background 0.2s;
+  transition: all 0.3s ease;
+  letter-spacing: 0.5px;
+  outline: none;
 }
 
 button:hover {
-  background: #1f1a2e;
+  background: #322848;
+  transform: translateY(-1px);
+  box-shadow: 0 0 10px #8a6bb8, 0 0 20px #c697bd, 0 0 30px #dbb4d7;
+}
+
+button:focus {
+  outline: none;
 }
 
 button:disabled {
@@ -322,11 +386,11 @@ button:disabled {
 .login-text {
   margin-top: 1rem;
   font-size: 0.85rem;
-  color: #ebebeb;
+  color: #322848;
 }
 
 .signin-link {
-  color: #ebebeb;
+  color: #322848;
   text-decoration: none;
   font-weight: 600;
 }
@@ -366,57 +430,70 @@ button:disabled {
   .CD {
     display: none;
   }
-  
+
   .login {
     width: 90%;
     max-width: 25rem;
+    padding: 1.5rem;
+    min-height: 28rem;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 25px;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.25);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    transition: all 0.3s ease;
   }
 }
 
 @media (max-width: 480px) {
   .login {
-    padding: 1.5rem;
-    min-height: 30rem;
+    padding: 1rem;
+    min-height: 24rem;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 25px;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.25);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    transition: all 0.3s ease;
   }
-  
+
   h2 {
-    font-size: 1.75rem;
+    font-size: 28px;
   }
-  
+
   .input-group input {
     font-size: 0.85rem;
   }
-  
+
   .checkbox-container {
     font-size: 0.75rem;
   }
 }
 
 .success-message {
-  color: green;
-  font-size: 11px;
+  color: #4CAF50;
+  font-size: 12px;
   margin: 0.5rem 0;
+  padding: 0.5rem;
+  background: rgba(76, 175, 80, 0.1);
+  border-radius: 4px;
+  border: 1px solid rgba(76, 175, 80, 0.2);
 }
 
 
 /* Remove dark mode since we're using specific gradients */
 @media (prefers-color-scheme: dark) {
   .login {
-    background: linear-gradient(to bottom, #c697bd, #dbb4d7 50%, #1f0d3e);
-  }
-  
-  .input-group input {
-    background: rgba(235, 235, 235, 0.4);
-    border: none;
-  }
-  
-  .input-group input:focus {
-    border: 2px solid #1f0d3e;
-    background: rgba(235, 235, 235, 0.4);
-  }
-  
-  h2, .quote-text, .checkbox-container, .forgot-password a, .login-text, .signin-link {
-    color: #ebebeb;
+    /* Remove gradient, keep glassmorphism */
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 25px;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.25);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    transition: all 0.3s ease;
   }
 }
 </style>

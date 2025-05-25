@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Signup from './views/Signup.vue';
 import Login from './views/Login.vue';
-import Terms from './views/Terms.vue';
 import ForgotPassword from './views/ForgotPassword.vue';
 import PfCustom from './views/PfCustom.vue';
 import PfMixtape from './views/PfMixtape.vue';
@@ -9,8 +8,7 @@ import Welcome from './views/Welcome.vue';
 import ResetPassword from './views/ResetPassword.vue';
 import Discover from './views/Discover.vue';
 import Favorites from './views/Favorites.vue';
-import Feed from './views/Feed.vue';
-import Achievements from './views/Achievements.vue';
+import Feed from './views/feed.vue';
 import Profile from './views/Profile.vue';
 
 const routes = [
@@ -34,7 +32,6 @@ const routes = [
   { path: '/signup', component: Signup },
   { path: '/login', component: Login },
   { path: '/discover', component: () => import('./views/Discover.vue') },
-  { path: '/terms', component: Terms },
   { path: '/forgot-password', component: ForgotPassword }, 
   { path: '/pfcustom', component: PfCustom }, 
   { path: '/pfmixtape', component: PfMixtape },
@@ -42,7 +39,6 @@ const routes = [
   { path: '/reset-password', component: ResetPassword },
   { path: '/favorites', component: Favorites },
   { path: '/feed', component: Feed },
-  { path: '/achievements', component: Achievements },
   { path: '/profile', component: Profile },
 ];
 
