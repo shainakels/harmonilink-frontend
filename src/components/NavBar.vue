@@ -1,10 +1,10 @@
 <template>
   <nav class="top-nav">
     <img src="/src/assets/logo2.png" alt="Logo" class="logo" />
-    <div class="search-container">
-      <i 
-        class="fa-solid fa-microphone mic-icon" 
-        :class="{ 'listening': isListening }" 
+    <div class="search-container" v-if="showSearchBar">
+      <i
+        class="fa-solid fa-microphone mic-icon"
+        :class="{ listening: isListening }"
         @click="toggleSpeechRecognition"
       ></i>
       <input
@@ -14,6 +14,14 @@
         v-model="searchQuery"
         @input="fetchSearchResults"
       />
+      <button
+        v-if="searchQuery"
+        class="clear-btn"
+        @click="clearSearch"
+        style="margin-left: 8px"
+      >
+        ✕
+      </button>
     </div>
     <div class="user-menu">
       <i class="fa-solid fa-circle-user user-icon" @click="toggleDropdown"></i>
@@ -25,8 +33,8 @@
 
     <!-- Mic overlay -->
     <div v-if="isListening" class="mic-overlay">
-      <i 
-        class="fa-solid fa-xmark overlay-close-button" 
+      <i
+        class="fa-solid fa-xmark overlay-close-button"
         @click="closeMicOverlay"
       ></i>
       <div class="mic-animation-wrapper">
@@ -40,51 +48,80 @@
       </div>
     </div>
 
-    <div class="search-results" v-if="searchResults.length > 0">
-      <div v-for="(result, index) in searchResults" :key="result.type + '-' + index" class="search-result-item">
+    <div
+      class="search-results"
+      v-if="showSearchResults && searchResults.length > 0"
+    >
+      <div
+        v-for="(result, index) in searchResults"
+        :key="result.user_id + '-' + index"
+        class="search-result-item"
+        @click="
+          goToUser(
+            result.user_id,
+            result.mixtape?.name,
+            result.mixtape?.songs?.[0]
+          )
+        "
+      >
         <template v-if="result.type === 'user'">
-          <p>User: {{ result.username }}</p>
-        </template>
-        <template v-else-if="result.type === 'song'">
-          <p>Song: {{ result.name }}</p>
-        </template>
-        <template v-else-if="result.type === 'mixtape'">
-          <p>Mixtape: {{ result.name }}</p>
+          <p>
+            <strong>{{ result.username }}</strong>
+            <span v-if="result.mixtape && result.mixtape.name"
+              >— Mixtape: {{ result.mixtape.name }}</span
+            >
+          </p>
+          <div v-if="result.mixtape && result.mixtape.songs.length">
+            <small>Songs: {{ result.mixtape.songs.join(", ") }}</small>
+          </div>
         </template>
       </div>
     </div>
-
   </nav>
-</template> 
+</template>
 
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import axios from 'axios';
+import { ref, computed } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import axios from "axios";
 
 const showDropdown = ref(false);
-const searchQuery = ref('');
+const searchQuery = ref("");
 const isListening = ref(false);
-const micStatusMessage = ref('');
-const emit = defineEmits(['search']);
+const micStatusMessage = ref("");
+const emit = defineEmits(["search"]);
 const router = useRouter();
+const route = useRoute();
 
 let recognition = null;
 
-const searchResults = ref([]); 
+const searchResults = ref([]);
 
 async function fetchSearchResults() {
+  if (!searchQuery.value.trim()) {
+    searchResults.value = [];
+    showSearchResults.value = false;
+    return;
+  }
   try {
-    const response = await axios.get(`/api/search?q=${searchQuery.value}`);
-    searchResults.value = response.data; 
+    const token = localStorage.getItem("authToken");
+    const response = await axios.get(
+      `${import.meta.env.VITE_API_URL}/api/search?q=${encodeURIComponent(
+        searchQuery.value
+      )}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    searchResults.value = response.data;
+    showSearchResults.value = true;
   } catch (error) {
-    console.error('Error fetching search results:', error);
+    console.error("Error fetching search results:", error);
+    showSearchResults.value = false;
   }
 }
 
 // Emits search input
 function emitSearch() {
-  emit('search', searchQuery.value);
+  emit("search", searchQuery.value);
 }
 
 // Close mic overlay
@@ -93,7 +130,7 @@ function closeMicOverlay() {
     recognition.stop();
   }
   isListening.value = false;
-  micStatusMessage.value = '';
+  micStatusMessage.value = "";
 }
 
 // Toggle dropdown menu
@@ -112,93 +149,98 @@ function logout() {
 // Toggle mic (moved outside of 'if' block)
 function toggleSpeechRecognition() {
   if (!recognition) {
-    alert('Speech recognition is not supported in your browser.');
+    alert("Speech recognition is not supported in your browser.");
     return;
   }
 
-  micStatusMessage.value = 'Speak now';
+  micStatusMessage.value = "Speak now";
   isListening.value = true;
 
   setTimeout(() => {
-    micStatusMessage.value = 'Listening...';
+    micStatusMessage.value = "Listening...";
     recognition.start();
   }, 800);
 }
 
 // Initialize SpeechRecognition
-if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
+  const SpeechRecognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
   recognition = new SpeechRecognition();
-  recognition.lang = 'en-US';
+  recognition.lang = "en-US";
   recognition.interimResults = false;
   recognition.maxAlternatives = 1;
 
   recognition.onstart = () => {
     isListening.value = true;
-  };if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  recognition = new SpeechRecognition();
-  recognition.lang = 'en-US';
-  recognition.interimResults = false;
-  recognition.maxAlternatives = 1;
-
-  let gotSpeechResult = false;
-
-  recognition.onstart = () => {
-    gotSpeechResult = false;
-    isListening.value = true;
-    micStatusMessage.value = 'Listening...';
   };
+  if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
 
-  recognition.onresult = (event) => {
-    gotSpeechResult = true;
-    const transcript = event.results[0][0].transcript;
-    searchQuery.value = transcript;
-    emitSearchQuery();
-    isListening.value = false;
-    micStatusMessage.value = '';
-  };
+    let gotSpeechResult = false;
 
-  recognition.onend = () => {
-    if (!gotSpeechResult) {
-      micStatusMessage.value = "Didn't get that.";
-      setTimeout(() => {
-        isListening.value = false;
-        micStatusMessage.value = '';
-      }, 2000);
-    } else {
+    recognition.onstart = () => {
+      gotSpeechResult = false;
+      isListening.value = true;
+      micStatusMessage.value = "Listening...";
+    };
+
+    recognition.onresult = (event) => {
+      gotSpeechResult = true;
+      const transcript = event.results[0][0].transcript;
+      searchQuery.value = transcript;
+      fetchSearchResults(); // <-- FIXED: call fetchSearchResults, not emitSearchQuery
       isListening.value = false;
-    }
-  };
-}
+      micStatusMessage.value = "";
+    };
+
+    recognition.onend = () => {
+      if (!gotSpeechResult) {
+        micStatusMessage.value = "Didn't get that.";
+        setTimeout(() => {
+          isListening.value = false;
+          micStatusMessage.value = "";
+        }, 2000);
+      } else {
+        isListening.value = false;
+      }
+    };
+  }
 }
 
 //Addition para maayos yung sa search bar
-import { onMounted, onBeforeUnmount, watch } from 'vue';
+import { onMounted, onBeforeUnmount, watch } from "vue";
 
 const showSearchResults = ref(false);
 
 function handleClickOutside(event) {
-  const searchEl = document.querySelector('.search-container');
-  const resultsEl = document.querySelector('.search-results');
+  const searchEl = document.querySelector(".search-container");
+  const resultsEl = document.querySelector(".search-results");
   if (
-    searchEl && !searchEl.contains(event.target) &&
-    resultsEl && !resultsEl.contains(event.target)
+    searchEl &&
+    !searchEl.contains(event.target) &&
+    resultsEl &&
+    !resultsEl.contains(event.target)
   ) {
     showSearchResults.value = false;
   }
 }
 
 onMounted(() => {
-  document.addEventListener('click', handleClickOutside);
+  document.addEventListener("click", handleClickOutside);
 });
 
 onBeforeUnmount(() => {
-  document.removeEventListener('click', handleClickOutside);
+  document.removeEventListener("click", handleClickOutside);
 });
 
 watch(searchQuery, (newVal) => {
-  if (newVal.trim() === '') {
+  if (newVal.trim() === "") {
     searchResults.value = [];
     showSearchResults.value = false;
   } else {
@@ -206,29 +248,52 @@ watch(searchQuery, (newVal) => {
   }
 });
 
+function goToUser(userId) {
+  // Pass the search query as a route query parameter
+  router.push({ path: "/discover", query: { search: searchQuery.value } });
+  showSearchResults.value = false;
+}
+
+function clearSearch() {
+  searchQuery.value = "";
+  showSearchResults.value = false;
+  // Remove the search query from the URL
+  router.push({ path: "/discover" });
+}
+
+const showSearchBar = computed(() => {
+  // Hide on /feed, /favorites, /profile, /profile/:id
+  const path = route.path;
+  return !(
+    path.startsWith("/feed") ||
+    path.startsWith("/favorites") ||
+    path === "/profile" ||
+    /^\/profile\/[^/]+$/.test(path)
+  );
+});
 </script>
 
-
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap');
-  @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css');
+@import url("https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap");
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css");
 
-  * {
-    font-family: 'Fira Code', monospace;
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
+* {
+  font-family: "Fira Code", monospace;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-  html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    background-color: #dbb4d7;
-    overflow-x: hidden;
-  }
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background-color: #dbb4d7;
+  overflow-x: hidden;
+}
 
-  .top-nav {
+.top-nav {
   position: fixed;
   top: 0;
   left: 0;
@@ -243,20 +308,29 @@ watch(searchQuery, (newVal) => {
   z-index: 10;
 }
 
-  .logo {
-    height: 40px;
-  }
+.logo {
+  height: 40px;
+}
 
-  .search-container {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    align-items: center;
-    width: 100%; /* Full width on smaller screens */
-    max-width: 600px; /* Limit width on larger screens */
-    margin: 0 auto;
-  }
+.search-container {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  width: 100%; /* Full width on smaller screens */
+  max-width: 600px; /* Limit width on larger screens */
+  margin: 0 auto;
+}
+
+.clear-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.2rem;
+  cursor: pointer;
+  outline: none;
+}
 </style>
 
 <style scoped>
@@ -313,7 +387,7 @@ watch(searchQuery, (newVal) => {
 }
 
 .mic-icon.listening {
-  color: red; 
+  color: red;
 }
 
 .search-input {
@@ -392,7 +466,7 @@ watch(searchQuery, (newVal) => {
 }
 
 .overlay-close-button {
-  position:fixed;
+  position: fixed;
   top: 1.5rem;
   right: 1.5rem;
   font-size: 24px;
@@ -482,5 +556,4 @@ watch(searchQuery, (newVal) => {
     padding: 0.5rem;
   }
 }
-
 </style>
