@@ -1,6 +1,15 @@
 <template>
-    <div class="side-nav">
-      <div class="nav-section">
+  <div class="side-nav-hidden" v-if="show">
+    <div class="nav-section sidebar_burger" @click="show = !show">
+        <i class="fa-solid fa-bars fa-2x"></i>
+      </div>
+  </div>
+    <div class="side-nav" v-if="!show">
+
+       <div class="nav-section sidebar_burger" @click="show = !show">
+        <i class="fa-solid fa-bars fa-2x"></i>
+      </div>
+      <div class="nav-section" >
         <router-link
           v-for="(item, index) in navItems"
           :key="index"
@@ -10,7 +19,7 @@
           exact
         >
           <i :class="item.icon"></i>
-          <span>{{ item.text }}</span>
+          <span >{{ item.text }}</span>
         </router-link>
       </div>
   
@@ -18,14 +27,13 @@
         <div class="mixtape-header">
           <i class="fa-solid fa-compact-disc"></i>
           <span>My Mixtapes</span>
-          <i class="fa-solid fa-plus add-icon" @click="togglePopup"></i>
+          <i class="fa-solid fa-plus add-icon" @click="togglePopup();createAction=!createAction" ></i>
         </div>
   
         <!--START OF POPUP FOR CREATE MIXTAPE-->
         <div v-if="showPopup" class="popup-overlay">
           <div class="popup-box">
-            <h2>Create your Mixtape</h2>
-            
+            <h2 v-if="createAction">Your Mixtape</h2>
             <div class="upload-box" @click="triggerPhotoUpload">
               <img v-if="photoUrl" :src="photoUrl" class="photo-preview" />
               <span v-else>Add photo</span>
@@ -38,7 +46,7 @@
               />
             </div>
   
-            <input type="text" v-model="mixtapeName" placeholder="Mixtape Name" class="mixtape-name" />
+            <input type="text"  placeholder="Mixtape Name"  class="mixtape-name"  v-model="mixtapeName"/>
             <textarea
               v-model="mixtapeDescription"
               placeholder="Say something about your mixtape"
@@ -48,7 +56,7 @@
             <div class="song-list-scroll">
               <div v-for="(song, index) in songs" :key="index" class="song-item song-item-flex">
                 <div class="song-details-flex">
-                  <img v-if="song.artwork_url" :src="song.artwork_url" alt="Artwork" class="search-artwork" />
+                  <img v-if="song.artwork_url" :src="song.artwork_url" alt="Artwork" class="search-artwork"/>
                   <div class="song-text">
                     <div>{{ song.name }} - {{ song.artist }}</div>
                   </div>
@@ -83,7 +91,7 @@
             </div>
 
             <div class="popup-buttons">
-              <button @click="createMixtape">Create Mixtape</button>
+              <button @click="createMixtape">Save Mixtape</button>
               <button @click="showConfirmCancel = true">Cancel</button>
             </div>
           </div>
@@ -218,8 +226,23 @@
         </div>
       </div>
     </div>
+
+
+
+
+
+     
   </template>
-  
+<script> //FOR SIDEBAR
+export default {
+  data() {
+    return { show: true };
+    return { createAction: false };
+    return { updateAction: false };
+  }
+}
+</script>
+
 <script setup>
 import { ref, onMounted, watch, nextTick, onBeforeUnmount } from 'vue';
 import axios from 'axios';
@@ -231,7 +254,6 @@ const showConfirmCancel = ref(false);
 const navItems = [
   { icon: 'fa-solid fa-user-plus', text: 'Discover', route: '/discover' },
   { icon: 'fa-solid fa-pen', text: 'Feed', route: '/feed' },
-  { icon: 'fa-solid fa-trophy', text: 'Achievements', route: '/achievements' },
   { icon: 'fa-solid fa-heart', text: 'Favorites', route: '/favorites' }
 ];
 
@@ -743,6 +765,14 @@ onBeforeUnmount(() => {
     padding: 0;
     box-sizing: border-box;
   }
+
+   html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background-color: #dbb4d7;
+    overflow-x: hidden;
+  }
   
   .side-nav {
   position: fixed;
@@ -756,13 +786,31 @@ onBeforeUnmount(() => {
   flex-direction: column;
   gap: 1rem;
   overflow: hidden;
-  z-index: 1;
+  z-index: 10;
 }
-  
+
+  .side-nav-hidden {
+  position: absolute;
+  top: 90px;
+  margin-left: 4px;
+  height: 50px;
+  width: 50px;
+  padding:10px;
+  padding-top:9px;
+  padding-left:11px;
+  border-radius: 10px;
+  background-color: #080d2a;
+
+  display: flex;
+  overflow: hidden;
+  z-index: 10;
+}
+
   .nav-section,
   .mixtape-section {
     background-color: #1f0d3e;
     padding: 2rem;
+
   }
   
   .nav-item {
@@ -823,13 +871,12 @@ onBeforeUnmount(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 1; 
   background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 1000;
 }
-
   
   .popup-box {
     background-color: #080d2a;
@@ -840,7 +887,6 @@ onBeforeUnmount(() => {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-     z-index: 10000;
   }
   
   .upload-box {
@@ -946,7 +992,7 @@ onBeforeUnmount(() => {
     background-color: #dbb4d7;
     padding: 1.5rem;
     border-radius: 1rem;
-    width: 30rem;
+    width: 350px;
     text-align: center;
     color: #1f0d3e;
     position: relative;
@@ -1085,12 +1131,14 @@ onBeforeUnmount(() => {
     color: white;
     font-size: 12px;
   }
-  
+
   .mixtape-list {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
     margin-top: 1rem;
+        overflow: auto;
+        height: 130px;
   }
   
   .mixtape-item {
@@ -1137,9 +1185,10 @@ onBeforeUnmount(() => {
 }
 
 .popup-box {
-  max-height: 90vh;
+  max-height: 85vh;
   overflow-y: auto;
   padding-right: 1rem;
+  margin-top:60px;
 }
 
 .song-item + .song-item {
@@ -1307,7 +1356,8 @@ onBeforeUnmount(() => {
 .mixtape-menu-dropdown {
   position: absolute;
   right: 0;
-  top: 25px;
+  top:0;
+  /* top: 25px; */
   background: #2e1f45;
   border-radius: 6px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
@@ -1338,6 +1388,61 @@ onBeforeUnmount(() => {
   border: 1px solid #dbb4d7;
   background: #2e1f45;
   color: #fff;
-  font-size: 0.95rem;
+  font-size: 11pt;
+  width:100%;
 }
+.sidebar_burger{
+  text-align: right;
+  background-color: unset;
+  padding:0;
+  padding-right: 5px;
+}
+<<<<<<< HEAD
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .mixtape-header span{
+    text-align: left;
+  }
+  .side-nav {
+     width: 100%;
+    height: auto; /* Allow height to adjust */
+    position: relative; /* Change position to relative */
+  }
+  /* .nav-section, */
+  .mixtape-section {
+    padding: 1rem; /* Adjust padding for smaller screens */
+  }
+  .nav-item span {
+    font-size: 1rem;
+  }
+  .nav-item {
+    flex-direction: row; /* Ensure items are in a row */
+    justify-content: left; /* Align items to the start */
+  }
+ /* .mixtape-header span {
+  display: none;
+ } */
+  .add-icon {
+  margin-left: 0; /* Remove margin for smaller screens */
+    }
+  }
+  /* Additional styles for very small screens */
+  @media (max-width: 480px) {
+      .side-nav {
+    width: 100%;
+    height: auto; /* Allow height to adjust */
+    position: relative; /* Change position to relative */
+  }
+    .nav-item {
+      font-size: 0.9rem; /* Smaller font size */
+    }
+    .mixtape-input {
+      font-size: 0.8rem; /* Smaller input font size */
+    }
+  }
+
 </style>
+=======
+</style>
+>>>>>>> main

@@ -26,6 +26,14 @@
 
     <p v-if="mixtapeBioError" class="error-message">{{ mixtapeBioError }}</p>
 
+<<<<<<< HEAD
+
+
+    <!-- SONGS AREA (keep this) -->
+    <div class="songs-area-label">
+      Add 3 songs to create your first mixtape
+    </div>
+=======
     <!-- REMOVE THIS OLD SONG LIST AREA -->
     <!--
     <div v-for="(song, index) in songs" :key="index" class="song-entry song-item-flex">
@@ -55,6 +63,7 @@
     <div class="songs-area-label">
       Add 3 songs to create your first mixtape
     </div>
+>>>>>>> main
     <div class="songs-area">
       <div
   v-for="i in 3"
@@ -104,7 +113,11 @@
     <p v-if="showSongError" class="error-message">You need to add at least 3 songs.</p>
     <button class="create-button" :class="{ 'gradient-active': gradientActive, 'twinkle-effect': twinkleActive }"
       :disabled="isSubmitting" @click="handleFinish">
+<<<<<<< HEAD
+      {{ isSubmitting ? 'Creating...' : 'Create Mixtape' }}
+=======
       <span>{{ isSubmitting ? 'Creating...' : 'Create Mixtape' }}</span>
+>>>>>>> main
     </button>
 
     <!-- Song Modal IS EDITED -->
@@ -479,8 +492,14 @@ watch(songs, () => {
 
 /*EDITED*/
 .create-text {
+<<<<<<< HEAD
+  width:100%;
+  position: absolute;
+  top: 2rem;
+=======
   position: absolute;
   top: 3rem;
+>>>>>>> main
   left: 50%;
   transform: translateX(-50%);
   font-size: 3rem;
@@ -494,9 +513,15 @@ watch(songs, () => {
 .main-box {
   background: rgba(255, 255, 255, 0.55);
   /* glassmorphism */
+<<<<<<< HEAD
+  width: 40%;
+  height: auto;
+  padding: 0.5rem;
+=======
   width: 35rem;
   height: 33rem;
   padding: 2rem;
+>>>>>>> main
   border-radius: 15px;
   color: #322848;
   position: absolute;
@@ -524,8 +549,13 @@ watch(songs, () => {
 /* EDITED */
 .upload-box {
   background-color: #3228485a;
+<<<<<<< HEAD
+  width: 7rem;
+  height: 7rem;
+=======
   width: 10rem;
   height: 10rem;
+>>>>>>> main
   margin: 0 auto 1rem;
   border: 2px solid #322848;
   border-radius: 0.5rem;
@@ -603,7 +633,11 @@ watch(songs, () => {
 }
 
 .textarea {
+<<<<<<< HEAD
+  height: 40px;
+=======
   height: 90px;
+>>>>>>> main
   resize: none;
 }
 
@@ -676,8 +710,13 @@ watch(songs, () => {
 /*EDITED AND ADDED EVERYTHING ABOUT BUTTON BELOW*/
 .create-button {
   width: 50%;
+<<<<<<< HEAD
+  height: 35px;
+  padding: 5px;
+=======
   height: 45px;
   padding: 10px;
+>>>>>>> main
   background: #322848;
   color: #fff;
   border: none;
@@ -693,7 +732,10 @@ watch(songs, () => {
   margin-left: auto;
   margin-right: auto;
   position: relative;
+<<<<<<< HEAD
+=======
   overflow: hidden;
+>>>>>>> main
   z-index: 1;
 }
 
@@ -1020,7 +1062,11 @@ watch(songs, () => {
 .songs-area {
   display: flex;
   flex-direction: column;
+<<<<<<< HEAD
+  gap: 0.5rem;
+=======
   gap: 1rem;
+>>>>>>> main
   margin-top: 0.5rem;
 }
 
@@ -1230,4 +1276,29 @@ watch(songs, () => {
   padding: 0;
   line-height: 1;
 }
+<<<<<<< HEAD
+
+/* Responsive styles */
+@media (max-width: 1024px) {
+  .main-box{
+    width: 60%;
+  }
+
+  }
+@media (max-width: 768px) {
+  .main-box{
+    width: 80%;
+    top: 55%;
+  }
+
+  }
+  /* Additional styles for very small screens */
+  @media (max-width: 480px) {
+.main-box{
+    width: 90%;
+    top: 80%;
+  }
+  }
+=======
+>>>>>>> main
 </style>

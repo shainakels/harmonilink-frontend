@@ -240,7 +240,7 @@ watch(searchQuery, (newVal) => {
   align-items: center;
   justify-content: space-between;
   padding: 20px;
-  z-index: 1;
+  z-index: 10;
 }
 
   .logo {
@@ -253,7 +253,9 @@ watch(searchQuery, (newVal) => {
     transform: translateX(-50%);
     display: flex;
     align-items: center;
-    width: 30rem;
+    width: 100%; /* Full width on smaller screens */
+    max-width: 600px; /* Limit width on larger screens */
+    margin: 0 auto;
   }
 </style>
 
@@ -277,7 +279,6 @@ watch(searchQuery, (newVal) => {
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   width: 150px;
-  z-index: 1000;
 }
 
 .dropdown-item {
@@ -307,7 +308,6 @@ watch(searchQuery, (newVal) => {
   position: absolute;
   left: 10px;
   color: white;
-  z-index: 1;
   cursor: pointer;
   transition: color 0.3s ease;
 }
@@ -412,7 +412,6 @@ watch(searchQuery, (newVal) => {
   width: 30rem;
   max-height: 300px;
   overflow-y: auto;
-  z-index: 1000;
   padding: 1rem;
   color: white;
 }
@@ -441,4 +440,47 @@ watch(searchQuery, (newVal) => {
     opacity: 0;
   }
 }
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .top-nav {
+    padding: 1rem; /* Adjust padding */
+    justify-content: space-between; /* Keep logo and user icon in place */
+  }
+
+  .search-container {
+    width: 60%; /* Full width on smaller screens */
+    max-width: 400px; /* Limit width on larger screens */
+    margin: 0 auto; /* Center the search container */
+    transition: max-width 0.5s ease, width 0.5s ease; /* Smooth transition for width */
+  }
+
+  .search-input {
+    width: 100%; /* Full width for the input */
+    padding: 0.5rem 1rem 0.5rem 2.5rem; /* Adjust padding */
+    transition: width 0.5s ease, padding 0.5s ease; /* Smooth transition for input width and padding */
+  }
+}
+
+@media (max-width: 480px) {
+  .user-icon {
+    font-size: 30px; /* Smaller icon size */
+  }
+
+  .search-input {
+    padding: 0.5rem; /* Adjust padding for smaller screens */
+    transition: padding 0.5s ease; /* Smooth transition for padding */
+  }
+}
+
+@media (max-width: 380px) {
+  .search-container {
+    max-width: 300px; /* Further limit width on very small screens */
+  }
+
+  .search-input {
+    padding: 0.5rem;
+  }
+}
+
 </style>

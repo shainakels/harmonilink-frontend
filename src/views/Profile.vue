@@ -19,6 +19,22 @@
         :src="profileImage"
         alt="Profile Picture"
       />
+              <div style="display: flex; gap: 8px;">
+          <button class="edit-btn" @click="toggleEdit">
+            <i v-if="!isEditing" class="fa-solid fa-pen"></i>
+            <i v-else class="fa-solid fa-floppy-disk"></i>
+            <span>{{ isEditing ? 'Save' : 'Edit Profile' }}</span>
+          </button>
+          <button
+            v-if="isEditing"
+            class="exit-edit-btn"
+            @click="cancelEdit"
+            aria-label="Cancel editing"
+            style="background-color: #7b62b5; border: none; color: #fff; font-size: 1.3rem; cursor: pointer; border-radius: 6px;"
+          >
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
     </div>
 
     <div class="info-box">
@@ -35,22 +51,10 @@
             />
           </label>
         </div>
-        <div style="display: flex; gap: 8px;">
-          <button class="edit-btn" @click="toggleEdit">
-            <i v-if="!isEditing" class="fa-solid fa-pen"></i>
-            <i v-else class="fa-solid fa-floppy-disk"></i>
-            <span>{{ isEditing ? 'Save' : 'Edit Profile' }}</span>
-          </button>
-          <button
-            v-if="isEditing"
-            class="exit-edit-btn"
-            @click="cancelEdit"
-            aria-label="Cancel editing"
-            style="background: none; border: none; color: #fff; font-size: 1.3rem; cursor: pointer;"
-          >
-            <i class="fa-solid fa-xmark"></i>
-          </button>
-        </div>
+
+<!-- dito dati edit profile -->
+
+
       </div>
 
       <template v-if="!isEditing">
@@ -66,8 +70,7 @@
               <option value="">Select Gender</option>
               <option value="Male">Male</option>
               <option value="Female">Female</option>
-              <option value="Non-Binary">Non-Binary</option>
-              <option value="Others">Others</option>
+              <option value="Others">Prefer not to say</option>
             </select>
             <input
               v-if="editableProfile.gender === 'Others'"
@@ -100,8 +103,8 @@
   <div class="mixtapes-header">
     <div class="mixtapes-title">
       <i class="fa-solid fa-compact-disc"></i>
-      <span>My Mixtapes</span>
-      <button class="add-btn" @click="togglePopup">＋</button>
+      <span style="text-align: left;">My Mixtapes</span>
+      <i class="fa-solid fa-plus add-icon" @click="togglePopup"></i>
     </div>
 
     <div class="profile-search-filter">
@@ -141,8 +144,13 @@
     </div>
   </div>
   <div v-else class="mixtape-edit-form">
+<<<<<<< HEAD
+    <input v-model="editMixtapeName" placeholder="Mixtape Name" class="mixtape-desc"/>
+    <textarea v-model="editMixtapeDescription" placeholder="Description" class ="mixtape-desc"></textarea>
+=======
     <input v-model="editMixtapeName" placeholder="Mixtape Name" />
     <textarea v-model="editMixtapeDescription" placeholder="Description"></textarea>
+>>>>>>> main
     <div class="edit-songs-section">
       <h4>Edit Songs</h4>
       <div v-for="(song, idx) in editableMixtape.songs" :key="idx" class="edit-song-row">
@@ -174,8 +182,14 @@
       </div>
       <button @click="addEmptySongToEditable" style="margin-top: 10px; background: #6a4fcf; color: #fff; border-radius: 6px;">Add Song</button>
     </div>
+<<<<<<< HEAD
+    <button @click="saveEditMixtape(editableMixtape)" style="background: rgb(106, 79, 207); color: #fff; border-radius: 6px;">Save</button>
+    &nbsp;&nbsp;&nbsp;
+    <button @click="editingMixtapeId = null" style="background: rgb(106, 79, 207); color: #fff; border-radius: 6px;">Cancel</button>
+=======
     <button @click="saveEditMixtape(editableMixtape)">Save</button>
     <button @click="editingMixtapeId = null">Cancel</button>
+>>>>>>> main
   </div>
   <transition name="fade">
     <div v-if="expandedMixtapeId === mixtape.id" class="expanded-songs">
@@ -193,6 +207,7 @@
 </div>
 </div>
 
+<!-- START OF CREATE MIXTAPE  -->
   <div v-if="showPopup" class="popup-overlay">
     <div class="popup-box">
       <h2>Create your Mixtape</h2>
@@ -234,11 +249,18 @@
       </div>
     </div>
   </div>
+<!-- END OF MAIN MIXTAPE CREATE MODAL -->
 
+
+<!-- START OF SONG SELECT -->
   <div v-if="showSongModal" class="modal-overlay">
     <div class="song-popup-box">
       <span class="exit-btn" @click="closeSongModal">×</span>
+<<<<<<< HEAD
+      <h3>Song Search</h3>
+=======
       <h3>Add Song</h3>
+>>>>>>> main
       <input
         type="text"
         v-model="songSearchQuery"
@@ -247,7 +269,18 @@
         autocomplete="off"
       />
       <div v-if="isSearchingSongs" style="margin: 0.5rem 0;">Searching...</div>
+<<<<<<< HEAD
+      <ul v-if="songSearchResults.length" 
+      style="margin-top: 1rem;
+            max-height: 150px;
+            overflow-y: auto;
+            background: #1f0d3e;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            color: #dbb4d7;">
+=======
       <ul v-if="songSearchResults.length" style="max-height: 200px; overflow-y: auto; margin: 0; padding: 0;">
+>>>>>>> main
         <li
           v-for="(song, idx) in songSearchResults"
           :key="idx"
@@ -262,11 +295,19 @@
           <audio v-if="song.preview_url" :src="song.preview_url" controls style="margin-left: auto; width: 80px; height: 28px;" />
         </li>
       </ul>
+<<<<<<< HEAD
+      <div v-if="!isSearchingSongs && !songSearchResults.length && songSearchQuery" style="color: #888; margin: 0.5rem 0;">No results found.</div>  
+=======
       <div v-if="!isSearchingSongs && !songSearchResults.length && songSearchQuery" style="color: #888; margin: 0.5rem 0;">No results found.</div>
       <button v-if="!songSearchQuery" @click="showSongModal = false">Cancel</button>
+>>>>>>> main
     </div>
   </div>
 
+<!-- END OF SONG SELECT -->
+
+
+<!-- START OF CONFIRM CANCEL -->
   <div v-if="showConfirmCancel" class="modal-overlay">
     <div class="confirm-box">
       <p>Are you sure you want to close it?</p>
@@ -276,6 +317,8 @@
       </div>
     </div>
   </div>
+
+  <!-- END OF CONFIRM CANCEL -->
 
   <div v-if="selectedMixtape" class="modal-overlay" @click="closeMixtapePopup"></div>
   <div v-if="selectedMixtape" class="mixtape-popup">
@@ -852,6 +895,18 @@ function addEmptySongToEditable() {
 
 
 <style scoped>
+.mixtape-name-inp{
+  padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 0.95rem;
+}
+.mixtape-desc{
+  padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 0.95rem;
+}
 .profile-wrapper {
   padding: 2rem;
   background-color: #dbb4d7;
@@ -862,13 +917,19 @@ function addEmptySongToEditable() {
   flex-direction: column;
   margin-bottom: 1rem;
   margin-top: 80px;
+<<<<<<< HEAD
+  /* margin-left: 270px; */
+=======
   margin-left: 270px;
+>>>>>>> main
 }
 
 .page-title {
   font-weight: 700;
   font-size: 1.8rem;
   margin-bottom: 8px;
+  text-align: left;
+  margin-left: 30px;
 }
 
 .separator {
@@ -928,6 +989,7 @@ function addEmptySongToEditable() {
   padding: 6px 10px;
   cursor: pointer;
   transition: background-color 0.25s ease;
+  width: 100%;
 }
 
 .edit-btn i {
@@ -941,11 +1003,15 @@ function addEmptySongToEditable() {
 .user-meta {
   margin-bottom: 12px;
   font-size: 1rem;
+  text-align: left;
+  margin-left: 1rem;
 }
 
 .user-bio {
   white-space: pre-wrap;
   font-size: 1rem;
+  text-align: left;
+  margin-left: 1rem;
 }
 
 /* Editing inputs */
@@ -1168,6 +1234,10 @@ function addEmptySongToEditable() {
   gap: 1rem;
 }
 
+.labeled-input {
+  text-align: left;
+}
+
 .edit-form-section label {
   font-weight: 500;
 }
@@ -1387,6 +1457,7 @@ button:hover {
 
 .song-popup-box h3 {
   margin-bottom: 1rem;
+  font-size: 1.6rem;
 }
 
 .song-popup-box input {
@@ -1397,25 +1468,14 @@ button:hover {
   border: none;
 }
 
-.song-popup-box button {
-  padding: 0.75rem;
-  border: none;
-  border-radius: 30px;
-  background-color: #1f0d3e;
-  color: white;
-  cursor: pointer;
-  width: 60%;
-}
-
 .exit-btn {
   position: absolute;
-  top: 10px;
-  right: 15px;
-  background: none;
-  color: #1f0d3e;
-  border: none;
-  font-size: 1.2rem;
+  top: 3px;
+  right: 1rem;
   cursor: pointer;
+  font-size: 2rem;
+  font-weight: bold;
+
 }
 
 .confirm-box {
@@ -1567,6 +1627,8 @@ button:hover {
   box-shadow: 0 2px 6px rgba(0,0,0,0.18);
   pointer-events: none;
   z-index: 2;
+  width: 40px;
+  height: 40px;
 }
 
 .expanded-songs {
@@ -1632,4 +1694,29 @@ button:hover {
   border: 1px solid #ccc;
   font-size: 0.95rem;
 }
+<<<<<<< HEAD
+  .add-icon { 
+    background-color:#1f0d3e;
+    color:  #dbb4d7;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    margin-left: auto;
+    cursor: pointer;
+  }
+.mixtape-sort-dropdown select{
+    padding: 0.3rem 0.7rem;
+    border-radius: 6px;
+    border: 1px solid #dbb4d7;
+    background: #2e1f45;
+    color: #fff;
+    font-size: 11pt;
+    width: 100%;
+}
+=======
+>>>>>>> main
 </style>

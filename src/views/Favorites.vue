@@ -1,4 +1,5 @@
 <template>
+  <transition name="fade">
   <NavLayout>
     <div class="favorites-wrapper">
       <h1 class="favorites-title">Favorites</h1>
@@ -85,9 +86,13 @@
           <p v-else class="song-list">(No songs listed)</p>
         </div>
       </div>
+<<<<<<< HEAD
+=======
 
+>>>>>>> main
     </div>
   </NavLayout>
+  </transition>
 </template>
 
 <script setup>
@@ -149,17 +154,32 @@ function closeMixtapePopup() {
 </script>
 
 <style scoped>
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 1s ease-in-out; 
+}
+.fade-enter, .fade-leave-to {
+  opacity: 0;
+}
+
 .favorites-wrapper {
   padding: 2rem;
+  width: 90%;
   background-color: #dbb4d7;
-  min-height: 100vh;
+  height: auto;
   overflow: auto;
   color: black;
   display: flex;
   flex-direction: column;
   margin-bottom: 1rem;
   margin-top: 80px;
+<<<<<<< HEAD
+  margin-left: auto;
+  margin-right: auto;
+  /* margin-left: 270px; */
+=======
   margin-left: 270px;
+>>>>>>> main
 }
 
 .favorites-title {
@@ -191,7 +211,11 @@ function closeMixtapePopup() {
   flex-direction: column;
   position: relative;
   text-align: left;
+<<<<<<< HEAD
+  
+=======
   box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+>>>>>>> main
 }
 
 .heart-btn {
@@ -297,7 +321,11 @@ function closeMixtapePopup() {
   background-color: #080d2a;
   border-radius: 12px;
   padding: 1.5rem;
+<<<<<<< HEAD
+  width: 45%;
+=======
   width: 35rem;
+>>>>>>> main
   height: 26rem;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
   color: white;
@@ -405,4 +433,23 @@ function closeMixtapePopup() {
   color: white;
   border: 1px solid #ebebeb;
 }
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .favorites-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+  .mixtape-popup {
+    width:70%;
+  }
+  }
+  /* Additional styles for very small screens */
+  @media (max-width: 480px) {
+    .favorites-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+  .mixtape-popup {
+    width:80%;
+  }
+  }
 </style>

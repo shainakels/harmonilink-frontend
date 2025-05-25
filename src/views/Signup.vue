@@ -1,5 +1,9 @@
 <template>
   <!-- Background image -->
+<<<<<<< HEAD
+  <img src="/src/assets/background.png" alt="background" class="background">
+=======
+>>>>>>> main
   <div class="background"></div>
 
   <!-- Logo -->
@@ -112,12 +116,15 @@
       <div class="star2 stars"></div>
       <div class="star3 stars"></div>
       <div class="star4 stars"></div>
+<<<<<<< HEAD
+=======
       <div class="star5 stars"></div>
       <div class="star6 stars"></div>
       <div class="star7 stars"></div>
       <div class="star8 stars"></div>
       <div class="star9 stars"></div>
       <div class="star10 stars"></div>
+>>>>>>> main
       <img src="/src/assets/cd.png" alt="CD" class="cd" />
     </div>
   </div>
@@ -406,9 +413,15 @@ const handleSignup = async () => {
 
 .signup-container {
   position: relative;
+<<<<<<< HEAD
+  width: 100%;
+  height: 100vh;
+
+=======
   width: 100vw;
   height: 100vh;
   position: absolute;
+>>>>>>> main
   top: 0;
   left: 0;
 }
@@ -715,6 +728,33 @@ button:focus {
 }
 
 @media (max-width: 1400px) {
+<<<<<<< HEAD
+  .signup {
+    left: 37%;
+  }
+}
+
+@media (max-width: 1200px) {
+  .signup {
+    left: 45%;
+  }
+
+}
+
+@media (max-width: 768px) {
+  .cdbg {
+    display: none;
+  }
+
+  .cd {
+    display: none;
+  }
+
+  .signup {
+    border-radius: 25px;
+    left: 50%;
+    width: 90%;
+=======
   .signup {
     left: 37%;
   }
@@ -776,6 +816,7 @@ button:focus {
   .signup {
     border-radius: 25px;
     left: 50%;
+>>>>>>> main
   }
 
   .modal-box {
@@ -797,6 +838,10 @@ button:focus {
 @media (max-width: 480px) {
   .signup {
     padding: 25px 40px;
+<<<<<<< HEAD
+    width: 90%;
+=======
+>>>>>>> main
   }
 
   h2 {
@@ -816,6 +861,18 @@ button:focus {
   button {
     height: 42px;
     font-size: 15px;
+<<<<<<< HEAD
+  }
+
+  .password-validation {
+    font-size: 11px;
+    padding: 12px;
+  }
+
+  .password-validation p {
+    margin: 6px 0;
+=======
+>>>>>>> main
   }
 
   .password-validation {
@@ -876,5 +933,53 @@ button:focus {
   transform: scale(0.85);
   transform-origin: center;
 }
-</style>
 
+@media (max-height: 700px) {
+  .signup {
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+}
+
+.password-popup {
+  position: absolute;
+  top: 110%;
+  left: 0;
+  width: 87%;
+  margin-left: 27px;
+  background: rgba(255, 255, 255, 0.9); 
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  font-size: 12px;
+  color: #333;
+}
+
+.password-popup p {
+  margin: 5px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.password-popup p.met {
+  color: green;
+}
+
+.password-popup p:not(.met) {
+  color: red;
+}
+
+.password-popup i {
+  font-size: 14px;
+}
+
+.recaptcha-wrapper {
+  display: flex;
+  justify-content: center;
+  margin: 0.75rem 0;
+  transform: scale(0.85);
+  transform-origin: center;
+}
+</style>

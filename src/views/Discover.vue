@@ -1,17 +1,31 @@
 <template>
+  <transition name="fade">
   <NavLayout>
-    <div class="discover-wrapper">
+    
+    <div class="favorites-wrapper">
+      <h1 class="favorites-title">Discover</h1>
+      <p class="favorites-description">
+        Find your link in the harmony! Dive into mixtapes that vibe with you.
+      </p>
 
-      <!-- Navigation Buttons -->
+
+
+ <div class="grid-container">
+
+<div class="left-column">
+
+         <!-- Navigation Buttons -->
           <button 
-            class="nav-button left" 
+            class="nav-button" 
             @click="prevProfile" 
             :disabled="currentIndex === 0 || isFlipped"
           > <i class="fa-solid fa-circle-arrow-left"></i>
           </button>
+</div>
 
-      <div class="discover-scroll">
-        <div class="discover-container" :class="{ flipped: isFlipped }">
+
+<div class="main-column">
+          <div class="discover-container" :class="{ flipped: isFlipped }">
 
           <!-- No Profiles Message -->
           <div v-if="profiles.length === 0" class="no-profiles">
@@ -69,6 +83,16 @@
                 style="width: 40px; height: 40px; margin-right: 0.5rem; border-radius: 6px;"
               />
 
+
+              <span style="width: 200px;">{{ song.song_name }} by {{ song.artist_name }}</span>
+
+              <audio
+                v-if="song.preview_url"
+                ref="discoverAudioRefs"
+                :src="song.preview_url"
+                @ended="onDiscoverAudioEnded"
+                style="display: none;"
+              ></audio> &nbsp;
               <button
                 v-if="song.preview_url"
                 class="mini-audio-btn"
@@ -78,17 +102,6 @@
               >
                 <i :class="discoverPlayingIndex === index ? 'fa-solid fa-pause' : 'fa-solid fa-play'"></i>
               </button>
-
-              <span>{{ song.song_name }} by {{ song.artist_name }}</span>
-
-              <audio
-                v-if="song.preview_url"
-                ref="discoverAudioRefs"
-                :src="song.preview_url"
-                @ended="onDiscoverAudioEnded"
-                style="display: none;"
-              ></audio>
-
               <span v-else class="no-preview" style="margin-left: 0.5rem;">No preview</span>
             </li>
           </ul>
@@ -128,9 +141,10 @@
             </div>
           </div>
         </div>
-      </div>
+</div>
 
-       <!-- Navigation Buttons -->
+<div class="right-column"> 
+    <!-- Navigation Buttons -->
           <button 
             class="nav-button right" 
             @click="nextProfile" 
@@ -138,8 +152,23 @@
           > <i class="fa-solid fa-circle-arrow-right"></i>
           </button>
 
-    </div>
+</div>
+
+
+
+      </div>
+
+
+
+
+
+
+
+</div>
+
+   
   </NavLayout>
+  </transition>
 </template>
 
 <script setup>
@@ -515,45 +544,59 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+
+button{
+  padding:0;
+}
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 1s ease-in-out; 
+}
+.fade-enter, .fade-leave-to {
+  opacity: 0;
+}
+
 .discover-wrapper {
-  margin-top: 80px;
-  margin-left: 270px;
+  /* margin-top: 100px; */
+  /* margin-left: 270px; */
   display: flex;
   justify-content: center;
   align-items: center;
-  height: calc(100% - 80px); 
-  width: calc(100% - 270px);
+  text-align: center;
+  /* height: calc(100% - 80px); 
+  width: calc(100% - 270px); */
+  width:100%;
+  
 }
 
 .discover-container {
   background-color: rgba(8, 13, 42, 0.85);
   border-radius: 12px;
-  padding-top: 3rem;
-  width: 900px;
-  height: 550px;
+  /* padding-top: 3rem; */
+  transition: opacity 0.5s ease; /* Smooth transition for opacity */
+  opacity: 1; 
+  width:100%;
+  height: 480px;
   position: relative;
   user-select: none;
   z-index: 0;
   box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+<<<<<<< HEAD
+
+=======
+>>>>>>> main
 }
 
 .nav-button {
-  top: 50%;
-  transform: translateY(-20%);
   background: none;
   border: none;
   font-size: 2.5rem;
   color: #080d2a;
   cursor: pointer;
   z-index: 1;
-  flex-direction: column; 
-  gap: 1rem; 
-}
-
-.nav-button {
   outline: none;
   box-shadow: none;
 }
+
 
 .nav-button:focus {
   outline: none;
@@ -580,8 +623,12 @@ onUnmounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: 3rem;
+  padding-left: 3rem;
+   padding-right: 3rem;
+   padding-top: 1rem;
+   padding-bottom: 1rem;
   box-sizing: border-box;
+  transition: transform 0.5s ease;
 }
 
 .front {
@@ -610,11 +657,13 @@ onUnmounted(() => {
 
 .discover-container.flipped .front {
   transform: rotateY(180deg);
+  transition: transform 1s ease;
   z-index: 1;
 }
 
 .discover-container.flipped .back {
   transform: rotateY(0deg);
+  transition: transform 1s ease;
   z-index: 2;
 }
 
@@ -649,14 +698,14 @@ onUnmounted(() => {
   background-color: rgba(108, 119, 178, 0.35);
   padding: 1.5rem;
   border-radius: 10px;
-  width: 390px;
-  height: 440px;
+  width: 50%;
+  height: 450px;
   text-align: center;
   color: #ffffff;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  margin-top: -60px;
+  /* margin-top: -60px; */
 }
 
 .profile-name {
@@ -722,6 +771,7 @@ onUnmounted(() => {
   top: 30px;
   left: 30px;
   color: white;
+  z-index: 1;
 }
 
 .back-button:hover {
@@ -731,14 +781,15 @@ onUnmounted(() => {
 .back-mixtape {
   background-color: rgba(108, 119, 178, 0.35);
   position: relative;
-  padding: 1.5rem;
+
   border-radius: 10px;
-  width: 31rem;
+  width: 60%;
   height: 380px;
   color: #ffffff;
   display: flex;
   flex-direction: column;
   justify-content: left;
+  z-index: 0;
 }
 
 .mixtape-image {
@@ -752,7 +803,7 @@ onUnmounted(() => {
 }
 
 .mixtape-title-front {
-  margin-top: 3rem;
+  margin-top: 1rem;
   text-align: center;
 }
 
@@ -778,7 +829,7 @@ onUnmounted(() => {
   text-align: left;
   font-size: 0.9rem;
   line-height: 1.4;
-  max-height: 250px;
+  height: 100px;
   overflow-y: auto;
   margin: 5rem auto 0; 
   padding: 0 1.5rem; 
@@ -787,7 +838,9 @@ onUnmounted(() => {
   gap: 0.5rem;
   overflow-y: auto;
   width: 90%;
-  flex: 1;
+  border: 1px solid #dbb4d7;
+  padding: 10px;
+  border-radius: 10px;
 }
 
 .mini-audio-btn {
@@ -824,18 +877,18 @@ onUnmounted(() => {
 
 .action-section {
   margin-top: 1rem;
-  padding: 0.8rem;
+  padding: 8px;
   background-color: #5c5e78;
   border: 2px solid #a7a5a5c2;
   border-radius: 10px;
   text-align: center;
-  width: 31rem;
+  width: 60%;
 }
 
 .buttons {
   display: flex;
   justify-content: center;
-  gap: 7rem;
+  gap: 5rem;
   margin-bottom: 0.5rem;
 }
 
@@ -848,6 +901,13 @@ onUnmounted(() => {
   color: white;
   cursor: pointer;
   transition: transform 0.2s ease;
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+}
+
+.heart-btn:hover, .x-btn:hover {
+  transform: scale(1.1);
 }
 
 .heart-btn {
@@ -904,4 +964,114 @@ onUnmounted(() => {
   vertical-align: middle;
 }
 
+<<<<<<< HEAD
+</style>
+
+
+<!-- Style from Favorites -->
+<style scoped>
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 1s ease-in-out; 
+}
+.fade-enter, .fade-leave-to {
+  opacity: 0;
+}
+
+.favorites-wrapper {
+  padding-left: 2rem;
+  padding-top: 2rem;
+  padding-right: 2rem;
+  background-color: #dbb4d7;
+  min-height: 100%;
+  overflow: auto;
+  color: black;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+  margin-top: 80px;
+  /* margin-left: 270px; */
+  width:100%;
+  margin-left:auto;
+  margin-right:auto;
+}
+
+.favorites-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: black;
+  text-align: left;
+  width: 80%;
+  margin: auto;
+}
+
+.favorites-description {
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+  text-align: left;
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+}
+.grid-container {
+  display: grid;
+  grid-template-columns: 10% 80% 10%; /* 10-80-10 ratio */
+  height: auto; /* Full viewport height */
+  gap: 10px;;
+}
+
+.left-column, .right-column {
+   display: flex;              /* Enables flex centering */
+  flex-direction: column;     /* Stacks children vertically */
+  justify-content: center;    /* Centers vertically */
+  align-items: center;        /* Centers horizontally */
+  padding: 15px;
+  height: 480px;
+}
+
+.main-column {
+  /* padding: 20px; */
+}
+
+
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .profile-card {
+      width: 98%;
+    }
+    .front{
+       padding-left: 20px;
+        padding-right: 20px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+    .discover-top{
+      padding:15px;
+    }
+    .action-section {
+      width:100%;
+    }
+  }
+  /* Additional styles for very small screens */
+  @media (max-width: 480px) {
+    .profile-card {
+     width: 100%;
+    }
+    .front{
+              padding-left: 20px;
+        padding-right: 20px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+    .discover-top{
+      padding:15px;
+    }
+    .action-section {
+      width:100%;
+    }
+  }
+
+=======
+>>>>>>> main
 </style>

@@ -1,11 +1,27 @@
 <template>
   <NavLayout>
-    <div class="poll-wrapper">
-      <div class="create-poll-container">
-        <i class="fa-solid fa-square-poll-horizontal"></i>
-        <button class="create-poll-button" @click="openCreatePollPopup">Create Poll</button>
-      </div>
+       <div class="favorites-wrapper">
+      <h1 class="favorites-title">Feed</h1>
+      <p class="favorites-description">
+       Your interactive hub of harmony! Create polls cast votes, and keep the vibe flowing.
+      </p>
+</div>
 
+
+      <div class="grid-container">
+      
+          <div class="left-column">
+        <!-- Navigation Buttons -->
+          <button 
+            class="nav-button left" 
+            @click="prevProfile" 
+            :disabled="currentIndex === 0 || isFlipped"
+          > <i class="fa-solid fa-circle-arrow-left"></i>
+          </button>
+          </div>
+
+        <div class="main-column">
+          
       <div v-if="showCreatePoll" class="popup-overlay">
         <div class="popup-container">
           <div class="popup-header">
@@ -38,6 +54,19 @@
         </div>
 
         <div class="poll-length-section">
+<<<<<<< HEAD
+          <label>Poll Length:</label><br>
+          <select v-model="pollDays" class="poll-length-select">
+            <option v-for="d in daysOptions" :key="d" :value="d">{{ d }} day{{ d === 1 ? '' : 's' }}</option>
+          </select>
+          <select v-model="pollHours" class="poll-length-select">
+            <option v-for="h in hoursOptions" :key="h" :value="h">{{ h }} hour{{ h === 1 ? '' : 's' }}</option>
+          </select>
+          <select v-model="pollMinutes" class="poll-length-select">
+            <option v-for="m in minutesOptions" :key="m" :value="m">{{ m }} minute{{ m === 1 ? '' : 's' }}</option>
+          </select>
+        </div><br>
+=======
           <label>Poll Length:</label>
           <select v-model="pollDays">
             <option v-for="d in daysOptions" :key="d" :value="d">{{ d }} day{{ d === 1 ? '' : 's' }}</option>
@@ -49,18 +78,44 @@
             <option v-for="m in minutesOptions" :key="m" :value="m">{{ m }} minute{{ m === 1 ? '' : 's' }}</option>
           </select>
         </div>
+>>>>>>> main
 
         <button class="submit-poll-btn" @click="createPoll">Create Poll</button>
       </div>
     </div>
 
+
       <div class="poll-scroll">
+<<<<<<< HEAD
+
+      <div style="display: flex; padding:10px;">
+        <i class="fa-solid fa-square-poll-horizontal fa-2x" style="color:#080d2a; margin-right: 5px;"></i>
+        <button class="create-poll-button" @click="openCreatePollPopup">Create Poll</button>
+      </div>
+
+        <div v-if="currentProfile" class="poll-container">
+=======
         <div v-if="currentProfile" class="poll-container">
           <button class="nav-button left" @click="prevProfile">←</button>
           <button class="nav-button right" @click="nextProfile">→</button>
+>>>>>>> main
 
           <!-- Poll Container -->
           <div class="poll-content">
+
+
+            <div style="text-align: right;">
+             <button
+                v-if="currentProfile.userId === loggedInUserId"
+                class="delete-poll-btn"
+                @click="deletePoll"
+                style="margin-left: auto; background: #ff4d4f; color: white; border: none; border-radius: 6px; padding: 8px 16px; cursor: pointer;"
+              >
+                Delete Poll
+              </button>
+              </div>
+
+
             <div class="poll-profile">
               <img :src="currentProfile.image" alt="Profile Image" class="poll-profile-image" />
               <div class="poll-profile-info">
@@ -70,6 +125,9 @@
                   Posted: {{ formatDateTime(currentProfile.createdAt) }} ({{ timeAgo(currentProfile.createdAt) }})
                 </span>
               </div>
+<<<<<<< HEAD
+             
+=======
               <button
                 v-if="currentProfile.userId === loggedInUserId"
                 class="delete-poll-btn"
@@ -78,6 +136,7 @@
               >
                 Delete Poll
               </button>
+>>>>>>> main
             </div>
 
             <div class="poll-description">
@@ -113,6 +172,26 @@
                     {{ option.text }}
                     <span v-if="option.voted" style="color: #080d2a; margin-left: 6px;">✔</span>
                   </p>
+<<<<<<< HEAD
+                  <!-- <span class="poll-percentage">{{ calculatePercentage(index) }}%</span> -->
+
+
+
+                  <!-- Progress Bar -->
+                   <div class="poll-progress-bar-wrapper">
+                  <div class="poll-progress-bar-bg">
+                    <div
+                      class="poll-progress-bar-fill"
+                      :style="{ width: calculatePercentage(index) + '%' }"
+                    ></div>
+                  </div>
+                  <span class="poll-progress-bar-label">{{ calculatePercentage(index) }}%</span>
+                </div>
+                 <!-- Progress Bar -->
+
+                </div>
+               
+=======
                   <span class="poll-percentage">{{ calculatePercentage(index) }}%</span>
                 </div>
                 <div class="poll-progress-bar-wrapper">
@@ -124,8 +203,10 @@
                   </div>
                   <span class="poll-progress-bar-label">{{ calculatePercentage(index) }}%</span>
                 </div>
+>>>>>>> main
               </div>
             </div>
+            
 
             <!-- Number of Votes -->
             <div class="poll-votes">
@@ -141,8 +222,23 @@
         <div v-else class="no-polls-message">
           <p>No polls available yet. Be the first to create one!</p>
         </div>
+<<<<<<< HEAD
       </div>
-    </div>
+        </div>
+
+        <div class="right-column">
+          <!-- Navigation Buttons -->
+              <button 
+                class="nav-button right" 
+                @click="nextProfile" 
+                :disabled="currentIndex === profiles.length - 1 || isFlipped"
+              > <i class="fa-solid fa-circle-arrow-right"></i>
+              </button>
+          </div>
+
+=======
+>>>>>>> main
+      </div>
   </NavLayout>
 </template>
 
@@ -423,6 +519,33 @@
 
 
 <style scoped>
+<<<<<<< HEAD
+.side-nav{
+  z-index:unset;
+}
+.poll-length-select{
+    padding: 0.3rem 0.7rem;
+    border-radius: 6px;
+    border: 1px solid #dbb4d7;
+    background: #2e1f45;
+    color: #fff;
+    font-size: 11pt;
+    margin:5px;
+}
+/* .poll-wrapper {
+  margin-top: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: calc(100% - 80px); 
+  width: 90%;
+  margin-left: auto;
+  margin-right:auto;
+} */
+
+.poll-container {
+   box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+=======
 .poll-wrapper {
   background-color: #ddb0d7;
   padding: 2rem;
@@ -434,6 +557,7 @@
   margin-bottom: 1rem;
   margin-top: 80px;
   margin-left: 270px;
+>>>>>>> main
 }
 
 .create-poll-container {
@@ -522,6 +646,7 @@
   border: none;
   cursor: pointer;
   color: white;
+  padding:0;
 }
 
 .close-btn:hover{
@@ -595,43 +720,51 @@
 }
 
 .poll-scroll {
-  display: flex;
+  /* display: flex; */
   justify-content: center;
 }
 
 .poll-container {
   background-color: #080d2a;
   border-radius: 12px;
-  padding: 3rem;
-  width: 900px;
-  height: 550px;
+  padding-left: 3rem;
+  padding-right: 3rem;
+   padding-top: 1rem;
+  padding-bottom: 1rem;
+  width: 100%;
+  height: 420px;
   position: relative;
   perspective: 1500px;
   user-select: none;
+ 
 }
 
 .nav-button {
-  position: absolute;
   top: 50%;
-  transform: translateY(-50%);
-  background-color: transparent;
-  border: 2px solid #080d2a;
+  transform: translateY(-20%);
+  background: none;
+  border: none;
+  font-size: 2.5rem;
   color: #080d2a;
-  font-size: 2rem;
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
   cursor: pointer;
-  z-index: 10;
-  user-select: none;
+  z-index: 1;
+  flex-direction: column; 
+  gap: 1rem; 
 }
 
-.nav-button.left {
-  left: 15px;
+.nav-button {
+  outline: none;
+  box-shadow: none;
 }
 
-.nav-button.right {
-  right: 15px;
+.nav-button:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.nav-button:active {
+  outline: none;
+  box-shadow: none;
 }
 
 .poll-top {
@@ -667,8 +800,8 @@
   margin-top: 20px;
   text-align: center;
   color: #ffffff;
-  width: 800px;
-  height: 400px;
+  /* width: 80%; */
+  height: 95%;
 }
 
 .poll-profile {
@@ -702,18 +835,17 @@
 
 .poll-description {
   font-size: 1rem;
-  margin: 1.5rem 0;
+  margin: 0.5rem 0;
   text-align: left;
 }
 
 .poll-options-container {
   background-color: rgba(218, 171, 224, 0.7); 
   border: 4px solid white;
-  padding: 1rem;
+  padding: 0.5rem;
   border-radius: 10px;
-  margin-bottom: 1rem;
-  width: 750px;
-  height: 140px; 
+  width: 100%;
+  height: 100px; 
   overflow-y: auto; 
 }
 
@@ -725,7 +857,10 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.7rem;
+  margin-bottom: 0.2rem;
+  border: 1px solid #080d2a;
+  padding: 4px 20px 4px 20px;
+  border-radius: 10px;;
 }
 
 .poll-option input[type="radio"] {
@@ -784,7 +919,11 @@
 .poll-progress-bar-bg {
   background: #e0e0e0;
   border-radius: 8px;
+<<<<<<< HEAD
+  width: 100%;
+=======
   width: 120px;
+>>>>>>> main
   height: 16px;
   margin-right: 8px;
   overflow: hidden;
@@ -804,4 +943,127 @@
   min-width: 38px;
   text-align: right;
 }
+<<<<<<< HEAD
+
+
+
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 1s ease-in-out; 
+}
+.fade-enter, .fade-leave-to {
+  opacity: 0;
+}
+
+.favorites-wrapper {
+  padding-top: 2rem;
+  padding-left:2rem;
+  padding-right:2rem;
+  background-color: #dbb4d7;
+  min-height: 100%;
+  overflow: auto;
+  color: black;
+  display: flex;
+  flex-direction: column;
+  margin-top: 80px;
+  width:100%;
+  margin-left:auto;
+  margin-right:auto;
+}
+
+.favorites-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: black;
+  text-align: left;
+  width: 80%;
+  margin: auto;
+}
+
+.favorites-description {
+  font-size: 1rem;
+  /* margin-bottom: 2rem; */
+  text-align: left;
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+}
+.grid-container {
+  display: grid;
+  grid-template-columns: 10% 80% 10%; /* 10-80-10 ratio */
+  height: auto; /* Full viewport height */
+  gap: 10px;
+  width: 90%;
+  margin-top: 20px;
+  margin-left: auto;
+  margin-right: auto;
+
+}
+
+.left-column, .right-column {
+   display: flex;              /* Enables flex centering */
+  flex-direction: column;     /* Stacks children vertically */
+  justify-content: center;    /* Centers vertically */
+  align-items: center;        /* Centers horizontally */
+  padding: 15px;
+  height: 500px;
+}
+
+
+
+
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .profile-card {
+      width: 98%;
+    }
+    .front{
+      padding:0;
+    }
+    .discover-top{
+      padding:15px;
+    }
+    .action-section {
+      width:100%;
+    }
+    .poll-content{
+      width: 100%;
+    }
+    .poll-container{
+      padding-left: 20px;
+      padding-right: 20px;
+      padding-top:10px;
+      padding-bottom:10px;
+    }
+  }
+  /* Additional styles for very small screens */
+  @media (max-width: 480px) {
+    .profile-card {
+     width: 100%;
+    }
+    .front{
+      padding:0;
+    }
+    .discover-top{
+      padding:15px;
+    }
+    .action-section {
+      width:100%;
+    }
+    .poll-content{
+      width: 100%;
+    }
+    .poll-container{
+      padding-left: 0;
+      padding-right: 0;
+      padding-top:10px;
+      padding-bottom:10px;
+    }
+  }
+
+
 </style>
+=======
+</style>
+>>>>>>> main

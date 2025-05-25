@@ -5,7 +5,7 @@
       <div class="layout-container">
         <SideNav />
         <div class="page-content">
-          <slot />
+          <slot/>
         </div>
       </div>
     </div>
@@ -17,24 +17,26 @@
   </script>
   
   <style scoped>
+  
   .layout-wrapper {
     display: flex;
     flex-direction: column;
     height: 100vh; 
   }
   
-  .layout-container {
-    display: flex;
-    flex: 1; 
-    overflow: hidden;
-  }
+.layout-container {
+
+  flex: 1; 
+  overflow: auto;
+  position: relative;
+  z-index: 9;
+}
   
   .page-content {
     flex: 1;
-    /* padding: 20px;
-    margin-left: 270px;  */
     overflow-y: auto;
     position: relative; 
+    z-index: 1;
   }
   
   .NavBar {
@@ -43,7 +45,6 @@
     left: 0;
     width: 100%;
     height: 60px; 
-    z-index: 1000; 
   }
   
   .SideNav {
@@ -52,7 +53,6 @@
     left: 0;
     width: 270px; 
     height: calc(100vh - 60px); 
-    z-index: 900;
     overflow-y: auto; 
   }
   </style>

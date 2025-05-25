@@ -195,7 +195,7 @@ const saveProfile = async () => {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
+  width: 100%;
   height: 100vh;
   background: linear-gradient(120deg, #e3b8ff 0%, #dbb4d7 25%, #c697bd 50%, #8a6bb8 75%, #322848 100%);
   background-size: 200% 200%; 
@@ -224,6 +224,65 @@ const saveProfile = async () => {
 }
 .fade-enter, .fade-leave-to {
   opacity: 0;
+<<<<<<< HEAD
+}
+
+/* added font weigtht */
+.setup-text {
+  width: 100%;
+  position: absolute;
+  top: 3rem; 
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 35pt;
+  color: #322848;
+  text-align: center;
+  font-weight: 425;
+}
+
+/* EDITED THIS FOR GLASSMORPHISM */
+.profile-setup {
+  background: rgba(255, 255, 255, 0.55);
+  width: 50%;
+  height: auto;
+  padding: 2rem;
+  border-radius: 15px;
+  color: #322848;
+  position: absolute;
+  top: 57%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.25);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transition: all 0.3s ease;
+}
+
+/* ADDED HOVER EFFECT */
+.profile-setup:hover {
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.35);
+  backdrop-filter: blur(16px) saturate(200%);
+  -webkit-backdrop-filter: blur(16px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+p {
+  font-size: 1.5rem;
+  margin: 0.1rem 1rem 1rem 1rem;
+  margin-bottom: 1.2rem;
+}
+
+/*EDITED*/
+.birthday-inputs {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+=======
 }
 
 /* added font weigtht */
@@ -280,6 +339,7 @@ p {
   margin-bottom: 2rem;
 }
 
+>>>>>>> main
 /* EDITED */
 .birthday-inputs input {
   width: 95%;
@@ -307,8 +367,12 @@ p {
 }
 
 .gender-options {
+<<<<<<< HEAD
+  display: block;
+=======
   display: flex;
   gap: 1rem;
+>>>>>>> main
   justify-content: center;
   margin-bottom: 2rem;
 }
@@ -323,6 +387,10 @@ p {
   font-size: 1rem;
   color: #32284889;
   font-weight: 400;
+<<<<<<< HEAD
+  margin:5px;
+=======
+>>>>>>> main
 }
 
 /*EDITED*/
@@ -402,4 +470,27 @@ textarea:focus {
   outline: none;
   background-color: #3228485a;
 }
+<<<<<<< HEAD
+
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .profile-setup{
+    width: 80%;
+  }
+  .setup-text{
+    font-size: 20pt;
+  }
+  }
+  /* Additional styles for very small screens */
+  @media (max-width: 480px) {
+.profile-setup{
+    width: 90%;
+  }
+  .setup-text{
+    font-size: 15pt;
+  }
+  }
+=======
+>>>>>>> main
 </style>
