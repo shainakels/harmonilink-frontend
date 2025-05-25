@@ -1,6 +1,6 @@
 <template>
   <nav class="top-nav">
-    <img src="/src/assets/logo2.png" alt="Logo" class="logo" />
+    <img src="/src/assets/logo.png" alt="Logo" class="logo" />
     <div class="search-container" v-if="showSearchBar">
       <i
         class="fa-solid fa-microphone mic-icon"
@@ -13,7 +13,14 @@
         class="search-input"
         v-model="searchQuery"
         @input="fetchSearchResults"
+        @focus="searchFocused = true"
+        @blur="searchFocused = false"
       />
+      <i
+        class="fa-solid fa-microphone mic-icon"
+        :class="{ 'mic-focused': searchFocused, listening: isListening }"
+        @click="toggleSpeechRecognition"
+      ></i>
       <button
         v-if="searchQuery"
         class="clear-btn"
@@ -27,7 +34,9 @@
       <i class="fa-solid fa-circle-user user-icon" @click="toggleDropdown"></i>
       <div v-if="showDropdown" class="dropdown-menu">
         <router-link to="/profile" class="dropdown-item">Profile</router-link>
-        <button class="dropdown-item logout-button" @click="logout">Logout</button>
+        <button class="dropdown-item logout-button" @click="logout">
+          Logout
+        </button>
       </div>
     </div>
 
@@ -39,12 +48,17 @@
       ></i>
       <div class="mic-animation-wrapper">
         <div class="mic-animation">
+          <div class="pulse-circle"></div>
           <i class="fa-solid fa-microphone mic-icon"></i>
-          <div class="circle"></div>
-          <div class="circle"></div>
-          <div class="circle"></div>
         </div>
         <p class="listening-text">{{ micStatusMessage }}</p>
+        <p
+          v-if="micStatusMessage === `Didn't get that.`"
+          class="try-again-text"
+          @click="tryAgain"
+        >
+          Try again
+        </p>
       </div>
     </div>
 
@@ -92,6 +106,7 @@ const micStatusMessage = ref("");
 const emit = defineEmits(["search"]);
 const router = useRouter();
 const route = useRoute();
+const searchFocused = ref(false);
 
 let recognition = null;
 
@@ -140,10 +155,10 @@ function toggleDropdown() {
 
 // Logout
 function logout() {
-  localStorage.removeItem('authToken');
-  localStorage.removeItem('userLoggedIn');
-  localStorage.removeItem('onboardingStep');
-  router.push('/login');
+  localStorage.removeItem("authToken");
+  localStorage.removeItem("userLoggedIn");
+  localStorage.removeItem("onboardingStep");
+  router.push("/login");
 }
 
 // Toggle mic (moved outside of 'if' block)
@@ -194,20 +209,17 @@ if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
       gotSpeechResult = true;
       const transcript = event.results[0][0].transcript;
       searchQuery.value = transcript;
-      fetchSearchResults(); // <-- FIXED: call fetchSearchResults, not emitSearchQuery
-      isListening.value = false;
+      fetchSearchResults();
       micStatusMessage.value = "";
     };
 
     recognition.onend = () => {
       if (!gotSpeechResult) {
         micStatusMessage.value = "Didn't get that.";
-        setTimeout(() => {
-          isListening.value = false;
-          micStatusMessage.value = "";
-        }, 2000);
-      } else {
-        isListening.value = false;
+        // Remove the timeout below so the message stays
+        // setTimeout(() => {
+        //   micStatusMessage.value = "";
+        // }, 2000);
       }
     };
   }
@@ -271,6 +283,13 @@ const showSearchBar = computed(() => {
     /^\/profile\/[^/]+$/.test(path)
   );
 });
+
+function tryAgain() {
+  micStatusMessage.value = "Listening...";
+  if (recognition) {
+    recognition.start();
+  }
+}
 </script>
 
 <style>
@@ -289,7 +308,7 @@ body {
   margin: 0;
   padding: 0;
   height: 100%;
-  background-color: #dbb4d7;
+  /* background-color: #dbb4d7; */
   overflow-x: hidden;
 }
 
@@ -298,8 +317,16 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  height: 80px;
-  background-color: #080d2a;
+  height: 65px;
+  color: #322848;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.616),
+    rgba(255, 255, 255, 0)
+  );
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2); /* stronger shadow for depth */
+  backdrop-filter: blur(12px) brightness(1.05);
+  -webkit-backdrop-filter: blur(12px) brightness(1.05);
   color: white;
   display: flex;
   align-items: center;
@@ -318,17 +345,29 @@ body {
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  width: 100%; /* Full width on smaller screens */
-  max-width: 600px; /* Limit width on larger screens */
+  width: 100%;
+  max-width: 600px;
   margin: 0 auto;
 }
 
 .clear-btn {
+  position: absolute;
+  right: 44px;
+  top: 48%;
+  transform: translateY(-50%);
   background: none;
   border: none;
-  color: #fff;
-  font-size: 1.2rem;
+  color: #322848;
+  font-size: 1rem;
   cursor: pointer;
+  outline: none;
+  padding: 0;
+  z-index: 2;
+}
+
+.clear-btn:focus {
+  background: none;
+  border: none;
   outline: none;
 }
 </style>
@@ -339,7 +378,7 @@ body {
 }
 
 .user-icon {
-  color: white;
+  color: #322848;
   font-size: 35px;
   cursor: pointer;
 }
@@ -348,8 +387,7 @@ body {
   position: absolute;
   top: 50px;
   right: 0;
-  background-color: #080d2a;
-  border: 1px solid #432775;
+  background-color: #322848;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   width: 150px;
@@ -367,7 +405,7 @@ body {
 }
 
 .dropdown-item:hover {
-  background-color: #432775;
+  background-color: #28203a;
   color: #ffffff;
 }
 
@@ -381,7 +419,7 @@ body {
 .mic-icon {
   position: absolute;
   left: 10px;
-  color: white;
+  color: #322848;
   cursor: pointer;
   transition: color 0.3s ease;
 }
@@ -390,30 +428,21 @@ body {
   color: red;
 }
 
-.search-input {
-  width: 100%;
-  padding: 0.5rem 1rem 0.5rem 2.5rem;
-  background-color: #432775;
-  border: none;
-  border-radius: 40px;
-  color: white;
-}
-
 /* Mic overlay styles */
 .mic-overlay {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.83);
+  width: 100vw; /* Ensure full viewport width */
+  height: 100vh; /* Ensure full viewport height */
+  background-color: rgb(0, 0, 0);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   color: white;
   font-size: 1.5rem;
-  z-index: 2000;
+  z-index: 9999; /* Make sure it's above all other elements */
 }
 
 .mic-animation-wrapper {
@@ -421,6 +450,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  margin-top: 3.5rem;
 }
 
 .mic-animation {
@@ -433,36 +463,76 @@ body {
   margin-bottom: -3rem;
 }
 
-.mic-animation .mic-icon {
-  font-size: 3.5rem;
-  color: red;
-  z-index: 2;
-  position: relative;
-  margin-right: 1rem;
-}
-
-.mic-animation .circle {
+/* Red pulsing circle behind the mic */
+.pulse-circle {
   position: absolute;
   width: 90px;
   height: 90px;
-  border: 2px solid white;
   border-radius: 50%;
-  animation: echo 1.5s infinite ease-out;
-  opacity: 0.7;
+  background: rgba(255, 0, 0, 0.8);
+  animation: pulse 4s ease-in-out infinite;
+  z-index: 1;
 }
 
-.mic-animation .circle:nth-child(2) {
-  animation-delay: 0.5s;
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.3); /* smaller pulse */
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
-.mic-animation .circle:nth-child(3) {
-  animation-delay: 1s;
+/* Make the mic icon white, smaller, centered, and pulse in opposite phase */
+.mic-overlay .mic-icon {
+  color: #fff !important;
+  font-size: 2.2rem;
+  z-index: 2;
+  position: relative;
+  margin: 0;
+  left: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: micPulse 2.4s infinite; /* Slower and opposite phase */
+}
+
+@keyframes micPulse {
+  0% {
+    transform: scale(1.18);
+  }
+  35% {
+    transform: scale(0.92);
+  }
+  70% {
+    transform: scale(1.18);
+  }
+  100% {
+    transform: scale(1.18);
+  }
 }
 
 .listening-text {
   font-size: 1.5rem;
+  font-weight: bold;
   color: white;
-  margin-top: 10rem;
+  margin-top: 8rem;
+}
+
+.try-again-text {
+  color: white;
+  font-size: 1rem;
+  margin-top: 0.5rem;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+.try-again-text:hover {
+  color: #ff2222;
 }
 
 .overlay-close-button {
@@ -475,24 +545,40 @@ body {
   z-index: 2001;
 }
 
+.search-input {
+  width: 96%;
+  padding: 0.5rem 1rem 0.5rem 2.5rem;
+  background-color: rgba(169, 163, 173, 0.379);
+  border: none;
+  border-radius: 40px;
+  color: #322848;
+}
+
 .search-results {
   position: absolute;
-  top: 60px;
-  left: 50%;
+  top: 50px;
+  left: 49.5%;
   transform: translateX(-50%);
-  background-color: #080d2a;
-  border: 1px solid #432775;
+  background-color: #322848;
+  border: 1px solid #3228489e;
   border-radius: 8px;
-  width: 30rem;
+  width: 35rem;
   max-height: 300px;
   overflow-y: auto;
-  padding: 1rem;
   color: white;
+  /* Remove padding here */
+  padding: 0;
 }
 
 .search-result-item {
-  padding: 0.5rem 0;
-  border-bottom: 1px solid #432775;
+  width: 100%;
+  display: block;
+  padding: 0.55rem 1rem; /* Add horizontal padding here */
+  border-bottom: 1px solid #3228489e;
+  font-size: 13px;
+  text-align: left;
+  box-sizing: border-box;
+  border-radius: 0; /* Remove border radius except on hover */
 }
 
 .search-result-item:last-child {
@@ -500,8 +586,18 @@ body {
 }
 
 .search-result-item:hover {
-  background-color: #432775;
+  background-color: #28203a;
   cursor: pointer;
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 8px;
+}
+
+.search-input:focus {
+  outline: none;
+  border: none;
+  background: rgba(255, 255, 255, 0.45);
+  box-shadow: 0 8px 12px rgba(31, 13, 62, 0.174);
 }
 
 @keyframes echo {
