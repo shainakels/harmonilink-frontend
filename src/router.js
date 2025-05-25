@@ -39,6 +39,7 @@ const routes = [
   { path: '/reset-password', component: ResetPassword },
   { path: '/favorites', component: Favorites },
   { path: '/feed', component: Feed },
+  { path: '/profile/:id', component: Profile },
   { path: '/profile', component: Profile },
 ];
 
