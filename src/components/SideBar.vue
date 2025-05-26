@@ -1,41 +1,59 @@
 <template>
-  <div class="side-nav-hidden" v-if="show">
-    <div class="nav-section sidebar_burger" @click="show = !show">
-      <i class="fa-solid fa-bars fa-2x"></i>
-    </div>
-  </div>
-  <div class="side-nav" v-if="!show">
-    <div class="nav-section sidebar_burger" @click="show = !show">
-      <i class="fa-solid fa-bars fa-2x"></i>
-    </div>
-    <div class="nav-section">
-      <router-link
-        v-for="(item, index) in navItems"
-        :key="index"
-        :to="item.route"
-        class="nav-item"
-        active-class="active"
-        exact
-      >
-        <i :class="item.icon"></i>
-        <span>{{ item.text }}</span>
-      </router-link>
-    </div>
-
-    <div class="mixtape-section">
-      <div class="mixtape-header">
-        <i class="fa-solid fa-compact-disc"></i>
-        <span>My Mixtapes</span>
-        <i
-          class="fa-solid fa-plus add-icon"
-          @click="
-            togglePopup();
-            createAction = !createAction;
-          "
-        ></i>
-      </div>
-
-      <!--START OF POPUP FOR CREATE MIXTAPE-->
+<!-- MIXTAPE OVERLAY VIEW -->
+          <div v-if="selectedMixtape" class="mixtape-detail-overlay">
+          <div class="mixtape-detail-box">
+            <span class="close-detail" @click="selectedMixtape = null"
+              >&times;</span
+            >
+            <img
+              :src="getFullPhotoUrl(selectedMixtape.cover)"
+              class="detail-img"
+            />
+            <h2>{{ selectedMixtape.name }}</h2>
+            <p>{{ selectedMixtape.description }}</p>
+            <p>{{ selectedMixtape.bio }}</p>
+            <ul class="song-detail-list">
+              <li
+                v-for="(song, i) in selectedMixtape.songs"
+                :key="i"
+                style="display: flex; align-items: center; gap: 10px"
+              >
+                <img
+                  :src="song.artwork_url || '/src/assets/noimage.jpg'"
+                  alt="Artwork"
+                  style="width: 40px; height: 40px; border-radius: 4px"
+                />
+                <span style="flex: 1">{{ song.name }} - {{ song.artist }}</span>
+                <button
+                  v-if="song.preview_url"
+                  class="mini-audio-btn"
+                  @click="toggleSongPlay(i)"
+                  :aria-label="
+                    playingSongIndex === i ? 'Pause preview' : 'Play preview'
+                  "
+                  style="margin-left: 8px"
+                >
+                  <i
+                    :class="
+                      playingSongIndex === i
+                        ? 'fa-solid fa-pause'
+                        : 'fa-solid fa-play'
+                    "
+                  ></i>
+                </button>
+                <audio
+                  v-if="song.preview_url"
+                  ref="songAudioRefs"
+                  :src="song.preview_url"
+                  @ended="onSongAudioEnded"
+                  style="display: none"
+                ></audio>
+              </li>
+            </ul>
+          </div>
+        </div>
+<!-- END OF MIXTAPE OVERLAY VIEW -->
+       <!--START OF POPUP FOR CREATE MIXTAPE-->
       <div v-if="showPopup" class="popup-overlay">
         <div class="popup-box">
           <h2 v-if="createAction">Your Mixtape</h2>
@@ -51,6 +69,7 @@
             />
           </div>
 
+
           <input
             type="text"
             placeholder="Mixtape Name"
@@ -62,6 +81,7 @@
             placeholder="Say something about your mixtape"
             class="description-box"
           ></textarea>
+
 
           <div class="song-list-scroll">
             <div
@@ -112,6 +132,7 @@
             </div>
           </div>
 
+
           <div class="song-actions">
             <div class="add-song" @click="openSongModal">
               <i class="fa-solid fa-circle-plus"></i>
@@ -119,12 +140,14 @@
             </div>
           </div>
 
+
           <div class="popup-buttons">
             <button @click="createMixtape">Save Mixtape</button>
             <button @click="showConfirmCancel = true">Cancel</button>
           </div>
         </div>
       </div>
+
 
       <div v-if="showSongModal" class="modal-overlay">
         <div class="song-popup-box">
@@ -192,6 +215,7 @@
         </div>
       </div>
 
+
       <div v-if="showConfirmCancel" class="modal-overlay">
         <div class="confirm-box">
           <p>Are you sure you want to close this?</p>
@@ -202,9 +226,55 @@
         </div>
       </div>
 
+
       <!--END OF POPUP FOR CREATE MIXTAPE-->
+     
+  <div class="side-nav-hidden" v-if="!show">
+    <div class="nav-section sidebar_burger" @click="show = !show" style="color:white;">
+      <i class="fa-solid fa-bars fa-2x"></i>
+    </div>
+  </div>
+  <div class="side-nav" v-if="show">
+    <div class="nav-section sidebar_burger" @click="show = !show"  style="color:#322848">
+      <i class="fa-solid fa-bars fa-2x"></i>
+    </div>
+    <div class="nav-section">
+      <router-link
+        v-for="(item, index) in navItems"
+        :key="index"
+        :to="item.route"
+        class="nav-item"
+        active-class="active"
+        exact
+      >
+        <i :class="item.icon"></i>
+        <span>{{ item.text }}</span>
+      </router-link>
+    </div>
+
+
+    <div class="mixtape-section">
+      <div class="mixtape-header">
+        <i class="fa-solid fa-compact-disc"></i>
+        <span>My Mixtapes</span>
+        <i
+          class="fa-solid fa-plus add-icon"
+          @click="
+            togglePopup();
+            createAction = !createAction;
+          "
+           @click.stop="toggleMixtapeMenu(null)"
+           
+        ></i>
+      </div>
+
+
+
+
+
 
       <hr class="separator" />
+
 
       <div class="mixtape-search">
         <div class="input-wrapper input-with-mic">
@@ -238,65 +308,17 @@
         </div>
       </div>
 
+
       <div class="mixtape-list">
-        <div v-if="selectedMixtape" class="mixtape-detail-overlay">
-          <div class="mixtape-detail-box">
-            <span class="close-detail" @click="selectedMixtape = null"
-              >&times;</span
-            >
-            <img
-              :src="getFullPhotoUrl(selectedMixtape.cover)"
-              class="detail-img"
-            />
-            <h2>{{ selectedMixtape.name }}</h2>
-            <p>{{ selectedMixtape.description }}</p>
-            <p>{{ selectedMixtape.bio }}</p>
-            <ul class="song-detail-list">
-              <li
-                v-for="(song, i) in selectedMixtape.songs"
-                :key="i"
-                style="display: flex; align-items: center; gap: 10px"
-              >
-                <img
-                  :src="song.artwork_url || '/src/assets/noimage.jpg'"
-                  alt="Artwork"
-                  style="width: 32px; height: 32px; border-radius: 4px"
-                />
-                <span style="flex: 1">{{ song.name }} - {{ song.artist }}</span>
-                <button
-                  v-if="song.preview_url"
-                  class="mini-audio-btn"
-                  @click="toggleSongPlay(i)"
-                  :aria-label="
-                    playingSongIndex === i ? 'Pause preview' : 'Play preview'
-                  "
-                  style="margin-left: 8px"
-                >
-                  <i
-                    :class="
-                      playingSongIndex === i
-                        ? 'fa-solid fa-pause'
-                        : 'fa-solid fa-play'
-                    "
-                  ></i>
-                </button>
-                <audio
-                  v-if="song.preview_url"
-                  ref="songAudioRefs"
-                  :src="song.preview_url"
-                  @ended="onSongAudioEnded"
-                  style="display: none"
-                ></audio>
-              </li>
-            </ul>
-          </div>
-        </div>
+<!-- Was mixtape overlay -->
+
 
         <div
           class="mixtape-item"
           v-for="(mix, index) in filteredMixtapes"
           :key="mix.id || index"
           @click="selectedMixtape = mix"
+          @click.stop="toggleMixtapeMenu(null)"
           style="position: relative"
         >
           <img
@@ -304,10 +326,10 @@
             alt="Mixtape Image"
             class="mixtape-img"
           />
-          <span>{{ mix.name }}</span>
+          <span>{{ mix.name.slice(0, 8) }}{{ mix.name.length > 8 ? '.' : '' }}</span>
           <!-- Three-dot menu -->
           <div
-            v-if="mix.id !== firstMixtapeId"
+           
             class="mixtape-menu-wrapper"
             @click.stop
           >
@@ -317,7 +339,7 @@
             ></i>
             <div v-if="openMenuIndex === index" class="mixtape-menu-dropdown">
               <div @click="editMixtape(index)">Edit</div>
-              <div @click="deleteMixtape(index)">Delete</div>
+              <div @click="deleteMixtape(index)" v-if="mix.id !== firstMixtapeId">Delete</div>
             </div>
           </div>
         </div>
@@ -336,6 +358,7 @@ export default {
 };
 </script>
 
+
 <script setup>
 import {
   ref,
@@ -347,15 +370,18 @@ import {
 } from "vue";
 import axios from "axios";
 
+
 const showPopup = ref(false);
 const showSongModal = ref(false);
 const showConfirmCancel = ref(false);
+
 
 const navItems = [
   { icon: "fa-solid fa-user-plus", text: "Discover", route: "/discover" },
   { icon: "fa-solid fa-pen", text: "Feed", route: "/feed" },
   { icon: "fa-solid fa-heart", text: "Favorites", route: "/favorites" },
 ];
+
 
 const mixtapes = ref([]); // get mixtapes from backend
 const isSortedByName = ref(true);
@@ -370,23 +396,29 @@ const photoInput = ref(null);
 const selectedMixtape = ref(null);
 const artworkUrl = ref(null); // for song artwork, can be full URL or backend relative path
 
+
 const searchResults = ref([]);
 const isEditing = ref(false);
 const editingIndex = ref(null);
+
 
 const playingIndex = ref(null);
 const audioRefs = ref([]);
 const searchAudioRefs = ref([]);
 const searchPlayingIndex = ref(null);
 
+
 const songAudioRefs = ref([]);
 const playingSongIndex = ref(null);
 
+
 const token = localStorage.getItem("token");
+
 
 const togglePopup = () => {
   showPopup.value = true;
 };
+
 
 const closePopup = () => {
   showPopup.value = false;
@@ -399,9 +431,11 @@ const closePopup = () => {
   editingMixtapeId.value = null;
 };
 
+
 function triggerPhotoUpload() {
   photoInput.value?.click();
 }
+
 
 async function handlePhotoUpload(event) {
   const file = event.target.files[0];
@@ -409,9 +443,11 @@ async function handlePhotoUpload(event) {
     // Show preview (for local preview before upload)
     photoUrl.value = URL.createObjectURL(file);
 
+
     // Upload to backend
     const formData = new FormData();
     formData.append("photo", file);
+
 
     try {
       const token = localStorage.getItem("token");
@@ -437,6 +473,7 @@ async function handlePhotoUpload(event) {
   }
 }
 
+
 const createMixtape = async () => {
   if (mixtapeName.value.trim() === "") {
     alert("Please enter a mixtape name.");
@@ -451,8 +488,10 @@ const createMixtape = async () => {
     return;
   }
 
+
   // Use photoPath (backend relative path) for DB
   let photoForDb = photoPath.value;
+
 
   // Ensure all songs have artwork_url and preview_url
   const songsForDb = songs.value.map((song) => ({
@@ -461,6 +500,7 @@ const createMixtape = async () => {
     preview_url: song.preview_url || null,
     artwork_url: song.artwork_url || null,
   }));
+
 
   try {
     const token = localStorage.getItem("token");
@@ -502,9 +542,11 @@ const createMixtape = async () => {
   }
 };
 
+
 const onSearchAudioEnded = () => {
   searchPlayingIndex.value = null;
 };
+
 
 const toggleSearchPlay = (index) => {
   if (
@@ -515,10 +557,12 @@ const toggleSearchPlay = (index) => {
     searchAudioRefs.value[searchPlayingIndex.value].currentTime = 0;
   }
 
+
   if (searchPlayingIndex.value === index) {
     searchPlayingIndex.value = null;
     return;
   }
+
 
   const audio = searchAudioRefs.value[index];
   if (audio) {
@@ -527,12 +571,14 @@ const toggleSearchPlay = (index) => {
   }
 };
 
+
 const openSongModal = () => {
   showSongModal.value = true;
   songName.value = "";
   artistName.value = "";
   searchResults.value = [];
 };
+
 
 const closeSongModal = () => {
   showSongModal.value = false;
@@ -542,6 +588,7 @@ const closeSongModal = () => {
   artistName.value = "";
   searchResults.value = [];
 };
+
 
 const addSongFromResult = (result) => {
   const newSong = {
@@ -559,6 +606,7 @@ const addSongFromResult = (result) => {
   }
   closeSongModal();
 };
+
 
 const searchSongs = async () => {
   if (!songName.value && !artistName.value) {
@@ -580,9 +628,9 @@ const searchSongs = async () => {
   }
 };
 
+
 const editMixtape = (index) => {
   const mix = mixtapes.value[index];
-  if (mix.id === firstMixtapeId.value) return;
   mixtapeName.value = mix.name;
   mixtapeDescription.value = mix.description || mix.bio || "";
   // Always keep the original artwork_url if it exists
@@ -599,9 +647,11 @@ const editMixtape = (index) => {
   openMenuIndex.value = null;
 }
 
+
 const deleteSong = (index) => {
   songs.value.splice(index, 1);
 };
+
 
 const togglePlay = (index) => {
   audioRefs.value.forEach((audio, i) => {
@@ -610,6 +660,7 @@ const togglePlay = (index) => {
       audio.currentTime = 0;
     }
   });
+
 
   const currentAudio = audioRefs.value[index];
   if (!currentAudio) return;
@@ -622,9 +673,11 @@ const togglePlay = (index) => {
   }
 };
 
+
 const onAudioEnded = () => {
   playingIndex.value = null;
 };
+
 
 function toggleSongPlay(index) {
   // Pause any currently playing audio
@@ -636,10 +689,12 @@ function toggleSongPlay(index) {
     songAudioRefs.value[playingSongIndex.value].currentTime = 0;
   }
 
+
   if (playingSongIndex.value === index) {
     playingSongIndex.value = null;
     return;
   }
+
 
   nextTick(() => {
     const audio = songAudioRefs.value[index];
@@ -650,9 +705,11 @@ function toggleSongPlay(index) {
   });
 }
 
+
 function onSongAudioEnded() {
   playingSongIndex.value = null;
 }
+
 
 // Reset refs when selectedMixtape changes
 watch(
@@ -663,6 +720,7 @@ watch(
   }
 );
 
+
 watch(songs, () => {
   audioRefs.value = [];
 });
@@ -670,7 +728,9 @@ watch(searchResults, () => {
   searchAudioRefs.value = [];
 });
 
+
 const sortOption = ref("az");
+
 
 function sortMixtapes() {
   if (!mixtapes.value || mixtapes.value.length === 0) return;
@@ -690,13 +750,16 @@ function sortMixtapes() {
   }
 }
 
+
 // --- Drag and Drop Sorting ---
 let dragSourceIndex = null;
+
 
 const handleDragStart = (event, index) => {
   dragSourceIndex = index;
   event.dataTransfer.effectAllowed = "move";
 };
+
 
 const handleDrop = (event, dropIndex) => {
   if (dragSourceIndex !== null && dropIndex !== dragSourceIndex) {
@@ -707,22 +770,27 @@ const handleDrop = (event, dropIndex) => {
   dragSourceIndex = null;
 };
 
+
 const handleDragOver = (event) => {
   event.preventDefault();
   event.dataTransfer.dropEffect = "move";
 };
 
+
 onMounted(() => {
   dragSourceIndex = null;
 });
+
 
 // --- Speech Recognition ---
 const searchText = ref("");
 const micActive = ref(false);
 
+
 // Function to toggle the microphone recording state
 const toggleMicRecording = () => {
   micActive.value = !micActive.value;
+
 
   if (micActive.value) {
     startSpeechRecognition(); // Start speech recognition when recording starts
@@ -731,6 +799,7 @@ const toggleMicRecording = () => {
   }
 };
 
+
 // Function to start speech recognition (as you already have this)
 const startSpeechRecognition = () => {
   if (!("webkitSpeechRecognition" in window)) {
@@ -738,37 +807,45 @@ const startSpeechRecognition = () => {
     return;
   }
 
+
   const recognition = new webkitSpeechRecognition();
   recognition.lang = "en-US";
   recognition.continuous = false;
   recognition.interimResults = false;
 
+
   recognition.onstart = () => {
     console.log("Speech recognition started");
   };
+
 
   recognition.onresult = (event) => {
     const transcript = event.results[0][0].transcript;
     searchText.value = transcript;
   };
 
+
   recognition.onerror = (event) => {
     console.error("Speech recognition error", event.error);
     alert("There was an error with speech recognition.");
   };
 
+
   recognition.onend = () => {
     console.log("Speech recognition ended");
   };
 
+
   recognition.start();
 };
+
 
 // Function to stop speech recognition
 const stopSpeechRecognition = () => {
   console.log("Speech recognition stopped");
   // You can implement stopping the recognition here if necessary
 };
+
 
 const filteredMixtapes = computed(() => {
   if (!searchText.value.trim()) return mixtapes.value;
@@ -786,9 +863,11 @@ const filteredMixtapes = computed(() => {
   );
 });
 
+
 onMounted(async () => {
   await fetchUserMixtapes();
 });
+
 
 async function fetchUserMixtapes() {
   try {
@@ -820,6 +899,7 @@ async function fetchUserMixtapes() {
   }
 }
 
+
 function getFullPhotoUrl(photoUrl) {
   if (!photoUrl) return "/src/assets/noimage.jpg";
   if (photoUrl.startsWith("http")) return photoUrl;
@@ -830,13 +910,17 @@ function getFullPhotoUrl(photoUrl) {
   )}`;
 }
 
+
 const openMenuIndex = ref(null);
+
 
 function toggleMixtapeMenu(index) {
   openMenuIndex.value = openMenuIndex.value === index ? null : index;
 }
 
+
 const editingMixtapeId = ref(null);
+
 
 async function deleteMixtape(index) {
   const mix = mixtapes.value[index];
@@ -857,11 +941,14 @@ async function deleteMixtape(index) {
   }
 }
 
+
 const showSortDropdown = ref(false);
+
 
 function toggleSortDropdown() {
   showSortDropdown.value = !showSortDropdown.value;
 }
+
 
 function handleClickOutside(event) {
   const dropdown = document.querySelector(".mixtape-sort-dropdown");
@@ -876,12 +963,14 @@ function handleClickOutside(event) {
   }
 }
 
+
 onMounted(() => {
   document.addEventListener("click", handleClickOutside);
 });
 onBeforeUnmount(() => {
   document.removeEventListener("click", handleClickOutside);
 });
+
 
 const firstMixtapeId = computed(() => {
   if (!mixtapes.value.length) return null;
@@ -890,9 +979,11 @@ const firstMixtapeId = computed(() => {
 });
 </script>
 
+
 <style scoped>
 @import url("https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap");
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css");
+
 
 * {
   font-family: "Fira Code", monospace;
@@ -900,6 +991,7 @@ const firstMixtapeId = computed(() => {
   padding: 0;
   box-sizing: border-box;
 }
+
 
 html,
 body {
@@ -910,59 +1002,74 @@ body {
   overflow-x: hidden;
 }
 
+
 .side-nav {
   position: fixed;
-  top: 70px;
+  top: 60px; /* Position below navbar */
   left: 0;
   height: calc(100vh - 60px);
   width: 270px;
-  background-color: #080d2a;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.616),
+    rgba(255, 255, 255, 0)
+  );
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(12px) brightness(1.05);
+  -webkit-backdrop-filter: blur(12px) brightness(1.05);
   padding: 1rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  overflow: hidden;
-  z-index: 10;
+  overflow-y: auto;
+  z-index: 89;
+  transition: transform 0.3s ease;
 }
 
+
 .side-nav-hidden {
-  position: absolute;
-  top: 90px;
-  margin-left: 4px;
+  position: fixed;
+  top: 70px;
+  left: 10px;
   height: 50px;
   width: 50px;
   padding: 10px;
   padding-top: 9px;
   padding-left: 11px;
   border-radius: 10px;
-  background-color: #080d2a;
-
-  display: flex;
-  overflow: hidden;
-  z-index: 10;
+  background-color: #322848;
+  display: none; /* Hidden by default, shown in mobile */
+  z-index: 90;
 }
+
 
 .nav-section,
 .mixtape-section {
-  background-color: #1f0d3e;
+  /* background-color: #1f0d3e; */
+   background: rgba(255, 255, 255, 0.55);
   padding: 2rem;
+color:#322848;
 }
+
 
 .nav-item {
   display: flex;
   align-items: center;
   gap: 1.5rem;
-  color: #cec3c3;
+  color:#322848;
   margin-bottom: 1.5rem;
   text-decoration: none;
   transition: color 0.3s, font-weight 0.3s;
 }
 
+
 .nav-item.active,
 .nav-item.router-link-active {
   font-weight: bold;
-  color: white;
+  color: #322848;
+  text-decoration: underline;
 }
+
 
 .nav-item i {
   width: 35px;
@@ -976,6 +1083,7 @@ body {
   font-size: 17px;
 }
 
+
 .mixtape-header {
   display: flex;
   align-items: center;
@@ -986,9 +1094,10 @@ body {
   text-overflow: ellipsis;
 }
 
+
 .add-icon {
-  background-color: #dbb4d7;
-  color: #1f0d3e;
+  background-color: #322848;
+  color: white;
   width: 25px;
   height: 25px;
   border-radius: 50%;
@@ -1000,6 +1109,7 @@ body {
   cursor: pointer;
 }
 
+
 .popup-overlay {
   position: fixed;
   top: 0;
@@ -1007,22 +1117,27 @@ body {
   right: 0;
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
+
+
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
 }
 
+
 .popup-box {
-  background-color: #080d2a;
+  /* background-color: #080d2a; */
+    background: linear-gradient(120deg, #e3b8ff 0%, #dbb4d7 25%, #c697bd 50%, #8a6bb8 75%, #75629e 100%);
   padding: 2rem;
   border-radius: 1rem;
   width: 600px;
-  color: white;
+  color: #322848;
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
+
 
 .upload-box {
   background-color: #bebebe;
@@ -1039,31 +1154,46 @@ body {
   overflow: hidden;
 }
 
+
 .photo-preview {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
+
 .mixtape-name,
 .description-box {
   padding: 0.75rem;
   border: none;
   width: 100%;
-  color: white;
-  background: transparent;
+  color: #322848;
+  background: rgba(255, 255, 255, 0.495);
   text-align: center;
 }
-
+.mixtape-name:focus{
+  outline: none;
+  background: #3228485a;
+  color: white;
+  box-shadow: 0 8px 12px rgba(31, 13, 62, 0.08);
+}
+.description-box:focus{
+  outline: none;
+  background: #3228485a;
+  color: white;
+  box-shadow: 0 8px 12px rgba(31, 13, 62, 0.08);
+}
 .description-box {
   height: 60px;
   resize: none;
 }
 
+
 .song-item {
   padding: 0.2rem;
   text-align: center;
 }
+
 
 .song-actions {
   display: flex;
@@ -1073,10 +1203,12 @@ body {
   padding: 0 2rem;
 }
 
+
 .song-count {
   font-size: 0.9rem;
   color: #fff;
 }
+
 
 .add-song {
   display: flex;
@@ -1087,11 +1219,13 @@ body {
   margin: 0;
 }
 
+
 .popup-buttons {
   display: flex;
   justify-content: space-between;
   gap: 1rem;
 }
+
 
 .popup-buttons button {
   flex: 1;
@@ -1099,16 +1233,18 @@ body {
   border: none;
   border-radius: 0.5rem;
   background-color: #dbb4d7;
-  color: #1f0d3e;
+  color: #322848;
   cursor: pointer;
   font-size: 15px;
 }
+
 
 .popup-buttons button:hover {
   background: #080d2a;
   color: #dbb4d7;
   border: 1px solid #ebebeb;
 }
+
 
 .modal-overlay {
   position: fixed;
@@ -1123,6 +1259,7 @@ body {
   z-index: 1100;
 }
 
+
 .song-popup-box {
   background-color: #dbb4d7;
   padding: 1.5rem;
@@ -1133,10 +1270,12 @@ body {
   position: relative;
 }
 
+
 .song-popup-box h3 {
   margin-bottom: 1rem;
   font-size: 1.6rem;
 }
+
 
 .song-popup-box input {
   width: 90%;
@@ -1144,7 +1283,24 @@ body {
   padding: 0.5rem;
   border-radius: 0.3rem;
   border: none;
+  background: rgba(255, 255, 255, 0.495);
+  color:#322848;
 }
+.song-popup-box input:focus {
+outline: none;
+  background: #3228485a;
+  color: white;
+  box-shadow: 0 8px 12px rgba(31, 13, 62, 0.08);
+}
+
+
+
+
+
+
+
+
+
 
 .exit-btn {
   position: absolute;
@@ -1155,15 +1311,17 @@ body {
   font-weight: bold;
 }
 
+
 .search-results {
   margin-top: 1rem;
   max-height: 150px;
   overflow-y: auto;
-  background: #1f0d3e;
+  background: #8a63b6;
   padding: 0.5rem;
   border-radius: 0.5rem;
-  color: #dbb4d7;
+  color: white;
 }
+
 
 .search-item {
   display: flex;
@@ -1174,6 +1332,7 @@ body {
   cursor: pointer;
 }
 
+
 .confirm-box {
   background-color: #dbb4d7;
   padding: 1rem;
@@ -1183,11 +1342,13 @@ body {
   color: #1f0d3e;
 }
 
+
 .confirm-buttons {
   display: flex;
   justify-content: space-around;
   margin-top: 1.5rem;
 }
+
 
 .confirm-buttons button {
   padding: 0.5rem 1rem;
@@ -1196,11 +1357,13 @@ body {
   cursor: pointer;
 }
 
+
 .confirm-buttons button:first-child:hover {
   background: #080d2a;
   color: #dbb4d7;
   border: 1px solid #ebebeb;
 }
+
 
 .confirm-buttons button:last-child:hover {
   background: red;
@@ -1208,11 +1371,13 @@ body {
   border: 1px solid #ebebeb;
 }
 
+
 .separator {
   border: none;
-  border-top: 1px solid white;
+  border-top: 1px solid #322848;
   margin: 1rem 0;
 }
+
 
 .search-icon,
 .sort-icon {
@@ -1228,6 +1393,7 @@ body {
   justify-content: center;
 }
 
+
 .input-with-mic {
   position: relative;
   display: flex;
@@ -1235,38 +1401,49 @@ body {
   width: 100%;
 }
 
+
 .mic-left-inside {
   position: absolute;
   left: 10px;
   z-index: 1;
+  color:#322848;
 }
+
 
 .input-with-mic .mixtape-input {
   padding-left: 32px; /* to make space for the mic icon */
 }
 
+
 .sort-icon {
   position: absolute;
   right: 0;
   cursor: pointer;
-  color: white;
+  color: #322848;
   transition: color 0.2s;
 }
+
 
 .sort-icon:hover {
   color: #555;
 }
 
+
 .mixtape-input {
   width: 85%;
   padding: 5px 35px;
-  background-color: #432775;
+  background-color: rgba(169, 163, 173, 0.379);
   border: none;
   border-radius: 30px;
-  color: white;
+  color: #322848;
   font-size: 12px;
 }
-
+.mixtape-input:focus {
+  outline: none;
+  border: none;
+  background: rgba(255, 255, 255, 0.45);
+  box-shadow: 0 8px 12px rgba(31, 13, 62, 0.174);
+}
 .mixtape-list {
   display: flex;
   flex-direction: column;
@@ -1276,20 +1453,23 @@ body {
   height: 130px;
 }
 
+
 .mixtape-item {
   display: flex;
   align-items: center;
   gap: 1rem;
-  color: white;
+  color: #322848;
   padding: 0.5rem;
   cursor: pointer;
 }
+
 
 .mixtape-img {
   width: 40px;
   object-fit: cover;
   border-radius: 6px;
 }
+
 
 .mixtape-name {
   font-weight: bold;
@@ -1302,6 +1482,7 @@ body {
   border-radius: 5px;
 }
 
+
 .description-box {
   font-size: 0.95rem;
   padding: 0.5rem;
@@ -1313,11 +1494,13 @@ body {
   margin-bottom: 0.5rem;
 }
 
+
 .song-item {
   font-size: 0.9rem;
   padding: 0.25rem 0;
   overflow-wrap: break-word;
 }
+
 
 .popup-box {
   max-height: 85vh;
@@ -1326,9 +1509,11 @@ body {
   margin-top: 60px;
 }
 
+
 .song-item + .song-item {
   border-top: 1px solid #3a2c56;
 }
+
 
 .song-list-scroll {
   display: flex;
@@ -1339,17 +1524,20 @@ body {
   margin-top: 1rem;
   border: 1px solid #444;
   border-radius: 10px;
+  background: rgba(255, 255, 255, 0.495);
 }
+
 
 .song-item-flex {
   display: flex;
   justify-content: space-between;
-  background-color: #2c1a40;
+  background-color: #8a63b6;
   padding: 0.5rem;
   border-radius: 5px;
   margin-bottom: 0.5rem;
   color: white;
 }
+
 
 .song-actions-buttons {
   display: flex;
@@ -1358,15 +1546,18 @@ body {
   align-items: center;
 }
 
+
 .song-actions-buttons i {
   margin-left: 0.5rem;
   cursor: pointer;
   color: #c2b4d6;
 }
 
+
 .song-actions-buttons i:hover {
   color: #ffffff;
 }
+
 
 .song-link {
   margin-left: 10px;
@@ -1375,16 +1566,18 @@ body {
   font-size: 1.1rem;
 }
 
+
 .song-link:hover {
   color: white;
 }
+
 
 .mixtape-detail-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
+  height: 100vh;
   background-color: rgba(20, 20, 20, 0.85);
   display: flex;
   justify-content: center;
@@ -1392,16 +1585,19 @@ body {
   z-index: 999;
 }
 
+
 .mixtape-detail-box {
-  background-color: #1e1e1e;
+  /* background-color: #1e1e1e; */
+  background: linear-gradient(120deg, #e3b8ff 0%, #dbb4d7 25%, #c697bd 50%, #8a6bb8 75%, #75629e 100%);
   padding: 2rem;
   border-radius: 1rem;
   width: 90%;
   max-width: 600px;
   text-align: center;
-  color: white;
+  color: #322848;
   position: relative;
 }
+
 
 .close-detail {
   position: absolute;
@@ -1411,13 +1607,16 @@ body {
   cursor: pointer;
 }
 
+
 .detail-img {
   width: 100px;
   height: 100px;
   object-fit: cover;
   border-radius: 0.5rem;
   margin-bottom: 1rem;
+  border:1px solid #322848;
 }
+
 
 .song-details-flex {
   display: flex;
@@ -1425,16 +1624,19 @@ body {
   gap: 10px;
 }
 
+
 .mic-icon {
-  color: white;
+  color: #322848;
   cursor: pointer;
 }
+
 
 .mic-recording {
   color: red;
   cursor: pointer;
   animation: pulse 1s infinite;
 }
+
 
 .mini-audio-btn {
   background: none;
@@ -1444,22 +1646,17 @@ body {
   color: #dbb4d7;
 }
 
+
 .mini-audio-btn:hover {
   color: #dbb4d7;
 }
+
 
 .search-details {
   flex: 1;
   font-size: 14px;
 }
 
-.search-artwork,
-.photo-preview {
-  width: 40px;
-  height: 40px;
-  border-radius: 5px;
-  object-fit: cover;
-}
 
 @keyframes pulse {
   0% {
@@ -1473,20 +1670,23 @@ body {
   }
 }
 
+
 .mixtape-menu-wrapper {
   position: absolute;
   right: 10px;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 1000;
+  z-index: 500;
 }
+
 
 .mixtape-menu-icon {
   cursor: pointer;
-  color: #dbb4d7;
+  color: #322848;
   font-size: 18px;
   padding: 4px;
 }
+
 
 .mixtape-menu-dropdown {
   position: absolute;
@@ -1501,16 +1701,22 @@ body {
   text-align: left;
 }
 
+
 .mixtape-menu-dropdown div {
   padding: 8px 16px;
   cursor: pointer;
   color: #fff;
 }
 
+
 .mixtape-menu-dropdown div:hover {
-  background: #dbb4d7;
+  background: #ffffff;
   color: #1f0d3e;
+  border:1px solid #322848;
+  border-radius: 6px;
+  font-weight:bold;
 }
+
 
 .mixtape-menu-dropdown .disabled {
   color: #aaa;
@@ -1519,19 +1725,23 @@ body {
   background: #eee;
 }
 
+
 .mixtape-sort-dropdown {
   margin-bottom: 0.5rem;
   text-align: right;
+  margin-top: 5px;
 }
+
 
 .mixtape-sort-dropdown select {
   padding: 0.3rem 0.7rem;
   border-radius: 6px;
   border: 1px solid #dbb4d7;
-  background: #2e1f45;
+  background: #322848;
   color: #fff;
   font-size: 11pt;
   width: 100%;
+ 
 }
 .sidebar_burger {
   text-align: right;
@@ -1540,46 +1750,195 @@ body {
   padding-right: 5px;
 }
 
+
 /* Responsive styles */
-@media (max-width: 768px) {
-  .mixtape-header span {
-    text-align: left;
-  }
+@media (max-width: 1024px) {
   .side-nav {
-    width: 100%;
-    height: auto; /* Allow height to adjust */
-    position: relative; /* Change position to relative */
+    width: 240px;
   }
-  /* .nav-section, */
-  .mixtape-section {
-    padding: 1rem; /* Adjust padding for smaller screens */
-  }
-  .nav-item span {
-    font-size: 1rem;
-  }
-  .nav-item {
-    flex-direction: row; /* Ensure items are in a row */
-    justify-content: left; /* Align items to the start */
-  }
-  /* .mixtape-header span {
-  display: none;
- } */
-  .add-icon {
-    margin-left: 0; /* Remove margin for smaller screens */
+
+  .mixtape-item {
+    font-size: 0.9rem;
   }
 }
-/* Additional styles for very small screens */
+
+@media (max-width: 768px) {
+  .side-nav {
+    transform: translateX(-100%); /* Hide by default on mobile */
+    width: 270px;
+  }
+
+  .side-nav.show {
+    transform: translateX(0);
+  }
+
+  .side-nav-hidden {
+    display: flex; /* Show the burger menu on mobile */
+  }
+
+  .nav-section,
+  .mixtape-section {
+    padding: 1rem;
+  }
+
+  .mixtape-list {
+    max-height: calc(100vh - 400px);
+  }
+
+  .nav-item {
+    margin-bottom: 1rem;
+  }
+
+  .nav-item i {
+    width: 30px;
+    height: 30px;
+    font-size: 15px;
+  }
+
+  .mixtape-header {
+    padding: 0.5rem 0;
+  }
+
+  .mixtape-item {
+    padding: 0.3rem;
+  }
+
+  .mixtape-img {
+    width: 35px;
+  }
+
+  .search-container {
+    width: 90%;
+  }
+
+  .mixtape-input {
+    font-size: 0.9rem;
+  }
+
+  .mixtape-sort-dropdown select {
+    font-size: 0.9rem;
+  }
+}
+
 @media (max-width: 480px) {
   .side-nav {
     width: 100%;
-    height: auto; /* Allow height to adjust */
-    position: relative; /* Change position to relative */
+    padding: 0.5rem;
   }
+
+  .nav-section,
+  .mixtape-section {
+    padding: 0.8rem;
+  }
+
   .nav-item {
-    font-size: 0.9rem; /* Smaller font size */
+    font-size: 0.8rem;
+    gap: 1rem;
   }
+
+  .nav-item i {
+    width: 25px;
+    height: 25px;
+    font-size: 13px;
+  }
+
+  .mixtape-header {
+    font-size: 0.9rem;
+  }
+
+  .add-icon {
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+  }
+
+  .mixtape-list {
+    max-height: calc(100vh - 350px);
+  }
+
+  .mixtape-item {
+    font-size: 0.8rem;
+  }
+
+  .mixtape-img {
+    width: 30px;
+  }
+
   .mixtape-input {
-    font-size: 0.8rem; /* Smaller input font size */
+    font-size: 0.8rem;
+    padding: 4px 30px;
+  }
+
+  .mixtape-sort-dropdown select {
+    font-size: 0.8rem;
+    padding: 0.2rem 0.5rem;
+  }
+
+  .popup-box {
+    width: 95%;
+    max-height: 80vh;
+    margin: 10px;
+    padding: 1rem;
+  }
+
+  .song-popup-box {
+    width: 95%;
+    margin: 10px;
+  }
+
+  .upload-box {
+    width: 8rem;
+    height: 8rem;
+  }
+
+  .song-list-scroll {
+    max-height: 200px;
+  }
+
+  .song-details-flex {
+    font-size: 0.8rem;
+  }
+
+  .search-artwork {
+    width: 30px;
+    height: 30px;
+  }
+}
+
+/* Collapsible sidebar for tablet/mobile */
+@media (max-width: 768px) {
+  .side-nav {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    position: fixed;
+    top: 60px;
+    left: 0;
+    height: calc(100vh - 60px);
+    z-index: 100;
+  }
+
+  .side-nav.show {
+    transform: translateX(0);
+  }
+
+  .side-nav-hidden {
+    display: block;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) {
+  .nav-item:hover,
+  .mixtape-item:hover,
+  .add-icon:hover {
+    transform: none;
+  }
+
+  .nav-item:active,
+  .mixtape-item:active,
+  .add-icon:active {
+    opacity: 0.7;
   }
 }
 </style>
+
