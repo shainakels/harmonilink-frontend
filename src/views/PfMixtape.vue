@@ -540,6 +540,7 @@ watch(songs, () => {
   margin-right: auto;
   text-align: center;
   font-weight: normal;
+  overflow: hidden;
 }
 
 .input::placeholder,

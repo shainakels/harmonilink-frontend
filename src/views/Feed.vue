@@ -1,14 +1,9 @@
 <template>
   <NavLayout>
-       <div class="favorites-wrapper">
+    <div class="favorites-wrapper">
       <h1 class="favorites-title">Feed</h1>
-      <p class="favorites-description">
-       Your interactive hub of harmony! Create polls cast votes, and keep the vibe flowing.
-      </p>
-</div>
-
-
-      <div class="grid-container">
+    </div>
+    <div class="grid-container">
       
           <div class="left-column">
         <!-- Navigation Buttons -->
@@ -174,8 +169,8 @@
           </div>
           
         </div>
-        <div v-else class="no-polls-message">
-          <p>No polls available yet. Be the first to create one!</p>
+        <div v-else class="no-polls-message styled-no-polls">
+          <p>Create your poll now and interact with your favorited users!</p>
         </div>
       </div>
         </div>
@@ -192,6 +187,7 @@
 
       </div>
   </NavLayout>
+  <div class="feed-background"></div>
 </template>
 
 <script setup>
@@ -230,7 +226,8 @@
         headers: { Authorization: `Bearer ${token}` }
       })
      
-      profiles.value = data.map(poll => ({
+      // Sort so that the logged-in user's poll is always first
+      const mapped = data.map(poll => ({
         name: poll.user.name,
         age: poll.user.birthday ? calculateAge(poll.user.birthday) : '',
         gender: poll.user.gender || '',
@@ -252,7 +249,16 @@
           })),
           id: poll.id
         }
-      }))
+      }));
+
+      // Move the logged-in user's poll to the front if it exists
+      mapped.sort((a, b) => {
+        if (a.userId === loggedInUserId) return -1;
+        if (b.userId === loggedInUserId) return 1;
+        return 0;
+      });
+
+      profiles.value = mapped;
       currentIndex.value = 0
       resetVoteState()
     } catch (e) {
@@ -495,10 +501,6 @@
   margin-right:auto;
 } */
 
-.poll-container {
-   box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
-}
-
 .create-poll-container {
   display: flex;
   align-items: center;
@@ -668,7 +670,7 @@
   border-radius: 12px;
   padding-left: 3rem;
   padding-right: 3rem;
-   padding-top: 1rem;
+  padding-top: 1rem;
   padding-bottom: 1rem;
   width: 100%;
   height: 420px;
@@ -881,7 +883,6 @@
 
 
 
-
 .fade-enter-active, .fade-leave-active {
   transition: opacity 1s ease-in-out; 
 }
@@ -893,16 +894,47 @@
   padding-top: 2rem;
   padding-left:2rem;
   padding-right:2rem;
-  background-color: #dbb4d7;
-  min-height: 100%;
-  overflow: auto;
+
+  overflow: hidden;
   color: black;
-  display: flex;
-  flex-direction: column;
-  margin-top: 80px;
+
   width:100%;
   margin-left:auto;
   margin-right:auto;
+}
+
+.favorites-wrapper::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at center,
+    rgba(204, 159, 255, 0.911),
+    rgba(122, 82, 155, 0.4),
+    rgba(238, 67, 141, 0.3),
+    rgba(143, 74, 203, 0.4)
+  );
+  background-size: 200% 200%;
+  animation: gradientDance 20s ease-in-out infinite;
+  z-index: -1;
+  pointer-events: none;
+}
+
+@keyframes gradientDance {
+  0% {
+    background-position: 0% 50%;
+  }
+  25% {
+    background-position: 50% 100%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  75% {
+    background-position: 50% 0%;
+  }
+  100% {
+  }
 }
 
 .favorites-title {
@@ -943,9 +975,61 @@
   height: 500px;
 }
 
+/* Add this to your Feed.vue style section */
 
+/* Feed background similar to Favorites, but won't cover content */
+.feed-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #ffffff;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
 
+.feed-background::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at center,
+    rgba(204, 159, 255, 0.911),
+    rgba(122, 82, 155, 0.4),
+    rgba(238, 67, 141, 0.3),
+    rgba(143, 74, 203, 0.4)
+  );
+  background-size: 200% 200%;
+  animation: gradientDance 20s ease-in-out infinite;
+  z-index: -1;
+  pointer-events: none;
+}
 
+@keyframes gradientDance {
+  0% {
+    background-position: 0% 50%;
+  }
+  25% {
+    background-position: 50% 100%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  75% {
+    background-position: 50% 0%;
+  }
+  100% {
+  }
+}
+
+/* Make sure main content is above the background */
+.favorites-wrapper,
+.grid-container {
+  position: relative;
+  z-index: 1;
+}
 
 /* Responsive styles */
 @media (max-width: 768px) {
@@ -996,5 +1080,21 @@
     }
   }
 
+  .styled-no-polls {
+  position: absolute;
+  top: 42%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: #28203a;
+  font-size: 1rem;
+  max-width: 80%;
+  line-height: 1.5;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+  z-index: 2;
+}
 
 </style>

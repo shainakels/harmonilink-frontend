@@ -474,15 +474,20 @@ button:disabled {
 }
 
 .success-message {
-  color: #4CAF50;
+  color: #00f108;
   font-size: 12px;
-  margin: 0.5rem 0;
+  margin: 0.9rem 0;
   padding: 0.5rem;
   background: rgba(76, 175, 80, 0.1);
   border-radius: 4px;
   border: 1px solid rgba(76, 175, 80, 0.2);
+  width: 95%;           /* Match input field width */
+  max-width: 95%;       /* Ensure it doesn't exceed input width */
+  box-sizing: border-box;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
-
 
 /* Remove dark mode since we're using specific gradients */
 @media (prefers-color-scheme: dark) {

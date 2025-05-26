@@ -1,9 +1,12 @@
 <template> 
 <NavLayout> 
+  <div class="animated-background"></div>
   <div class="profile-wrapper"> 
     <h1 class="page-title">Your Profile</h1> 
-    <hr class="separator" />
+    <hr class="separator"  style="color:#322848"/>
 
+
+    <!-- USER INFO -->
   <div class="user-info-section">
     <div class="profile-image-container">
       <label v-if="isEditing" class="edit-image-label" style="position: relative;">
@@ -98,11 +101,23 @@
       </template>
     </div>
   </div>
+  <!-- USER INFO -->
 
-  <hr class="separator" />
 
+
+<div class="tabs">
+  <button class="tabs-button" @click="myMixtapesTab =true;myPollTabs=false">My Mixtapes</button>
+  <button class="tabs-button" @click="myMixtapesTab =false;myPollTabs=true">My Polls</button>
+</div>
+
+
+<!-- MIXTAPES AREA -->
+<div class="mixtapes-area" v-if="myMixtapesTab">
+
+<!-- MIXTAPES HEADER -->
   <div class="mixtapes-header">
-    <div class="mixtapes-title">
+
+    <div class="mixtapes-title" >
       <i class="fa-solid fa-compact-disc"></i>
       <span style="text-align: left;">My Mixtapes</span>
       <i class="fa-solid fa-plus add-icon" @click="togglePopup"></i>
@@ -134,27 +149,30 @@
         </select>
       </div>
     </div>
-
   </div>
+<!-- MIXTAPES HEADER -->
 
+
+
+
+<!-- MIXTAPES LIST -->
   <div class="mixtapes-list" :class="{ list: isListView, grid: !isListView }">
   <div
   v-for="mixtape in filteredMixtapes"
   :key="mixtape.id"
   class="mixtape-item editable-mixtape"
+  
 >
-  <div v-if="editingMixtapeId !== mixtape.id" class="mixtape-content-wrapper">
-    <img v-if="mixtape.cover" :src="mixtape.cover" alt="Mixtape Cover" class="mixtape-cover" />
+  <div v-if="editingMixtapeId !== mixtape.id"  class="mixtape-content-wrapper">
+    <img v-if="mixtape.cover" :src="mixtape.cover" alt="Mixtape Cover" class="mixtape-cover" @click="selectedMixtape = mixtape"/>
     <span v-else class="no-cover">No cover</span>
-    <div class="mixtape-info">
+    <div class="mixtape-info" @click="selectedMixtape = mixtape">
       <h3 class="mixtape-name">{{ mixtape.name }}</h3>
       <p class="mixtape-desc">{{ mixtape.description }}</p>
     </div>
     <div class="mixtape-actions-top-right">
       <button 
         @click="startEditMixtape(mixtape)" 
-        :disabled="mixtape.id === firstMixtapeId"
-        v-if="mixtape.id !== firstMixtapeId"
       >Edit</button>
       <button 
         @click="deleteMixtape(mixtape)" 
@@ -167,7 +185,7 @@
     <input v-model="editableMixtape.name" placeholder="Mixtape Name" class="mixtape-desc"/>
     <textarea v-model="editableMixtape.description" placeholder="Description" class="mixtape-desc"></textarea>
     <div class="edit-songs-section">
-      <h4>Songs</h4>
+      <h4>Songs</h4><br>
       <div v-for="(song, idx) in editableMixtape.songs" :key="idx" class="song-item song-item-flex">
         <img
           v-if="song.artwork_url"
@@ -191,10 +209,10 @@
           <i class="fa-solid fa-trash delete-icon" @click="removeSongFromEditable(idx)"></i>
         </div>
       </div>
-      <!-- Add Song Button -->
+      <!-- Add Song Button  @click="openEditSongModal"-->
       <button
         class="add-song-btn"
-        @click="openEditSongModal"
+        @click="showSongModalEdit = true"
         style="margin-top: 1rem;"
       >
         <i class="fa-solid fa-circle-plus"></i> Add Song
@@ -219,6 +237,123 @@
   </transition>
 </div>
 </div>
+<!-- MIXTAPES LIST -->
+</div>
+
+<!-- END OF MIXTAPES AREA -->
+
+
+
+<!-- START OF SONG SELECT EDIT MIXTAPE-->
+  <div v-if="showSongModalEdit" class="modal-overlay">
+    <div class="song-popup-box">
+      <span class="exit-btn"  @click="showSongModalEdit = null">×</span>
+      <h3>Song Search</h3>
+      <input
+        type="text"
+        v-model="songSearchQuery"
+        placeholder="Search song or artist"
+        @input="searchSongs"
+        autocomplete="off"
+      />
+      <div v-if="isSearchingSongs" style="margin: 0.5rem 0;">Searching...</div>
+      <ul v-if="songSearchResults.length" 
+      style="margin-top: 1rem;
+            max-height: 150px;
+            overflow-y: auto;
+            background: #1f0d3e;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            color: #dbb4d7;">
+        <li
+          v-for="(song, idx) in songSearchResults"
+          :key="idx"
+          style="display: flex; align-items: center; cursor: pointer; padding: 0.5rem; border-bottom: 1px solid #eee;"
+        >
+          <img :src="song.artwork_url" style="width: 40px; height: 40px; border-radius: 6px; margin-right: 0.5rem;" />
+          <div>
+            <div style="font-weight: bold;">{{ song.name }}</div>
+            <div style="font-size: 0.9em; color: #555;">{{ song.artist }}</div>
+          </div>
+          <audio v-if="song.preview_url" :src="song.preview_url" controls style="margin-left: auto; width: 80px; height: 28px;" />
+        </li>
+      </ul>
+      <div v-if="!isSearchingSongs && !songSearchResults.length && songSearchQuery" style="color: #888; margin: 0.5rem 0;">No results found.</div>
+      <button v-if="!songSearchQuery" @click="showSongModalEdit = false">Cancel</button>
+    </div>
+  </div>
+
+<!-- START OF SONG SELECT EDIT MIXTAPE-->
+
+
+
+
+<!-- Start of Popup view mixtape -->
+  <div v-if="selectedMixtape" class="mixtape-detail-overlay">
+          <div class="mixtape-detail-box">
+            <span class="close-detail" @click="selectedMixtape = null"
+              >&times;</span
+            >
+            <img
+              :src="getFullPhotoUrl(selectedMixtape.cover)"
+              class="detail-img"
+            />
+            <h2>{{ selectedMixtape.name }}</h2>
+            <p>{{ selectedMixtape.description }}</p>
+            <p>{{ selectedMixtape.bio }}</p>
+            <ul class="song-detail-list">
+              <li
+                v-for="(song, i) in selectedMixtape.songs"
+                :key="i"
+                style="display: flex; align-items: center; gap: 10px"
+              >
+                <img
+                  :src="song.artwork_url || '/src/assets/noimage.jpg'"
+                  alt="Artwork"
+                  style="width: 32px; height: 32px; border-radius: 4px"
+                />
+                <span style="flex: 1">{{ song.name }} - {{ song.artist }}</span>
+                <!-- NO SONG.PREVIEW_URL, PLAY NOT VISIBLE IN POPUP -->
+                <button
+                
+                  v-if="song.preview_url"
+                  class="mini-audio-btn"
+                  @click="toggleSongPlay(i)"
+                  :aria-label="
+                    playingSongIndex === i ? 'Pause preview' : 'Play preview'
+                  "
+                  style="margin-left: 8px"
+                >
+                  <i
+                    :class="
+                      playingSongIndex === i
+                        ? 'fa-solid fa-pause'
+                        : 'fa-solid fa-play'
+                    "
+                  ></i>
+                </button>
+                <audio
+                  v-if="song.preview_url"
+                  ref="songAudioRefs"
+                  :src="song.preview_url"
+                  @ended="onSongAudioEnded"
+                  style="display: none"
+                ></audio>
+              </li>
+            </ul>
+          </div>
+        </div>
+<!-- End of popup view mixtape -->
+
+
+
+
+
+
+
+
+
+
 
 <!-- START OF CREATE MIXTAPE  -->
   <div v-if="showPopup" class="popup-overlay">
@@ -270,7 +405,10 @@
       </div>
     </div>
   </div>
+
 <!-- END OF MAIN MIXTAPE CREATE MODAL -->
+ 
+
 
 
 <!-- START OF SONG SELECT -->
@@ -326,28 +464,141 @@
       </div>
     </div>
   </div>
-
   <!-- END OF CONFIRM CANCEL -->
 
-  <div v-if="selectedMixtape" class="modal-overlay" @click="closeMixtapePopup"></div>
-  <div v-if="selectedMixtape" class="mixtape-popup">
-    <button class="exit-button" @click="closeMixtapePopup">✕</button>
-    <div class="back-mixtape">
-      <img v-if="selectedMixtape && selectedMixtape.cover" :src="selectedMixtape.cover" alt="Mixtape Image" class="mixtape-image" />
-      <span v-else class="no-cover">No cover</span>
-      <h3 class="mixtape-title-back">{{ selectedMixtape.name }}</h3>
-      <ol v-if="selectedMixtape.songs && selectedMixtape.songs.length" class="song-list">
-        <li v-for="(song, index) in selectedMixtape.songs" :key="index">
-          <span class="song-title">{{ song.name }}</span> by <span class="artist-name">{{ song.artist }}</span>
-          <audio v-if="song.url" :src="song.url" controls style="vertical-align:middle; margin-left:10px; height:28px;" />
-        </li>
-      </ol>
-      <p v-else class="song-list">(No songs listed)</p>
+
+
+<!-- Start of POLL -->
+
+     
+<div class="poll-area" v-if="myPollTabs">
+
+  <div class="mixtapes-title" style="margin:10px;">
+      <i class="fa-solid fa-square-poll-horizontal"></i>
+      <span style="text-align: left;">My Polls</span>
     </div>
+
+  <div class="grid-container">
+
+
+    <!-- PLACEHOLDER FOR POLLS -->
+    <div class="poll-container">
+      <div class="poll-content">
+        <div class="poll-created-at">
+          <span>Posted: 5/22/2025, 5:33:53 PM (3 days ago)</span>
+        </div>
+        <div class="postedtime" style="text-align:left; margin-top:20px;">
+          <span>what do you listen to while studying?</span>
+        </div>
+
+                            <!-- Poll Options -->
+            <div class="poll-options-container">
+              <div class="poll-options">
+
+                <div class="poll-option" style="cursor: pointer;">
+                  <input type="radio" style="display: none;" readonly/>
+                  <p style="margin-bottom: 0;">Test<span style="color: #080d2a; margin-left: 6px;">✔</span></p>
+                  <!-- Progress Bar -->
+                   <div class="poll-progress-bar-wrapper">
+                  <div class="poll-progress-bar-bg">
+                    <div
+                      class="poll-progress-bar-fill"
+                      :style="{ width: '100'+ '%' }"
+                    ></div>
+                  </div>
+                  <span class="poll-progress-bar-label">100%</span>
+                </div>
+                 <!-- Progress Bar -->
+                </div>
+
+                <div class="poll-option" style="cursor: pointer;">
+                  <input type="radio" style="display: none;" readonly/>
+                  <p style="margin-bottom: 0;">Test<span style="color: #080d2a; margin-left: 6px;">✔</span></p>
+                  <!-- Progress Bar -->
+                   <div class="poll-progress-bar-wrapper">
+                  <div class="poll-progress-bar-bg">
+                    <div
+                      class="poll-progress-bar-fill"
+                      :style="{ width: '100'+ '%' }"
+                    ></div>
+                  </div>
+                  <span class="poll-progress-bar-label">100%</span>
+                </div>
+                 <!-- Progress Bar -->
+                </div>
+            
+              </div>
+            </div>
+
+        
+     </div>
+    </div>
+        <!-- END PLACEHOLDER FOR POLLS -->
+
+
+
+
   </div>
+</div>
+
+
+<!-- End of POLL -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 </div>
   </NavLayout>
 </template>
+
+<script>
+//FOR SIDEBAR
+export default {
+  data() {
+    return{
+      showSongModalEdit: false, // Controls modal visibility
+      songSearchQuery: '',      // Search input binding
+      songSearchResults: [],    // Stores search results
+      isSearchingSongs: false,  // Loading state
+      ismyMixtabesTab:true,
+      myMixtapesTab:true,
+      myPollTabs:false
+    // ... other data properties
+    }
+  },
+};
+
+
+
+
+</script>
+
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
@@ -381,7 +632,53 @@ const token = localStorage.getItem('token');
 onMounted(() => {
   fetchProfile();
   fetchMixtapes();
+
 });
+
+ 
+
+
+
+async function getFullPhotoUrl(photoUrl) {
+  if (!photoUrl) return "/src/assets/noimage.jpg";
+  if (photoUrl.startsWith("http")) return photoUrl;
+  // Always use backend API URL for uploads
+  return `${import.meta.env.VITE_API_URL.replace(/\/$/, "")}/${photoUrl.replace(
+    /^\/?/,
+    ""
+  )}`;
+}
+
+async function toggleSongPlay(index) {
+  // Pause any currently playing audio
+  if (
+    playingSongIndex.value !== null &&
+    songAudioRefs.value[playingSongIndex.value]
+  ) {
+    songAudioRefs.value[playingSongIndex.value].pause();
+    songAudioRefs.value[playingSongIndex.value].currentTime = 0;
+  }
+
+  if (playingSongIndex.value === index) {
+    playingSongIndex.value = null;
+    return;
+  }
+
+  nextTick(() => {
+    const audio = songAudioRefs.value[index];
+    if (audio) {
+      audio.play();
+      playingSongIndex.value = index;
+    }
+  });
+}
+
+async function onSongAudioEnded() {
+  playingSongIndex.value = null;
+}
+
+
+
 
 async function fetchProfile() {
   try {
@@ -762,7 +1059,7 @@ const saveEditedSong = () => {
 }
 
 function startEditMixtape(mixtape) {
-  if (mixtape.id === firstMixtapeId.value) return;
+  // if (mixtape.id === firstMixtapeId.value) return;
   editingMixtapeId.value = mixtape.id;
   editableMixtape.value = JSON.parse(JSON.stringify(mixtape));
 }
@@ -1019,7 +1316,134 @@ function playPreview(url, idx) {
 </script>
 
 
+
 <style scoped>
+button:active{
+  text-decoration: underline;
+}
+.postedtime{
+  margin-bottom:20px;
+  color:#322848;
+}
+/* Start Polls Style */
+.poll-progress-bar-bg{
+  background: #e0e0e0;
+    border-radius: 8px;
+    width: 100%;
+    height: 16px;
+    margin-right: 8px;
+    overflow: hidden;
+    position: relative;
+}
+.poll-progress-bar-wrapper{
+  display: flex;
+    align-items: center;
+    width: 180px;
+    margin-left: 12px;
+}
+.poll-option{
+  display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.2rem;
+    border: 1px solid #322848;
+    padding: 4px 20px 4px 20px;
+    border-radius: 10px;
+}
+.poll-options{
+  text-align: left;
+}
+.poll-options-container {
+  background-color: rgba(218, 171, 224, 0.7); 
+  border: 4px solid white;
+  padding: 0.5rem;
+  border-radius: 10px;
+  width: 100%;
+  height: 100px; 
+  overflow-y: auto; 
+}
+.poll-created-at {
+  font-size: 12px;
+  color: #322848;
+}
+.poll-container {
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: 12px;
+  padding:20px;
+  width: 100%;
+  height: auto;
+  position: relative;
+  perspective: 1500px;
+  user-select: none;
+ 
+}
+.poll-content {
+  background-color: rgba(108, 119, 178, 0.35);
+  padding: 1.5rem;
+  border-radius: 10px;
+  text-align: center;
+  color: #ffffff;
+  height: auto;
+  width:100%;
+}
+.poll-area{
+  width: 100%;
+  height:500px;
+  overflow-y: auto;
+  padding:10px;
+  border: 1px solid 322848;
+}
+.grid-container {
+  display: grid;
+  grid-template-columns: 70%; /* 10-80-10 ratio */
+  height: auto; /* Full viewport height */
+  gap: 10px;
+  margin-top:15px;
+}
+
+.left-column,
+.right-column {
+  display: flex; /* Enables flex centering */
+  flex-direction: column; /* Stacks children vertically */
+  justify-content: center; /* Centers vertically */
+  align-items: center; /* Centers horizontally */
+  padding: 15px;
+  height: 480px;
+}
+
+.main-column {
+  padding: 20px;
+}
+
+
+/* End Polls Style */
+.tabs{
+  width: 100%;
+}
+.tabs-button{
+  font-size: 17pt;
+  background:none;
+  border: none;
+  color: #322848;
+  font-family: monospace;
+  font-weight: 600;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: background-color 0.25s ease;
+  cursor: pointer;
+  width: 20%;
+  margin-left:10px;
+  margin-right:10px;
+  border-radius: 0;
+}
+.mixtapes-area{
+  border: 1px solid #322848;
+  padding:10px;
+  border-radius: 6px
+}
+.mixtape-edit-form{
+  width:100%;
+}
 .mixtape-name-inp{
   padding: 4px 8px;
     border-radius: 4px;
@@ -1029,19 +1453,26 @@ function playPreview(url, idx) {
 .mixtape-desc{
   padding: 4px 8px;
     border-radius: 4px;
-    border: 1px solid #ccc;
+    border: 1px solid #322848;
     font-size: 0.95rem;
+    font-weight:bold;
 }
+.mixtape-desc:focus{
+  outline: none;
+  background: #3228485a;
+  color: white;
+  box-shadow: 0 8px 12px rgba(31, 13, 62, 0.08);
+}
+
 .profile-wrapper {
   padding: 2rem;
-  background-color: #dbb4d7;
+
   min-height: 100vh;
   overflow: auto;
   color: black;
   display: flex;
   flex-direction: column;
   margin-bottom: 1rem;
-  margin-top: 80px;
   /* margin-left: 270px; */
 }
 
@@ -1050,7 +1481,7 @@ function playPreview(url, idx) {
   font-size: 1.8rem;
   margin-bottom: 8px;
   text-align: left;
-  margin-left: 30px;
+  margin-left: 50px;
 }
 
 .separator {
@@ -1062,6 +1493,10 @@ function playPreview(url, idx) {
   display: flex;
   gap: 15px;
   align-items: center;
+  border: 1px solid #322848;
+  border-radius:6px;
+  padding:15px;
+ margin-bottom: 10px;
 }
 
 .profile-image {
@@ -1080,10 +1515,10 @@ function playPreview(url, idx) {
 
 .info-box {
   flex: 1;
-  background-color: #080d2a;
+  background: rgba(255, 255, 255, 0.55);
   border-radius: 12px;
   padding: 20px;
-  color: white;
+  color: #322848;
   position: relative;
 }
 
@@ -1101,7 +1536,7 @@ function playPreview(url, idx) {
 }
 
 .edit-btn {
-  background-color: #5e4a87;
+  background-color: #322848;
   border: none;
   border-radius: 6px;
   color: #ddd;
@@ -1115,10 +1550,6 @@ function playPreview(url, idx) {
 
 .edit-btn i {
   margin-right: 10px;
-}
-
-.edit-btn:hover {
-  background-color: #7b62b5;
 }
 
 .user-meta {
@@ -1214,8 +1645,14 @@ function playPreview(url, idx) {
   padding: 8px 12px 8px 40px; 
   border: 1px solid #ccc;
   border-radius: 50px;
+  background-color:rgba(169, 163, 173, 0.379);
 }
-
+.search-input:focus {
+  outline: none;
+  border: none;
+  background: rgba(255, 255, 255, 0.45);
+  box-shadow: 0 8px 12px rgba(31, 13, 62, 0.174);
+}
 .search-icon {
   position: absolute;
   top: 50%;
@@ -1237,10 +1674,12 @@ function playPreview(url, idx) {
 }
 
 .mixtapes-list {
-  display: flex;
-  gap: 20px;
+  display: block;
   flex-wrap: wrap;
   padding-bottom: 40px;
+  padding: 10px;
+  height:auto;
+  width: 100%;
 }
 
 .mixtapes-list.list {
@@ -1248,9 +1687,9 @@ function playPreview(url, idx) {
 }
 
 .mixtape-item {
-  background-color: #080d2a;
+  background:rgba(255, 255, 255, 0.55);
   border-radius: 12px;
-  color: #ddd;
+  color: #322848;
   display: flex;
   gap: 12px;
   padding: 14px 16px;
@@ -1258,6 +1697,7 @@ function playPreview(url, idx) {
   max-width: 50rem;
   transition: background-color 0.3s ease;
   position: relative;
+  margin-bottom:10px;
 }
 
 .mixtape-actions-top-right {
@@ -1270,7 +1710,7 @@ function playPreview(url, idx) {
 }
 
 .mixtape-actions-top-right button {
-  background-color: #6a5acd;
+  background-color: #322848;
   color: white;
   border: none;
   padding: 10px 15px;
@@ -1279,14 +1719,6 @@ function playPreview(url, idx) {
   cursor: pointer;
   transition: background-color 0.2s ease;
   box-shadow: 0 2px 4px rgb(0 0 0 / 0.15);
-}
-
-.mixtape-actions-top-right button:hover {
-  background-color: #483d8b; 
-}
-
-.mixtape-actions-top-right button:active {
-  background-color: #2f2b60; 
 }
 
 .editable-mixtape {
@@ -1304,13 +1736,14 @@ function playPreview(url, idx) {
   flex: 1;
   display: flex;
   flex-direction: column;
+  color:#322848;
 }
 
 .mixtape-name, .mixtape-desc {
   padding: 0.75rem;
   border: none;
   width: 100%;
-  color: white;
+  color: #322848;
   background: transparent;
   text-align: center;
 }
@@ -1405,7 +1838,7 @@ function playPreview(url, idx) {
 }
 
 .song-item-flex input {
-  background-color: #3a3a3a;
+  background-color: #9467b3;
   border: none;
   color: white;
   padding: 0.5rem 1rem;
@@ -1454,15 +1887,15 @@ button:hover {
 }
 
 .popup-box {
-  background-color: #080d2a;
+  background: linear-gradient(120deg, #e3b8ff 0%, #dbb4d7 25%, #c697bd 50%, #8a6bb8 75%, #75629e 100%);
   padding: 2rem;
   border-radius: 1rem;
-  width: 750px;
-  color: white;
+  width: 600px;
+  color: #322848;
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  max-height: 90vh;
+  max-height: 85vh;
   overflow-y: auto;
   padding-right: 1rem;
 }
@@ -1493,13 +1926,20 @@ button:hover {
   padding: 0.75rem;
   border: none;
   width: 100%;
-  color: white;
-  background: transparent;
+  color: #322848;
+  background: rgba(255, 255, 255, 0.495);
   text-align: center;
+  border-radius: 5px;
 }
-
+.mixtape-name:focus,
+.description-box:focus{
+  outline: none;
+  background: #3228485a;
+  color: white;
+  box-shadow: 0 8px 12px rgba(31, 13, 62, 0.08);
+}
 .description-box {
-  height: 60px;
+  height: 40px;
   resize: none;
 }
 
@@ -1703,7 +2143,7 @@ button:hover {
 .popup-box .song-list-scroll {
   max-height: 150px;
   overflow-y: auto;
-  background-color: #2e1f45;
+  background-color: #8a63b6;
   padding: 0.5rem;
   border-radius: 5px;
   margin-bottom: 1rem;
@@ -1713,11 +2153,11 @@ button:hover {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #2c1a40;
+  background-color: white;
   padding: 0.5rem;
   border-radius: 5px;
   margin-bottom: 0.5rem;
-  color: white;
+  color: #322848;
 }
 
 .song-actions-buttons i {
@@ -1799,7 +2239,7 @@ button:hover {
 
 .edit-songs-section {
   margin: 1rem 0;
-  background: #2e1f45;
+  background: linear-gradient(120deg, #e3b8ff 0%, #dbb4d7 25%, #c697bd 50%, #8a6bb8 75%, #75629e 100%);
   border-radius: 8px;
   padding: 1rem;
 }
@@ -1836,5 +2276,119 @@ button:hover {
     color: #fff;
     font-size: 11pt;
     width: 100%;
+}
+.mixtape-detail-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(20, 20, 20, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+.mixtape-detail-box {
+  background: linear-gradient(120deg, #e3b8ff 0%, #dbb4d7 25%, #c697bd 50%, #8a6bb8 75%, #75629e 100%);
+  padding: 2rem;
+  border-radius: 1rem;
+  width: 90%;
+  max-width: 600px;
+  text-align: center;
+  color: #322848;
+  position: relative;
+}
+
+/* For Mixtape PopUp */
+.close-detail {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 2rem;
+  cursor: pointer;
+}
+.detail-img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+}
+.song-details-flex {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mini-audio-btn {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: #dbb4d7;
+}
+
+.mini-audio-btn:hover {
+  color: #dbb4d7;
+}
+/* For Mixtape PopUp */
+
+
+
+/* Base white background */
+.animated-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 100vh;
+  width: 100vw;
+  background-color: #ffffff;
+  z-index: -2;
+  pointer-events: none;
+}
+
+/* Animated vibrant gradient overlay */
+.animated-background::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at center,
+    rgba(204, 159, 255, 0.911),
+    rgba(122, 82, 155, 0.4),
+    rgba(238, 67, 141, 0.3),
+    rgba(143, 74, 203, 0.4)
+  );
+  background-size: 200% 200%;
+  animation: gradientDance 20s ease-in-out infinite;
+  z-index: -1;
+  pointer-events: none;
+}
+
+@keyframes gradientDance {
+  0% {
+    background-position: 0% 50%;
+  }
+  25% {
+    background-position: 50% 100%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  75% {
+    background-position: 50% 0%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+.animated-background::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  backdrop-filter: blur(5px);
+  pointer-events: none;
 }
 </style>

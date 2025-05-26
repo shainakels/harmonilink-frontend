@@ -16,6 +16,7 @@
             </button>
           </div>
 
+
           <div class="main-column">
             <div class="discover-container" :class="{ flipped: isFlipped }">
               <!-- No Profiles Message -->
@@ -39,6 +40,7 @@
                   </div>
                 </div>
 
+
                 <div class="profile-card">
                   <h2 class="profile-name">{{ currentProfile.username }}</h2>
                   <p class="profile-info">
@@ -58,6 +60,7 @@
                     {{ currentProfile.mixtapes[0]?.bio }}
                   </p>
 
+
                   <!-- Unpack Button -->
                   <button
                     class="unpack-button"
@@ -74,11 +77,13 @@
                 </div>
               </div>
 
+
               <!-- Back Side (Mixtape Details) -->
               <div class="back" v-if="currentProfile">
                 <div class="back-button" @click="flipCard">
                   <i class="fa-solid fa-arrow-left"></i>
                 </div>
+
 
                 <!-- Show mixtape details if available -->
                 <div
@@ -157,6 +162,7 @@
                         style="width: 22px; margin-right: 0.7rem"
                       ></span>
 
+
                       <img
                         v-if="song.artwork_url"
                         :src="song.artwork_url"
@@ -170,9 +176,11 @@
                         "
                       />
 
+
                       <span style="width: 200px">
                         {{ song.song_name }} by {{ song.artist_name }}
                       </span>
+
 
                       <audio
                         v-if="song.preview_url"
@@ -191,10 +199,12 @@
                   </ul>
                 </div>
 
+
                 <!-- Fallback message if no mixtapes are available -->
                 <div class="no-mixtape-message" v-else>
                   <p>No mixtapes yet. Wanna give them a chance?</p>
                 </div>
+
 
                 <!-- Action Section -->
                 <div class="action-section">
@@ -208,6 +218,7 @@
                     >
                       <i class="fa-solid fa-heart"></i>
                     </button>
+
 
                     <!-- Discard Button -->
                     <button
@@ -227,6 +238,7 @@
             </div>
           </div>
 
+
           <div class="right-column">
             <!-- Navigation Buttons -->
             <button
@@ -243,6 +255,7 @@
   </transition>
 </template>
 
+
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import NavLayout from "../layouts/NavLayout.vue";
@@ -250,8 +263,10 @@ import axios from "axios";
 import { useRouter, useRoute } from "vue-router";
 import confetti from "canvas-confetti";
 
+
 const router = useRouter();
 const route = useRoute();
+
 
 // Profiles data
 const profiles = ref([]);
@@ -262,19 +277,24 @@ const currentProfile = computed(
 );
 const isFlipped = ref(false);
 
+
 // Current user data
 const currentUser = ref(null);
+
 
 // Timer for profile refresh
 const refreshTime = ref("03:00:00");
 let refreshInterval;
 
+
 // Tracks the number of profiles unpacked
 const viewedProfiles = ref(0);
+
 
 // Audio playback management
 const discoverAudioRefs = ref([]);
 const discoverPlayingIndex = ref(null);
+
 
 function toggleDiscoverPlay(index) {
   // Pause all other audios
@@ -285,8 +305,10 @@ function toggleDiscoverPlay(index) {
     }
   });
 
+
   const currentAudio = discoverAudioRefs.value[index];
   if (!currentAudio) return;
+
 
   if (discoverPlayingIndex.value === index && !currentAudio.paused) {
     currentAudio.pause();
@@ -297,9 +319,11 @@ function toggleDiscoverPlay(index) {
   }
 }
 
+
 function onDiscoverAudioEnded() {
   discoverPlayingIndex.value = null;
 }
+
 
 // Reset refs when songs change
 watch(
@@ -310,6 +334,7 @@ watch(
   }
 );
 
+
 // Fetch current user profile
 async function fetchCurrentUser() {
   try {
@@ -318,6 +343,7 @@ async function fetchCurrentUser() {
       console.error("No auth token found.");
       return;
     }
+
 
     const response = await axios.get(
       `${import.meta.env.VITE_API_URL}/api/auth/current-user`,
@@ -335,6 +361,7 @@ async function fetchCurrentUser() {
   }
 }
 
+
 // Fetch profiles from the backend and shuffle them
 async function fetchProfiles() {
   const token = localStorage.getItem("authToken");
@@ -343,11 +370,13 @@ async function fetchProfiles() {
     return;
   }
 
+
   if (profiles.value.length > 0) {
     console.log("Using saved profiles from localStorage.");
     filterProfiles(); // <-- Always filter after loading
     return;
   }
+
 
   try {
     const response = await axios.get(
@@ -356,6 +385,7 @@ async function fetchProfiles() {
         headers: { Authorization: `Bearer ${token}` },
       }
     );
+
 
     profiles.value = response.data.map((profile) => ({
       ...profile,
@@ -374,6 +404,7 @@ async function fetchProfiles() {
   }
 }
 
+
 // Utility function to shuffle an array
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
@@ -383,6 +414,7 @@ function shuffleArray(array) {
   return array;
 }
 
+
 // Navigate to the next profile
 function nextProfile() {
   pauseAllPreviews();
@@ -391,10 +423,12 @@ function nextProfile() {
     return;
   }
 
+
   if (currentIndex.value < profiles.value.length - 1) {
     currentIndex.value++;
   }
 }
+
 
 // Navigate to the previous profile
 function prevProfile() {
@@ -403,6 +437,7 @@ function prevProfile() {
     currentIndex.value--;
   }
 }
+
 
 // Flip the profile card
 function flipCard() {
@@ -413,6 +448,7 @@ function flipCard() {
       currentProfile.value.viewed = true;
       viewedProfiles.value++;
       saveStateToLocalStorage();
+
 
       // Confetti when unpacking for the first time
       confetti({
@@ -425,6 +461,7 @@ function flipCard() {
   isFlipped.value = !isFlipped.value;
 }
 
+
 // Start the refresh timer
 function startRefreshTimer() {
   if (!currentUser.value || !currentUser.value.id) {
@@ -432,8 +469,10 @@ function startRefreshTimer() {
     return;
   }
 
+
   const timerKey = `refreshEndTime_${currentUser.value.id}`; // Unique key for each user
   let endTime = localStorage.getItem(timerKey);
+
 
   if (!endTime || isNaN(parseInt(endTime, 10))) {
     // Set endTime to 3 hours from now
@@ -443,22 +482,27 @@ function startRefreshTimer() {
     endTime = parseInt(endTime, 10);
   }
 
+
   function updateTimer() {
     const now = Date.now();
     const timeLeft = Math.max(Math.floor((endTime - now) / 1000), 0);
+
 
     const hours = Math.floor(timeLeft / 3600);
     const minutes = Math.floor((timeLeft % 3600) / 60);
     const seconds = timeLeft % 60;
 
+
     refreshTime.value = `${String(hours).padStart(2, "0")}:${String(
       minutes
     ).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+
 
     if (timeLeft <= 0) {
       clearInterval(refreshInterval);
       refreshInterval = null; // Reset the interval
       localStorage.removeItem(timerKey); // Clear the timer for this user
+
 
       // Clear cached profiles and fetch new ones
       clearState(); // Clear profiles, index, and viewed count
@@ -466,9 +510,11 @@ function startRefreshTimer() {
     }
   }
 
+
   updateTimer(); // Run immediately
   refreshInterval = setInterval(updateTimer, 1000);
 }
+
 
 // Save state to localStorage
 function saveStateToLocalStorage() {
@@ -476,6 +522,7 @@ function saveStateToLocalStorage() {
     console.error("User ID is not available. Cannot save state.");
     return;
   }
+
 
   const stateKey = `discoverState_${currentUser.value.id}`; // Unique key for each user
   const state = {
@@ -490,12 +537,14 @@ function saveStateToLocalStorage() {
   localStorage.setItem(stateKey, JSON.stringify(state));
 }
 
+
 // Load state from localStorage
 function loadStateFromLocalStorage() {
   if (!currentUser.value || !currentUser.value.id) {
     console.error("User ID is not available. Cannot load state.");
     return;
   }
+
 
   const stateKey = `discoverState_${currentUser.value.id}`; // Unique key for each user
   const savedState = localStorage.getItem(stateKey);
@@ -507,6 +556,7 @@ function loadStateFromLocalStorage() {
   }
 }
 
+
 // Clear state
 function clearState() {
   profiles.value = [];
@@ -514,11 +564,13 @@ function clearState() {
   viewedProfiles.value = 0;
   isFlipped.value = false;
 
+
   if (currentUser.value && currentUser.value.id) {
     const stateKey = `discoverState_${currentUser.value.id}`;
     localStorage.removeItem(stateKey); // Clear saved state for the user
   }
 }
+
 
 // Pause all audio previews
 function pauseAllPreviews() {
@@ -531,10 +583,12 @@ function pauseAllPreviews() {
   discoverPlayingIndex.value = null;
 }
 
+
 // Animate heart button
 const animateHeart = async () => {
   pauseAllPreviews();
   const favoriteProfile = currentProfile.value;
+
 
   if (favoriteProfile) {
     try {
@@ -544,6 +598,7 @@ const animateHeart = async () => {
         return;
       }
 
+
       // Send the profile to the backend to store in the favorites table
       await axios.post(
         `${import.meta.env.VITE_API_URL}/api/favorites`,
@@ -551,8 +606,10 @@ const animateHeart = async () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
+
       // Mark the profile as favorited
       favoriteProfile.favorited = true;
+
 
       saveStateToLocalStorage(); // Save the updated state
       alert("Profile added to favorites!");
@@ -563,10 +620,12 @@ const animateHeart = async () => {
   }
 };
 
+
 // Animate X button
 const animateX = async () => {
   pauseAllPreviews();
   const discardedProfile = currentProfile.value;
+
 
   if (discardedProfile) {
     try {
@@ -576,6 +635,7 @@ const animateX = async () => {
         return;
       }
 
+
       // Send the profile to the backend to store in the discarded table
       await axios.post(
         `${import.meta.env.VITE_API_URL}/api/discard`,
@@ -583,16 +643,20 @@ const animateX = async () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
+
       // Remove the discarded profile from the profiles list
       profiles.value.splice(currentIndex.value, 1);
+
 
       // Adjust the current index if necessary
       if (currentIndex.value >= profiles.value.length) {
         currentIndex.value = profiles.value.length - 1;
       }
 
+
       // Reset the flipped state to ensure the next profile is shown on the front
       isFlipped.value = false;
+
 
       saveStateToLocalStorage(); // Save the updated state
       alert("Profile discarded.");
@@ -603,8 +667,10 @@ const animateX = async () => {
   }
 };
 
+
 // Search filter
 const searchFilter = ref("");
+
 
 watch(
   () => route.query.search,
@@ -615,6 +681,7 @@ watch(
   },
   { immediate: true }
 );
+
 
 function filterProfiles() {
   if (!searchFilter.value) {
@@ -650,6 +717,7 @@ function filterProfiles() {
   });
 }
 
+
 // Utility function to get full photo URL
 function getFullPhotoUrl(url) {
   if (!url) return "";
@@ -661,11 +729,13 @@ function getFullPhotoUrl(url) {
   )}`;
 }
 
+
 // Lifecycle hook
 onMounted(async () => {
   await fetchCurrentUser(); // Fetch the current user
   loadStateFromLocalStorage(); // Load saved state for the current user
   await fetchProfiles(); // Fetch profiles if not already loaded
+
 
   // Start the timer only if the user is logged in and profiles are viewed
   if (currentUser.value && currentUser.value.id && viewedProfiles.value > 0) {
@@ -673,12 +743,14 @@ onMounted(async () => {
   }
 });
 
+
 onUnmounted(() => {
   if (refreshInterval) {
     clearInterval(refreshInterval);
   }
 });
 </script>
+
 
 <style scoped>
 html,
@@ -689,6 +761,7 @@ body {
   padding: 0;
   overflow: hidden; /* This hides all scrollbars */
 }
+
 
 button {
   padding: 0;
@@ -702,6 +775,7 @@ button {
   opacity: 0;
 }
 
+
 .discover-wrapper {
   /* margin-top: 100px; */
   /* margin-left: 270px; */
@@ -709,10 +783,11 @@ button {
   justify-content: center;
   align-items: center;
   text-align: center;
-  /* height: calc(100% - 80px); 
+  /* height: calc(100% - 80px);
   width: calc(100% - 270px); */
   width: 100%;
 }
+
 
 .discover-container {
   background: transparent;
@@ -724,11 +799,12 @@ button {
   transition: opacity 0.5s ease; /* Smooth transition for opacity */
   opacity: 1;
   width: 100%;
-  height: 480px;
+  height: 75vh;
   position: relative;
   user-select: none;
   z-index: 0;
 }
+
 
 .nav-button {
   background: none;
@@ -741,15 +817,18 @@ button {
   box-shadow: none;
 }
 
+
 .nav-button:focus {
   outline: none;
   box-shadow: none;
 }
 
+
 .nav-button:active {
   outline: none;
   box-shadow: none;
 }
+
 
 /* front and back container */
 .front,
@@ -776,6 +855,7 @@ button {
   color: #322848;
 }
 
+
 /* Make sure all text elements inside the card also use #322848 */
 .profile-name,
 .profile-info,
@@ -788,6 +868,7 @@ button {
   color: #fff !important;
 }
 
+
 .front {
   background: #32284879;
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.25);
@@ -799,11 +880,13 @@ button {
   transform-style: preserve-3d;
 }
 
+
 .front:hover {
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.35);
   backdrop-filter: blur(16px) saturate(200%);
   -webkit-backdrop-filter: blur(16px) saturate(200%);
 }
+
 
 .back {
   background: #32284879;
@@ -824,17 +907,20 @@ button {
   height: 100%; /* Ensure it takes full height */
 }
 
+
 .discover-container.flipped .front {
   transform: rotateY(180deg);
   transition: transform 1s ease;
   z-index: 1;
 }
 
+
 .discover-container.flipped .back {
   transform: rotateY(0deg);
   transition: transform 1s ease;
   z-index: 2;
 }
+
 
 /* Keep original styles inside front unchanged */
 .discover-top {
@@ -846,16 +932,19 @@ button {
   flex-grow: 0;
 }
 
+
 .refresh-label {
   font-weight: bold;
   font-size: 0.9rem;
   color: #ffffff !important;
 }
 
+
 .refresh-time {
   font-size: 0.9rem;
   color: #ffffff !important;
 }
+
 
 .profile-count {
   background-color: #28203ad2;
@@ -864,6 +953,7 @@ button {
   font-size: 0.8rem;
   display: inline-block;
 }
+
 
 .profile-card {
   background: linear-gradient(
@@ -877,7 +967,7 @@ button {
   border: 1px solid rgba(255, 255, 255, 0.2); /* soft border */
   padding: 1.5rem;
   border-radius: 16px;
-  width: 50%;
+  width: 80%;
   height: 450px;
   text-align: center;
   color: #ffffff;
@@ -886,16 +976,19 @@ button {
   justify-content: space-between;
 }
 
+
 .profile-name {
   font-size: 1.5rem;
   margin-bottom: 0.25rem;
 }
+
 
 .profile-info {
   font-size: 0.9rem;
   color: white;
   margin-bottom: 1rem;
 }
+
 
 .profile-image {
   width: 160px;
@@ -905,15 +998,17 @@ button {
   margin: 0 auto 1rem auto;
 }
 
+
 .profile-bio {
   font-size: 0.95rem;
   margin-bottom: 1.5rem;
 }
 
+
 .unpack-button {
   background-color: #322848;
   color: white;
-  width: 10rem;
+  width: 15rem;
   padding: 0.3rem;
   border: none;
   border-radius: 6px;
@@ -927,26 +1022,31 @@ button {
   position: relative;
 }
 
+
 .unpack-button.unpacked {
   background-color: #28203a;
   color: #ffffff;
   cursor: default;
 }
 
+
 .unpack-button:hover {
   background: #28203a;
 }
+
 
 .unpack-button:focus {
   outline: none;
   box-shadow: none;
 }
 
+
 .heart-indicator {
   margin-left: 0.5rem;
   font-size: 1.2rem;
   color: red;
 }
+
 
 .back-button {
   position: absolute;
@@ -956,9 +1056,11 @@ button {
   z-index: 1;
 }
 
+
 .back-button:hover {
   color: #28203a;
 }
+
 
 .back-mixtape {
   background-color: #32284889;
@@ -973,6 +1075,7 @@ button {
   z-index: 0;
 }
 
+
 .mixtape-image {
   width: 110px;
   height: 110px;
@@ -982,16 +1085,19 @@ button {
   margin-top: 1rem;
 }
 
+
 .mixtape-title-front {
   margin-top: 1rem;
   text-align: center;
 }
+
 
 .mixtape-description {
   font-size: 0.9rem;
   margin-top: 1rem;
   text-align: center;
 }
+
 
 .mixtape-title-back {
   position: absolute;
@@ -1003,6 +1109,7 @@ button {
   font-weight: bold;
   margin: 0;
 }
+
 
 .song-list {
   list-style: none;
@@ -1024,6 +1131,7 @@ button {
   scrollbar-color: #28203a #f5f5fa;
 }
 
+
 /* Chrome, Edge, Safari */
 .song-list {
   overflow-y: auto;
@@ -1031,11 +1139,13 @@ button {
   scrollbar-color: #28203a transparent; /* thumb color, track transparent */
 }
 
+
 /* Chrome, Edge, Safari */
 .song-list::-webkit-scrollbar {
   width: 8px;
   background: transparent;
 }
+
 
 .song-list::-webkit-scrollbar-thumb {
   background: #28203a;
@@ -1044,11 +1154,14 @@ button {
   box-shadow: 0 2px 8px rgba(122, 82, 155, 0.15);
 }
 
+
 .song-list::-webkit-scrollbar-thumb:hover {
   background: #28203a; /* stays the same on hover */
 }
 
+
 /* ...existing code... */
+
 
 .mini-audio-btn {
   background: transparent;
@@ -1064,9 +1177,11 @@ button {
   padding: 0;
 }
 
+
 .mini-audio-btn:hover {
   color: #ffffff;
 }
+
 
 .no-mixtape-message {
   background-color: rgba(108, 119, 178, 0.35);
@@ -1083,6 +1198,7 @@ button {
   font-size: 1.2rem;
 }
 
+
 .action-section {
   margin-top: 1rem;
   padding: 8px;
@@ -1095,12 +1211,14 @@ button {
   width: 60%;
 }
 
+
 .buttons {
   display: flex;
   justify-content: center;
   gap: 5rem;
   margin-bottom: 0.5rem;
 }
+
 
 .heart-btn,
 .x-btn {
@@ -1117,11 +1235,13 @@ button {
   justify-content: center;
 }
 
+
 .heart-btn:hover,
 .x-btn:hover {
   transform: scale(1.1);
   box-shadow: 0 0 12px 4px rgba(255, 0, 69, 0.6); /* glowing red for heart */
 }
+
 
 .heart-btn {
   width: 4rem;
@@ -1137,19 +1257,23 @@ button {
   animation: gradientMove 12s ease-in-out infinite;
 }
 
+
 .heart-btn.clicked {
   border-color: white;
   background: radial-gradient(circle, #ff0045, #ffffff);
   transform: scale(1.2);
 }
 
+
 .x-btn {
   background: radial-gradient(circle, #0075ff, #ffffff);
 }
 
+
 .x-btn:hover {
   box-shadow: 0 0 12px 4px rgba(0, 117, 255, 0.6); /* glowing blue for x */
 }
+
 
 .x-btn:disabled {
   background: #ccc; /* Gray background for disabled state */
@@ -1157,15 +1281,18 @@ button {
   opacity: 0.6; /* Reduce opacity */
 }
 
+
 .action-message {
   font-size: 14px;
   color: #fff;
   font-family: "Courier New", Courier, monospace;
 }
 
+
 .arrow {
   margin-left: 0.5rem;
 }
+
 
 .no-profiles {
   text-align: center;
@@ -1173,6 +1300,7 @@ button {
   font-size: 1.2rem;
   margin-top: 2rem;
 }
+
 
 .song-artwork {
   width: 40px;
@@ -1182,6 +1310,7 @@ button {
   margin-right: 0.5rem;
   vertical-align: middle;
 }
+
 
 .soundwave {
   display: inline-flex;
@@ -1256,6 +1385,7 @@ button {
 }
 </style>
 
+
 <!-- Style from Favorites -->
 <style scoped>
 .fade-enter-active,
@@ -1267,6 +1397,7 @@ button {
   opacity: 0;
 }
 
+
 .favorites-wrapper {
   padding: 2rem;
   background: transparent;
@@ -1276,10 +1407,10 @@ button {
   display: flex;
   flex-direction: column;
   width: 100%;
-  margin: 80px auto 1rem auto;
   overflow: hidden;
-  position: fixed;
+  position: relative;
 }
+
 
 .favorites-title {
   font-size: 2rem;
@@ -1289,6 +1420,7 @@ button {
   width: 80%;
   margin: auto;
 }
+
 
 .favorites-description {
   font-size: 1rem;
@@ -1305,6 +1437,7 @@ button {
   gap: 10px;
 }
 
+
 .left-column,
 .right-column {
   display: flex; /* Enables flex centering */
@@ -1312,12 +1445,14 @@ button {
   justify-content: center; /* Centers vertically */
   align-items: center; /* Centers horizontally */
   padding: 15px;
-  height: 480px;
+  height: 75vh;
 }
+
 
 .main-column {
   padding: 20px;
 }
+
 
 /* Responsive styles */
 @media (max-width: 768px) {
@@ -1335,6 +1470,9 @@ button {
   }
   .action-section {
     width: 100%;
+  }
+  .unpack-button {
+    width:80%;
   }
 }
 /* Additional styles for very small screens */
@@ -1354,7 +1492,11 @@ button {
   .action-section {
     width: 100%;
   }
+  .unpack-button {
+    width:100%;
+  }
 }
+
 
 /* Base white background */
 .animated-background {
@@ -1369,6 +1511,7 @@ button {
   z-index: -2;
   pointer-events: none;
 }
+
 
 /* Animated vibrant gradient overlay */
 .animated-background::before {
@@ -1387,6 +1530,7 @@ button {
   z-index: -1;
   pointer-events: none;
 }
+
 
 @keyframes gradientDance {
   0% {
@@ -1413,6 +1557,7 @@ button {
   pointer-events: none;
 }
 
+
 .no-profiles-centered {
   position: absolute;
   top: 48%;
@@ -1426,4 +1571,7 @@ button {
   z-index: 10;
   pointer-events: none;
 }
+
+
 </style>
+
