@@ -69,7 +69,6 @@
             />
           </div>
 
-
           <input
             type="text"
             placeholder="Mixtape Name"
@@ -81,7 +80,6 @@
             placeholder="Say something about your mixtape"
             class="description-box"
           ></textarea>
-
 
           <div class="song-list-scroll">
             <div
@@ -132,7 +130,6 @@
             </div>
           </div>
 
-
           <div class="song-actions">
             <div class="add-song" @click="openSongModal">
               <i class="fa-solid fa-circle-plus"></i>
@@ -140,14 +137,12 @@
             </div>
           </div>
 
-
           <div class="popup-buttons">
             <button @click="createMixtape">Save Mixtape</button>
             <button @click="showConfirmCancel = true">Cancel</button>
           </div>
         </div>
       </div>
-
 
       <div v-if="showSongModal" class="modal-overlay">
         <div class="song-popup-box">
@@ -215,7 +210,6 @@
         </div>
       </div>
 
-
       <div v-if="showConfirmCancel" class="modal-overlay">
         <div class="confirm-box">
           <p>Are you sure you want to close this?</p>
@@ -226,9 +220,8 @@
         </div>
       </div>
 
-
       <!--END OF POPUP FOR CREATE MIXTAPE-->
-     
+      
   <div class="side-nav-hidden" v-if="!show">
     <div class="nav-section sidebar_burger" @click="show = !show" style="color:white;">
       <i class="fa-solid fa-bars fa-2x"></i>
@@ -252,7 +245,6 @@
       </router-link>
     </div>
 
-
     <div class="mixtape-section">
       <div class="mixtape-header">
         <i class="fa-solid fa-compact-disc"></i>
@@ -270,11 +262,7 @@
 
 
 
-
-
-
       <hr class="separator" />
-
 
       <div class="mixtape-search">
         <div class="input-wrapper input-with-mic">
@@ -308,10 +296,8 @@
         </div>
       </div>
 
-
       <div class="mixtape-list">
 <!-- Was mixtape overlay -->
-
 
         <div
           class="mixtape-item"
@@ -329,7 +315,7 @@
           <span>{{ mix.name.slice(0, 8) }}{{ mix.name.length > 8 ? '.' : '' }}</span>
           <!-- Three-dot menu -->
           <div
-           
+            
             class="mixtape-menu-wrapper"
             @click.stop
           >
@@ -358,7 +344,6 @@ export default {
 };
 </script>
 
-
 <script setup>
 import {
   ref,
@@ -370,18 +355,15 @@ import {
 } from "vue";
 import axios from "axios";
 
-
 const showPopup = ref(false);
 const showSongModal = ref(false);
 const showConfirmCancel = ref(false);
-
 
 const navItems = [
   { icon: "fa-solid fa-user-plus", text: "Discover", route: "/discover" },
   { icon: "fa-solid fa-pen", text: "Feed", route: "/feed" },
   { icon: "fa-solid fa-heart", text: "Favorites", route: "/favorites" },
 ];
-
 
 const mixtapes = ref([]); // get mixtapes from backend
 const isSortedByName = ref(true);
@@ -396,29 +378,23 @@ const photoInput = ref(null);
 const selectedMixtape = ref(null);
 const artworkUrl = ref(null); // for song artwork, can be full URL or backend relative path
 
-
 const searchResults = ref([]);
 const isEditing = ref(false);
 const editingIndex = ref(null);
-
 
 const playingIndex = ref(null);
 const audioRefs = ref([]);
 const searchAudioRefs = ref([]);
 const searchPlayingIndex = ref(null);
 
-
 const songAudioRefs = ref([]);
 const playingSongIndex = ref(null);
 
-
 const token = localStorage.getItem("token");
-
 
 const togglePopup = () => {
   showPopup.value = true;
 };
-
 
 const closePopup = () => {
   showPopup.value = false;
@@ -431,11 +407,9 @@ const closePopup = () => {
   editingMixtapeId.value = null;
 };
 
-
 function triggerPhotoUpload() {
   photoInput.value?.click();
 }
-
 
 async function handlePhotoUpload(event) {
   const file = event.target.files[0];
@@ -443,11 +417,9 @@ async function handlePhotoUpload(event) {
     // Show preview (for local preview before upload)
     photoUrl.value = URL.createObjectURL(file);
 
-
     // Upload to backend
     const formData = new FormData();
     formData.append("photo", file);
-
 
     try {
       const token = localStorage.getItem("token");
@@ -455,24 +427,23 @@ async function handlePhotoUpload(event) {
         `${import.meta.env.VITE_API_URL}/api/upload`,
         formData,
         {
-          headers:
-            {
-              "Content-Type": "multipart/form-data",
-              Authorization: `Bearer ${token}`,
-            },
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
-      // Save backend path for DB, and full URL for preview
-      photoPath.value = response.data.imageUrl; // backend path for DB
-      photoUrl.value = getFullPhotoUrl(response.data.imageUrl); // full URL for preview
+      // Save backend path for DB
+      photoPath.value = response.data.imageUrl;
+      // Show full URL for preview (from backend, not blob)
+      photoUrl.value = getFullPhotoUrl(response.data.imageUrl);
     } catch (err) {
-      alert(err.response?.data?.error || "Failed to upload image.");
-      photoUrl.value = null;
+      alert("Failed to upload image.");
+      photoUrl.value = "/src/assets/noimage.jpg";
       photoPath.value = null;
     }
   }
 }
-
 
 const createMixtape = async () => {
   if (mixtapeName.value.trim() === "") {
@@ -483,15 +454,6 @@ const createMixtape = async () => {
     alert("Please add at least 1 song to create a mixtape.");
     return;
   }
-  if (!photoPath.value) {
-    alert("Please upload a cover image for your mixtape.");
-    return;
-  }
-
-
-  // Use photoPath (backend relative path) for DB
-  let photoForDb = photoPath.value;
-
 
   // Ensure all songs have artwork_url and preview_url
   const songsForDb = songs.value.map((song) => ({
@@ -501,16 +463,15 @@ const createMixtape = async () => {
     artwork_url: song.artwork_url || null,
   }));
 
-
   try {
     const token = localStorage.getItem("token");
     if (editingMixtapeId.value) {
-      await axios.put(
+      const response = await axios.put(
         `${import.meta.env.VITE_API_URL}/api/mixtapes/${editingMixtapeId.value}`,
         {
           name: mixtapeName.value,
           description: mixtapeDescription.value,
-          photoUrl: photoForDb,
+          photoUrl: photoPath.value, // always backend path
           songs: songsForDb,
           artwork_url: artworkUrl.value,
         },
@@ -518,16 +479,30 @@ const createMixtape = async () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+      // Always update preview with backend path after save
+      if (response.data.photoUrl) {
+        photoPath.value = response.data.photoUrl;
+        photoUrl.value = getFullPhotoUrl(response.data.photoUrl);
+      } else if (photoPath.value) {
+        photoUrl.value = getFullPhotoUrl(photoPath.value);
+      }
+      await fetchUserMixtapes();
+      closePopup();
+      editingMixtapeId.value = null;
+      return;
     } else {
+      // For new mixtapes, allow default image
+      const payload = {
+        name: mixtapeName.value,
+        description: mixtapeDescription.value,
+        photoUrl: photoPath.value,
+        songs: songsForDb,
+        artwork_url: artworkUrl.value,
+      };
+
       await axios.post(
         `${import.meta.env.VITE_API_URL}/api/create-mixtape`,
-        {
-          name: mixtapeName.value,
-          description: mixtapeDescription.value,
-          photoUrl: photoForDb, // always use photoForDb
-          songs: songsForDb,
-          artwork_url: artworkUrl.value,
-        },
+        payload,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -536,17 +511,14 @@ const createMixtape = async () => {
     await fetchUserMixtapes();
     closePopup();
     editingMixtapeId.value = null;
-    photoPath.value = null;
   } catch (error) {
     alert("Failed to save mixtape.");
   }
 };
 
-
 const onSearchAudioEnded = () => {
   searchPlayingIndex.value = null;
 };
-
 
 const toggleSearchPlay = (index) => {
   if (
@@ -557,12 +529,10 @@ const toggleSearchPlay = (index) => {
     searchAudioRefs.value[searchPlayingIndex.value].currentTime = 0;
   }
 
-
   if (searchPlayingIndex.value === index) {
     searchPlayingIndex.value = null;
     return;
   }
-
 
   const audio = searchAudioRefs.value[index];
   if (audio) {
@@ -571,14 +541,12 @@ const toggleSearchPlay = (index) => {
   }
 };
 
-
 const openSongModal = () => {
   showSongModal.value = true;
   songName.value = "";
   artistName.value = "";
   searchResults.value = [];
 };
-
 
 const closeSongModal = () => {
   showSongModal.value = false;
@@ -588,7 +556,6 @@ const closeSongModal = () => {
   artistName.value = "";
   searchResults.value = [];
 };
-
 
 const addSongFromResult = (result) => {
   const newSong = {
@@ -606,7 +573,6 @@ const addSongFromResult = (result) => {
   }
   closeSongModal();
 };
-
 
 const searchSongs = async () => {
   if (!songName.value && !artistName.value) {
@@ -628,30 +594,32 @@ const searchSongs = async () => {
   }
 };
 
-
 const editMixtape = (index) => {
   const mix = mixtapes.value[index];
   mixtapeName.value = mix.name;
   mixtapeDescription.value = mix.description || mix.bio || "";
-  // Always keep the original artwork_url if it exists
   songs.value = (mix.songs || []).map((song) => ({
     name: song.name,
     artist: song.artist,
     preview_url: song.preview_url || song.url || null,
-    artwork_url: song.artwork_url || null, // <-- keep as-is, do not remap
+    artwork_url: song.artwork_url || null,
   }));
-  photoUrl.value = getFullPhotoUrl(mix.cover);
-  photoPath.value = mix.cover;
+  // Set both the display URL and the database path
+  if (mix.cover) {
+    photoUrl.value = getFullPhotoUrl(mix.cover);
+    photoPath.value = mix.cover;
+  } else {
+    photoUrl.value = "/src/assets/noimage.jpg";
+    photoPath.value = null;
+  }
   editingMixtapeId.value = mix.id;
   showPopup.value = true;
   openMenuIndex.value = null;
 }
 
-
 const deleteSong = (index) => {
   songs.value.splice(index, 1);
 };
-
 
 const togglePlay = (index) => {
   audioRefs.value.forEach((audio, i) => {
@@ -660,7 +628,6 @@ const togglePlay = (index) => {
       audio.currentTime = 0;
     }
   });
-
 
   const currentAudio = audioRefs.value[index];
   if (!currentAudio) return;
@@ -673,11 +640,9 @@ const togglePlay = (index) => {
   }
 };
 
-
 const onAudioEnded = () => {
   playingIndex.value = null;
 };
-
 
 function toggleSongPlay(index) {
   // Pause any currently playing audio
@@ -689,12 +654,10 @@ function toggleSongPlay(index) {
     songAudioRefs.value[playingSongIndex.value].currentTime = 0;
   }
 
-
   if (playingSongIndex.value === index) {
     playingSongIndex.value = null;
     return;
   }
-
 
   nextTick(() => {
     const audio = songAudioRefs.value[index];
@@ -705,11 +668,9 @@ function toggleSongPlay(index) {
   });
 }
 
-
 function onSongAudioEnded() {
   playingSongIndex.value = null;
 }
-
 
 // Reset refs when selectedMixtape changes
 watch(
@@ -720,7 +681,6 @@ watch(
   }
 );
 
-
 watch(songs, () => {
   audioRefs.value = [];
 });
@@ -728,9 +688,7 @@ watch(searchResults, () => {
   searchAudioRefs.value = [];
 });
 
-
 const sortOption = ref("az");
-
 
 function sortMixtapes() {
   if (!mixtapes.value || mixtapes.value.length === 0) return;
@@ -750,16 +708,13 @@ function sortMixtapes() {
   }
 }
 
-
 // --- Drag and Drop Sorting ---
 let dragSourceIndex = null;
-
 
 const handleDragStart = (event, index) => {
   dragSourceIndex = index;
   event.dataTransfer.effectAllowed = "move";
 };
-
 
 const handleDrop = (event, dropIndex) => {
   if (dragSourceIndex !== null && dropIndex !== dragSourceIndex) {
@@ -770,27 +725,22 @@ const handleDrop = (event, dropIndex) => {
   dragSourceIndex = null;
 };
 
-
 const handleDragOver = (event) => {
   event.preventDefault();
   event.dataTransfer.dropEffect = "move";
 };
 
-
 onMounted(() => {
   dragSourceIndex = null;
 });
-
 
 // --- Speech Recognition ---
 const searchText = ref("");
 const micActive = ref(false);
 
-
 // Function to toggle the microphone recording state
 const toggleMicRecording = () => {
   micActive.value = !micActive.value;
-
 
   if (micActive.value) {
     startSpeechRecognition(); // Start speech recognition when recording starts
@@ -799,7 +749,6 @@ const toggleMicRecording = () => {
   }
 };
 
-
 // Function to start speech recognition (as you already have this)
 const startSpeechRecognition = () => {
   if (!("webkitSpeechRecognition" in window)) {
@@ -807,45 +756,37 @@ const startSpeechRecognition = () => {
     return;
   }
 
-
   const recognition = new webkitSpeechRecognition();
   recognition.lang = "en-US";
   recognition.continuous = false;
   recognition.interimResults = false;
 
-
   recognition.onstart = () => {
     console.log("Speech recognition started");
   };
-
 
   recognition.onresult = (event) => {
     const transcript = event.results[0][0].transcript;
     searchText.value = transcript;
   };
 
-
   recognition.onerror = (event) => {
     console.error("Speech recognition error", event.error);
     alert("There was an error with speech recognition.");
   };
 
-
   recognition.onend = () => {
     console.log("Speech recognition ended");
   };
 
-
   recognition.start();
 };
-
 
 // Function to stop speech recognition
 const stopSpeechRecognition = () => {
   console.log("Speech recognition stopped");
   // You can implement stopping the recognition here if necessary
 };
-
 
 const filteredMixtapes = computed(() => {
   if (!searchText.value.trim()) return mixtapes.value;
@@ -863,11 +804,9 @@ const filteredMixtapes = computed(() => {
   );
 });
 
-
 onMounted(async () => {
   await fetchUserMixtapes();
 });
-
 
 async function fetchUserMixtapes() {
   try {
@@ -899,28 +838,20 @@ async function fetchUserMixtapes() {
   }
 }
 
-
 function getFullPhotoUrl(photoUrl) {
-  if (!photoUrl) return "/src/assets/noimage.jpg";
+  if (!photoUrl || photoUrl === "/src/assets/noimage.jpg") return "/src/assets/noimage.jpg";
   if (photoUrl.startsWith("http")) return photoUrl;
-  // Always use backend API URL for uploads
-  return `${import.meta.env.VITE_API_URL.replace(/\/$/, "")}/${photoUrl.replace(
-    /^\/?/,
-    ""
-  )}`;
+  const baseUrl = import.meta.env.VITE_API_URL;
+  return `${baseUrl}/${photoUrl.replace(/^\/+/, '')}`;
 }
 
-
 const openMenuIndex = ref(null);
-
 
 function toggleMixtapeMenu(index) {
   openMenuIndex.value = openMenuIndex.value === index ? null : index;
 }
 
-
 const editingMixtapeId = ref(null);
-
 
 async function deleteMixtape(index) {
   const mix = mixtapes.value[index];
@@ -941,14 +872,11 @@ async function deleteMixtape(index) {
   }
 }
 
-
 const showSortDropdown = ref(false);
-
 
 function toggleSortDropdown() {
   showSortDropdown.value = !showSortDropdown.value;
 }
-
 
 function handleClickOutside(event) {
   const dropdown = document.querySelector(".mixtape-sort-dropdown");
@@ -963,14 +891,12 @@ function handleClickOutside(event) {
   }
 }
 
-
 onMounted(() => {
   document.addEventListener("click", handleClickOutside);
 });
 onBeforeUnmount(() => {
   document.removeEventListener("click", handleClickOutside);
 });
-
 
 const firstMixtapeId = computed(() => {
   if (!mixtapes.value.length) return null;
@@ -979,11 +905,9 @@ const firstMixtapeId = computed(() => {
 });
 </script>
 
-
 <style scoped>
 @import url("https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap");
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css");
-
 
 * {
   font-family: "Fira Code", monospace;
@@ -991,7 +915,6 @@ const firstMixtapeId = computed(() => {
   padding: 0;
   box-sizing: border-box;
 }
-
 
 html,
 body {
@@ -1002,35 +925,33 @@ body {
   overflow-x: hidden;
 }
 
-
 .side-nav {
-  position: fixed;
-  top: 60px; /* Position below navbar */
+  position: relative;
   left: 0;
   height: calc(100vh - 60px);
   width: 270px;
-  background: linear-gradient(
+  /* background-color: #080d2a; */
+   background: linear-gradient(
     135deg,
     rgba(255, 255, 255, 0.616),
     rgba(255, 255, 255, 0)
   );
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2); /* stronger shadow for depth */
   backdrop-filter: blur(12px) brightness(1.05);
   -webkit-backdrop-filter: blur(12px) brightness(1.05);
+
   padding: 1rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  overflow-y: auto;
-  z-index: 89;
-  transition: transform 0.3s ease;
+  overflow: hidden;
+  z-index: 10;
 }
 
-
 .side-nav-hidden {
-  position: fixed;
-  top: 70px;
-  left: 10px;
+  position: absolute;
+  top: 10px;
+  margin-left: 10px;
   height: 50px;
   width: 50px;
   padding: 10px;
@@ -1038,10 +959,10 @@ body {
   padding-left: 11px;
   border-radius: 10px;
   background-color: #322848;
-  display: none; /* Hidden by default, shown in mobile */
-  z-index: 90;
+  display: flex;
+  overflow: hidden;
+  z-index: 10;
 }
-
 
 .nav-section,
 .mixtape-section {
@@ -1050,7 +971,6 @@ body {
   padding: 2rem;
 color:#322848;
 }
-
 
 .nav-item {
   display: flex;
@@ -1062,14 +982,12 @@ color:#322848;
   transition: color 0.3s, font-weight 0.3s;
 }
 
-
 .nav-item.active,
 .nav-item.router-link-active {
   font-weight: bold;
   color: #322848;
   text-decoration: underline;
 }
-
 
 .nav-item i {
   width: 35px;
@@ -1083,7 +1001,6 @@ color:#322848;
   font-size: 17px;
 }
 
-
 .mixtape-header {
   display: flex;
   align-items: center;
@@ -1093,7 +1010,6 @@ color:#322848;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 
 .add-icon {
   background-color: #322848;
@@ -1109,7 +1025,6 @@ color:#322848;
   cursor: pointer;
 }
 
-
 .popup-overlay {
   position: fixed;
   top: 0;
@@ -1118,13 +1033,11 @@ color:#322848;
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
 
-
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
 }
-
 
 .popup-box {
   /* background-color: #080d2a; */
@@ -1137,7 +1050,6 @@ color:#322848;
   flex-direction: column;
   gap: 1rem;
 }
-
 
 .upload-box {
   background-color: #bebebe;
@@ -1154,13 +1066,11 @@ color:#322848;
   overflow: hidden;
 }
 
-
 .photo-preview {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-
 
 .mixtape-name,
 .description-box {
@@ -1188,12 +1098,10 @@ color:#322848;
   resize: none;
 }
 
-
 .song-item {
   padding: 0.2rem;
   text-align: center;
 }
-
 
 .song-actions {
   display: flex;
@@ -1203,12 +1111,10 @@ color:#322848;
   padding: 0 2rem;
 }
 
-
 .song-count {
   font-size: 0.9rem;
   color: #fff;
 }
-
 
 .add-song {
   display: flex;
@@ -1219,13 +1125,11 @@ color:#322848;
   margin: 0;
 }
 
-
 .popup-buttons {
   display: flex;
   justify-content: space-between;
   gap: 1rem;
 }
-
 
 .popup-buttons button {
   flex: 1;
@@ -1238,13 +1142,11 @@ color:#322848;
   font-size: 15px;
 }
 
-
 .popup-buttons button:hover {
   background: #080d2a;
   color: #dbb4d7;
   border: 1px solid #ebebeb;
 }
-
 
 .modal-overlay {
   position: fixed;
@@ -1259,7 +1161,6 @@ color:#322848;
   z-index: 1100;
 }
 
-
 .song-popup-box {
   background-color: #dbb4d7;
   padding: 1.5rem;
@@ -1270,12 +1171,10 @@ color:#322848;
   position: relative;
 }
 
-
 .song-popup-box h3 {
   margin-bottom: 1rem;
   font-size: 1.6rem;
 }
-
 
 .song-popup-box input {
   width: 90%;
@@ -1297,11 +1196,6 @@ outline: none;
 
 
 
-
-
-
-
-
 .exit-btn {
   position: absolute;
   top: 3px;
@@ -1310,7 +1204,6 @@ outline: none;
   font-size: 2rem;
   font-weight: bold;
 }
-
 
 .search-results {
   margin-top: 1rem;
@@ -1322,7 +1215,6 @@ outline: none;
   color: white;
 }
 
-
 .search-item {
   display: flex;
   align-items: center;
@@ -1331,7 +1223,6 @@ outline: none;
   border-bottom: 1px solid #ccc;
   cursor: pointer;
 }
-
 
 .confirm-box {
   background-color: #dbb4d7;
@@ -1342,13 +1233,11 @@ outline: none;
   color: #1f0d3e;
 }
 
-
 .confirm-buttons {
   display: flex;
   justify-content: space-around;
   margin-top: 1.5rem;
 }
-
 
 .confirm-buttons button {
   padding: 0.5rem 1rem;
@@ -1357,13 +1246,11 @@ outline: none;
   cursor: pointer;
 }
 
-
 .confirm-buttons button:first-child:hover {
   background: #080d2a;
   color: #dbb4d7;
   border: 1px solid #ebebeb;
 }
-
 
 .confirm-buttons button:last-child:hover {
   background: red;
@@ -1371,13 +1258,11 @@ outline: none;
   border: 1px solid #ebebeb;
 }
 
-
 .separator {
   border: none;
   border-top: 1px solid #322848;
   margin: 1rem 0;
 }
-
 
 .search-icon,
 .sort-icon {
@@ -1393,14 +1278,12 @@ outline: none;
   justify-content: center;
 }
 
-
 .input-with-mic {
   position: relative;
   display: flex;
   align-items: center;
   width: 100%;
 }
-
 
 .mic-left-inside {
   position: absolute;
@@ -1409,11 +1292,9 @@ outline: none;
   color:#322848;
 }
 
-
 .input-with-mic .mixtape-input {
   padding-left: 32px; /* to make space for the mic icon */
 }
-
 
 .sort-icon {
   position: absolute;
@@ -1423,11 +1304,9 @@ outline: none;
   transition: color 0.2s;
 }
 
-
 .sort-icon:hover {
   color: #555;
 }
-
 
 .mixtape-input {
   width: 85%;
@@ -1453,7 +1332,6 @@ outline: none;
   height: 130px;
 }
 
-
 .mixtape-item {
   display: flex;
   align-items: center;
@@ -1463,13 +1341,11 @@ outline: none;
   cursor: pointer;
 }
 
-
 .mixtape-img {
   width: 40px;
   object-fit: cover;
   border-radius: 6px;
 }
-
 
 .mixtape-name {
   font-weight: bold;
@@ -1482,7 +1358,6 @@ outline: none;
   border-radius: 5px;
 }
 
-
 .description-box {
   font-size: 0.95rem;
   padding: 0.5rem;
@@ -1494,13 +1369,11 @@ outline: none;
   margin-bottom: 0.5rem;
 }
 
-
 .song-item {
   font-size: 0.9rem;
   padding: 0.25rem 0;
   overflow-wrap: break-word;
 }
-
 
 .popup-box {
   max-height: 85vh;
@@ -1509,11 +1382,9 @@ outline: none;
   margin-top: 60px;
 }
 
-
 .song-item + .song-item {
   border-top: 1px solid #3a2c56;
 }
-
 
 .song-list-scroll {
   display: flex;
@@ -1527,7 +1398,6 @@ outline: none;
   background: rgba(255, 255, 255, 0.495);
 }
 
-
 .song-item-flex {
   display: flex;
   justify-content: space-between;
@@ -1538,7 +1408,6 @@ outline: none;
   color: white;
 }
 
-
 .song-actions-buttons {
   display: flex;
   gap: 0.5rem;
@@ -1546,18 +1415,15 @@ outline: none;
   align-items: center;
 }
 
-
 .song-actions-buttons i {
   margin-left: 0.5rem;
   cursor: pointer;
   color: #c2b4d6;
 }
 
-
 .song-actions-buttons i:hover {
   color: #ffffff;
 }
-
 
 .song-link {
   margin-left: 10px;
@@ -1566,11 +1432,9 @@ outline: none;
   font-size: 1.1rem;
 }
 
-
 .song-link:hover {
   color: white;
 }
-
 
 .mixtape-detail-overlay {
   position: fixed;
@@ -1585,7 +1449,6 @@ outline: none;
   z-index: 999;
 }
 
-
 .mixtape-detail-box {
   /* background-color: #1e1e1e; */
   background: linear-gradient(120deg, #e3b8ff 0%, #dbb4d7 25%, #c697bd 50%, #8a6bb8 75%, #75629e 100%);
@@ -1598,7 +1461,6 @@ outline: none;
   position: relative;
 }
 
-
 .close-detail {
   position: absolute;
   top: 1rem;
@@ -1606,7 +1468,6 @@ outline: none;
   font-size: 2rem;
   cursor: pointer;
 }
-
 
 .detail-img {
   width: 100px;
@@ -1617,26 +1478,22 @@ outline: none;
   border:1px solid #322848;
 }
 
-
 .song-details-flex {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-
 .mic-icon {
   color: #322848;
   cursor: pointer;
 }
-
 
 .mic-recording {
   color: red;
   cursor: pointer;
   animation: pulse 1s infinite;
 }
-
 
 .mini-audio-btn {
   background: none;
@@ -1646,17 +1503,14 @@ outline: none;
   color: #dbb4d7;
 }
 
-
 .mini-audio-btn:hover {
   color: #dbb4d7;
 }
-
 
 .search-details {
   flex: 1;
   font-size: 14px;
 }
-
 
 @keyframes pulse {
   0% {
@@ -1670,7 +1524,6 @@ outline: none;
   }
 }
 
-
 .mixtape-menu-wrapper {
   position: absolute;
   right: 10px;
@@ -1679,14 +1532,12 @@ outline: none;
   z-index: 500;
 }
 
-
 .mixtape-menu-icon {
   cursor: pointer;
   color: #322848;
   font-size: 18px;
   padding: 4px;
 }
-
 
 .mixtape-menu-dropdown {
   position: absolute;
@@ -1701,13 +1552,11 @@ outline: none;
   text-align: left;
 }
 
-
 .mixtape-menu-dropdown div {
   padding: 8px 16px;
   cursor: pointer;
   color: #fff;
 }
-
 
 .mixtape-menu-dropdown div:hover {
   background: #ffffff;
@@ -1717,7 +1566,6 @@ outline: none;
   font-weight:bold;
 }
 
-
 .mixtape-menu-dropdown .disabled {
   color: #aaa;
   pointer-events: none;
@@ -1725,13 +1573,11 @@ outline: none;
   background: #eee;
 }
 
-
 .mixtape-sort-dropdown {
   margin-bottom: 0.5rem;
   text-align: right;
   margin-top: 5px;
 }
-
 
 .mixtape-sort-dropdown select {
   padding: 0.3rem 0.7rem;
@@ -1741,7 +1587,7 @@ outline: none;
   color: #fff;
   font-size: 11pt;
   width: 100%;
- 
+  
 }
 .sidebar_burger {
   text-align: right;
@@ -1750,195 +1596,47 @@ outline: none;
   padding-right: 5px;
 }
 
-
 /* Responsive styles */
-@media (max-width: 1024px) {
-  .side-nav {
-    width: 240px;
-  }
-
-  .mixtape-item {
-    font-size: 0.9rem;
-  }
-}
-
 @media (max-width: 768px) {
+  .mixtape-header span {
+    text-align: left;
+  }
   .side-nav {
-    transform: translateX(-100%); /* Hide by default on mobile */
-    width: 270px;
+    width: 100%;
+    height: 100vh; /* Allow height to adjust */
+    position: relative; /* Change position to relative */
   }
-
-  .side-nav.show {
-    transform: translateX(0);
-  }
-
-  .side-nav-hidden {
-    display: flex; /* Show the burger menu on mobile */
-  }
-
-  .nav-section,
+  /* .nav-section, */
   .mixtape-section {
-    padding: 1rem;
+    padding: 1rem; /* Adjust padding for smaller screens */
   }
-
-  .mixtape-list {
-    max-height: calc(100vh - 400px);
+  .nav-item span {
+    font-size: 1rem;
   }
-
   .nav-item {
-    margin-bottom: 1rem;
+    flex-direction: row; /* Ensure items are in a row */
+    justify-content: left; /* Align items to the start */
   }
-
-  .nav-item i {
-    width: 30px;
-    height: 30px;
-    font-size: 15px;
-  }
-
-  .mixtape-header {
-    padding: 0.5rem 0;
-  }
-
-  .mixtape-item {
-    padding: 0.3rem;
-  }
-
-  .mixtape-img {
-    width: 35px;
-  }
-
-  .search-container {
-    width: 90%;
-  }
-
-  .mixtape-input {
-    font-size: 0.9rem;
-  }
-
-  .mixtape-sort-dropdown select {
-    font-size: 0.9rem;
+  /* .mixtape-header span {
+  display: none;
+ } */
+  .add-icon {
+    margin-left: 0; /* Remove margin for smaller screens */
   }
 }
-
+/* Additional styles for very small screens */
 @media (max-width: 480px) {
   .side-nav {
     width: 100%;
-    padding: 0.5rem;
+    height: 100vh; /* Allow height to adjust */
+    position: relative; /* Change position to relative */
   }
-
-  .nav-section,
-  .mixtape-section {
-    padding: 0.8rem;
-  }
-
   .nav-item {
-    font-size: 0.8rem;
-    gap: 1rem;
+    font-size: 0.9rem; /* Smaller font size */
   }
-
-  .nav-item i {
-    width: 25px;
-    height: 25px;
-    font-size: 13px;
-  }
-
-  .mixtape-header {
-    font-size: 0.9rem;
-  }
-
-  .add-icon {
-    width: 20px;
-    height: 20px;
-    font-size: 12px;
-  }
-
-  .mixtape-list {
-    max-height: calc(100vh - 350px);
-  }
-
-  .mixtape-item {
-    font-size: 0.8rem;
-  }
-
-  .mixtape-img {
-    width: 30px;
-  }
-
   .mixtape-input {
-    font-size: 0.8rem;
-    padding: 4px 30px;
-  }
-
-  .mixtape-sort-dropdown select {
-    font-size: 0.8rem;
-    padding: 0.2rem 0.5rem;
-  }
-
-  .popup-box {
-    width: 95%;
-    max-height: 80vh;
-    margin: 10px;
-    padding: 1rem;
-  }
-
-  .song-popup-box {
-    width: 95%;
-    margin: 10px;
-  }
-
-  .upload-box {
-    width: 8rem;
-    height: 8rem;
-  }
-
-  .song-list-scroll {
-    max-height: 200px;
-  }
-
-  .song-details-flex {
-    font-size: 0.8rem;
-  }
-
-  .search-artwork {
-    width: 30px;
-    height: 30px;
+    font-size: 0.8rem; /* Smaller input font size */
   }
 }
 
-/* Collapsible sidebar for tablet/mobile */
-@media (max-width: 768px) {
-  .side-nav {
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
-    position: fixed;
-    top: 60px;
-    left: 0;
-    height: calc(100vh - 60px);
-    z-index: 100;
-  }
-
-  .side-nav.show {
-    transform: translateX(0);
-  }
-
-  .side-nav-hidden {
-    display: block;
-  }
-}
-
-/* Touch device optimizations */
-@media (hover: none) {
-  .nav-item:hover,
-  .mixtape-item:hover,
-  .add-icon:hover {
-    transform: none;
-  }
-
-  .nav-item:active,
-  .mixtape-item:active,
-  .add-icon:active {
-    opacity: 0.7;
-  }
-}
 </style>
-

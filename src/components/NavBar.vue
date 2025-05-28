@@ -313,7 +313,7 @@ body {
 }
 
 .top-nav {
-  position: fixed;
+  position: relative;
   top: 0;
   left: 0;
   right: 0;
@@ -599,6 +599,7 @@ body {
   background: rgba(255, 255, 255, 0.45);
   box-shadow: 0 8px 12px rgba(31, 13, 62, 0.174);
 }
+
 
 @keyframes echo {
   0% {
