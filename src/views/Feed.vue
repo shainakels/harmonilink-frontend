@@ -1,23 +1,6 @@
 <template>
-  <NavLayout>
-    <div class="favorites-wrapper">
-      <h1 class="favorites-title">Feed</h1>
-    </div>
-    <div class="grid-container">
-      
-          <div class="left-column">
-        <!-- Navigation Buttons -->
-          <button 
-            class="nav-button left" 
-            @click="prevProfile" 
-            :disabled="currentIndex === 0 || isFlipped"
-          > <i class="fa-solid fa-circle-arrow-left"></i>
-          </button>
-          </div>
-
-        <div class="main-column">
-          
-      <div v-if="showCreatePoll" class="popup-overlay">
+  
+  <div v-if="showCreatePoll" class="popup-overlay">
         <div class="popup-container">
           <div class="popup-header">
             <h2>Poll</h2>
@@ -65,6 +48,32 @@
       </div>
     </div>
 
+  <NavLayout>
+    <div class="animated-background"></div>
+       <div class="favorites-wrapper">
+      <h1 class="favorites-title">Feed</h1>
+      <p class="favorites-description">
+       Your interactive hub of harmony! Create polls cast votes, and keep the vibe flowing.
+      </p>
+</div>
+
+
+      <div class="grid-container">
+      
+          <div class="left-column">
+        <!-- Navigation Buttons -->
+          <button 
+            class="nav-button left" 
+            @click="prevProfile" 
+            :disabled="currentIndex === 0 || isFlipped"
+          > <i class="fa-solid fa-circle-arrow-left"></i>
+          </button>
+          </div>
+
+        <div class="main-column">
+<!-- start of popup -->         
+      
+<!-- end of popup -->
 
       <div class="poll-scroll">
 
@@ -73,8 +82,12 @@
         <button class="create-poll-button" @click="openCreatePollPopup">Create Poll</button>
       </div>
 
-        <div v-if="currentProfile" class="poll-container">
-
+        <!-- Show loading spinner while loading -->
+        <div v-if="loading" style="text-align:center; color:#322848; margin-top:2rem;">
+          Loading...
+        </div>
+        <!-- Show poll container if we have polls -->
+        <div v-else-if="currentProfile" class="poll-container">
           <!-- Poll Container -->
           <div class="poll-content">
 
@@ -170,7 +183,7 @@
           
         </div>
         <div v-else class="no-polls-message styled-no-polls">
-          <p>Create your poll now and interact with your favorited users!</p>
+          <p>No polls available yet. Be the first to create one!</p>
         </div>
       </div>
         </div>
@@ -186,8 +199,10 @@
           </div>
 
       </div>
+
+
+      
   </NavLayout>
-  <div class="feed-background"></div>
 </template>
 
 <script setup>
@@ -204,6 +219,7 @@
   const newPollQuestion = ref('')
   const newPollOptions = ref(['', '']) 
   const isFlipped = ref(false);
+  const loading = ref(true)
 
   const token = localStorage.getItem('token');
   let loggedInUserId = null;
@@ -221,13 +237,13 @@
   onMounted(fetchPolls)
 
   async function fetchPolls() {
+    loading.value = true
     try {
       const { data } = await axios.get(`${API_URL}/api/feed`, {
         headers: { Authorization: `Bearer ${token}` }
       })
      
-      // Sort so that the logged-in user's poll is always first
-      const mapped = data.map(poll => ({
+      profiles.value = data.map(poll => ({
         name: poll.user.name,
         age: poll.user.birthday ? calculateAge(poll.user.birthday) : '',
         gender: poll.user.gender || '',
@@ -249,20 +265,13 @@
           })),
           id: poll.id
         }
-      }));
-
-      // Move the logged-in user's poll to the front if it exists
-      mapped.sort((a, b) => {
-        if (a.userId === loggedInUserId) return -1;
-        if (b.userId === loggedInUserId) return 1;
-        return 0;
-      });
-
-      profiles.value = mapped;
+      }))
       currentIndex.value = 0
       resetVoteState()
     } catch (e) {
       alert('Failed to fetch polls')
+    } finally {
+      loading.value = false
     }
   }
 
@@ -481,25 +490,21 @@
 .side-nav{
   z-index:unset;
 }
+
+.poll-length-section{
+  color:#322848;
+  font-weight: bold;
+}
+
 .poll-length-select{
     padding: 0.3rem 0.7rem;
     border-radius: 6px;
     border: 1px solid #dbb4d7;
-    background: #2e1f45;
+    background: #322848;
     color: #fff;
     font-size: 11pt;
     margin:5px;
 }
-/* .poll-wrapper {
-  margin-top: 80px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: calc(100% - 80px); 
-  width: 90%;
-  margin-left: auto;
-  margin-right:auto;
-} */
 
 .create-poll-container {
   display: flex;
@@ -537,11 +542,6 @@
   align-items: center;
 }
 
-.create-poll-button:hover {
-  background-color: #1c1b2e;
-  color: #ddb0d7;
-}
-
 .popup-overlay {
   position: fixed;
   top: 0;
@@ -556,13 +556,18 @@
 }
 
 .popup-container {
-  background: #080d2a;
+  background: rgba(255, 255, 255, 0.55);
   padding: 2rem;
   border-radius: 12px;
   width: 500px;
   max-width: 90%;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
   position: relative;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.25);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transition: all 0.3s ease;
 }
 
 .popup-header {
@@ -575,7 +580,7 @@
 
 .popup-header h2 {
   font-size: 1.5rem;
-  color: white;
+  color:#322848;
 }
 
 .close-btn {
@@ -586,26 +591,36 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: white;
+  color: #322848;
   padding:0;
-}
-
-.close-btn:hover{
-  color: #ddb0d7;
 }
 
 .poll-input {
   width: 100%;
   padding: 0.75rem;
-  border: 2px solid white;
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 8px;
   margin-bottom: 1rem;
+  background: rgba(255, 255, 255, 0.495);
+  color: #322848;
+  transition: all 0.3s ease;
+}
+
+.poll-input::placeholder {
+  color: rgba(50, 40, 72, 0.6);
+}
+
+.poll-input:focus {
+  outline: none;
+  background: #3228485a;
+  color: #fff;
+  box-shadow: 0 8px 12px rgba(31, 13, 62, 0.08);
 }
 
 .options-label {
   font-weight: bold;
   margin-bottom: 0.5rem;
-  color: white;
+  color:#322848;
 }
 
 .options-inputs {
@@ -621,12 +636,26 @@
 .poll-option-input {
   flex: 1;
   padding: 0.5rem;
-  border: 1px solid #aaa;
-  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.495);
+  color: #322848;
+  transition: all 0.3s ease;
+}
+
+.poll-option-input::placeholder {
+  color: rgba(50, 40, 72, 0.6);
+}
+
+.poll-option-input:focus {
+  outline: none;
+  background: #3228485a;
+  color: #fff;
+  box-shadow: 0 8px 12px rgba(31, 13, 62, 0.08);
 }
 
 .option-row button {
-  background-color: #ddd;
+  background-color:#322848;
   border: none;
   padding: 0 0.5rem;
   font-size: 1.2rem;
@@ -640,44 +669,42 @@
   border: 1px dashed white;
   padding: 0.4rem 0.7rem;
   cursor: pointer;
-  color: white;
+  color:#322848;
   border-radius: 6px;
 }
 
 .submit-poll-btn {
-  background-color: white;
-  color: #080d2a;
+  background: #322848;
+  color: #fff;
   border: none;
-  padding: 0.7rem 1.5rem;
+  padding: 0.5rem 1.5rem;
   font-size: 1rem;
-  border-radius: 8px;
+  border-radius: 25px;
   cursor: pointer;
   width: 100%;
 }
 
-.submit-poll-btn:hover {
-  background-color: #ddb0d2;
-  color: #080d2a;
-}
-
 .poll-scroll {
-  /* display: flex; */
   justify-content: center;
 }
 
 .poll-container {
-  background-color: #080d2a;
+  /* background-color: #080d2a; */
+  background: rgba(255, 255, 255, 0.55);
   border-radius: 12px;
   padding-left: 3rem;
   padding-right: 3rem;
-  padding-top: 1rem;
+   padding-top: 1rem;
   padding-bottom: 1rem;
   width: 100%;
   height: 420px;
   position: relative;
   perspective: 1500px;
   user-select: none;
- 
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.25);
+  
+  transition: all 0.3s ease;
 }
 
 .nav-button {
@@ -760,30 +787,32 @@
 }
 
 .poll-profile-info {
-  color: #fff;
+  color: #323232;
   text-align: left;
 }
 
 .poll-username {
   font-size: 2rem;
   font-weight: bold;
+  color: #322848;
 }
 
 .poll-age-gender {
   font-size: 1rem;
-  color: #fff;
+  color: #322848;
 }
 
 .poll-description {
   font-size: 1rem;
   margin: 0.5rem 0;
   text-align: left;
+  color:#322848;
 }
 
 .poll-options-container {
-  background-color: rgba(218, 171, 224, 0.7); 
-  border: 4px solid white;
-  padding: 0.5rem;
+  background-color: rgba(218, 171, 224, 0.4); 
+  border: 1px solid #ffffff;
+  padding: 0.7rem;
   border-radius: 10px;
   width: 100%;
   height: 100px; 
@@ -798,10 +827,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.2rem;
+  margin-bottom: 0.3rem;
   border: 1px solid #080d2a;
   padding: 4px 20px 4px 20px;
   border-radius: 10px;;
+  color:#323232;
 }
 
 .poll-option input[type="radio"] {
@@ -828,7 +858,7 @@
 
 .poll-votes {
   font-size: 12px;
-  color: #fff;
+  color: #323232;
   text-align: right;
   margin-top: 1rem;
 }
@@ -838,16 +868,26 @@
   font-weight: bold;
 }
 
-.no-polls-message {
+  .styled-no-polls {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+  transform: translate(-50%, -50%);
   text-align: center;
-  color: #080d2a;
-  font-size: 1.5rem;
-  margin-top: 2rem;
+  color: #28203a;
+  font-size: 1rem;
+  max-width: 80%;
+  line-height: 1.5;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+  z-index: -1;
 }
 
 .poll-created-at {
   font-size: 12px;
-  color: #e0e0e0;
+  color: #323232;
 }
 
 .poll-progress-bar-wrapper {
@@ -883,6 +923,7 @@
 
 
 
+
 .fade-enter-active, .fade-leave-active {
   transition: opacity 1s ease-in-out; 
 }
@@ -894,47 +935,11 @@
   padding-top: 2rem;
   padding-left:2rem;
   padding-right:2rem;
-
-  overflow: hidden;
+  overflow: auto;
   color: black;
-
   width:100%;
   margin-left:auto;
   margin-right:auto;
-}
-
-.favorites-wrapper::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    circle at center,
-    rgba(204, 159, 255, 0.911),
-    rgba(122, 82, 155, 0.4),
-    rgba(238, 67, 141, 0.3),
-    rgba(143, 74, 203, 0.4)
-  );
-  background-size: 200% 200%;
-  animation: gradientDance 20s ease-in-out infinite;
-  z-index: -1;
-  pointer-events: none;
-}
-
-@keyframes gradientDance {
-  0% {
-    background-position: 0% 50%;
-  }
-  25% {
-    background-position: 50% 100%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  75% {
-    background-position: 50% 0%;
-  }
-  100% {
-  }
 }
 
 .favorites-title {
@@ -975,61 +980,9 @@
   height: 500px;
 }
 
-/* Add this to your Feed.vue style section */
 
-/* Feed background similar to Favorites, but won't cover content */
-.feed-background {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: #ffffff;
-  z-index: 0;
-  pointer-events: none;
-  overflow: hidden;
-}
 
-.feed-background::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    circle at center,
-    rgba(204, 159, 255, 0.911),
-    rgba(122, 82, 155, 0.4),
-    rgba(238, 67, 141, 0.3),
-    rgba(143, 74, 203, 0.4)
-  );
-  background-size: 200% 200%;
-  animation: gradientDance 20s ease-in-out infinite;
-  z-index: -1;
-  pointer-events: none;
-}
 
-@keyframes gradientDance {
-  0% {
-    background-position: 0% 50%;
-  }
-  25% {
-    background-position: 50% 100%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  75% {
-    background-position: 50% 0%;
-  }
-  100% {
-  }
-}
-
-/* Make sure main content is above the background */
-.favorites-wrapper,
-.grid-container {
-  position: relative;
-  z-index: 1;
-}
 
 /* Responsive styles */
 @media (max-width: 768px) {
@@ -1080,21 +1033,62 @@
     }
   }
 
-  .styled-no-polls {
-  position: absolute;
-  top: 42%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  color: #28203a;
-  font-size: 1rem;
-  max-width: 80%;
-  line-height: 1.5;
-  padding: 2rem;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  backdrop-filter: blur(8px);
-  z-index: 2;
+
+
+/* Base white background */
+.animated-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 100vh;
+  width: 100vw;
+  background-color: #ffffff;
+  z-index: -2;
+  pointer-events: none;
 }
 
+/* Animated vibrant gradient overlay */
+.animated-background::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at center,
+    rgba(204, 159, 255, 0.911),
+    rgba(122, 82, 155, 0.4),
+    rgba(238, 67, 141, 0.3),
+    rgba(143, 74, 203, 0.4)
+  );
+  background-size: 200% 200%;
+  animation: gradientDance 20s ease-in-out infinite;
+  z-index: -1;
+  pointer-events: none;
+}
+
+@keyframes gradientDance {
+  0% {
+    background-position: 0% 50%;
+  }
+  25% {
+    background-position: 50% 100%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  75% {
+    background-position: 50% 0%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+.animated-background::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  backdrop-filter: blur(5px);
+  pointer-events: none;
+}
 </style>

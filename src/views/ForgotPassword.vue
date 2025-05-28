@@ -257,7 +257,7 @@ button:disabled {
 }
 
 .success-message {
-  color: #38883b;
+  color: green;
   font-size: 0.85rem;
   margin: 0.5rem 0;
   padding: 0.5rem;
@@ -278,13 +278,13 @@ button:disabled {
 
 @media (prefers-color-scheme: dark) {
   .success-message {
-    color: #81c784;
+    color: green;
     background: rgba(129, 199, 132, 0.1);
     border-color: rgba(129, 199, 132, 0.2);
   }
 
   .error-message {
-    color: #e57373;
+    color: green;
     background: rgba(229, 115, 115, 0.1);
     border-color: rgba(229, 115, 115, 0.2);
   }

@@ -26,7 +26,6 @@
             {{ criteria.message }}
           </p>
         </div>
-        <p v-if="passwordError" class="error-message">{{ passwordError }}</p>
       </div>
       <!-- Confirm Password -->
       <div class="input-group">
@@ -40,8 +39,9 @@
         <span class="icon" @click="toggleConfirmPasswordVisibility">
           <i :class="showConfirmPassword ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'"></i>
         </span>
-        <p v-if="confirmPasswordError" class="error-message">{{ confirmPasswordError }}</p>
       </div>
+      <p v-if="passwordError" class="error-message">{{ passwordError }}</p>
+      <p v-if="confirmPasswordError" class="error-message">{{ confirmPasswordError }}</p>
       <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
       <button type="submit" :disabled="loading">
         {{ loading ? 'Resetting...' : 'Reset Password' }}
@@ -124,7 +124,11 @@ const handleResetPassword = async () => {
     }
   } catch (error) {
     if (error.response?.status === 400) {
-      errorMessage.value = 'Invalid or expired token.';
+      if (error.response.data.message === 'New password must be different from your current password.') {
+        passwordError.value = error.response.data.message;
+      } else {
+        errorMessage.value = error.response.data.message || 'Invalid or expired token.';
+      }
     } else {
       errorMessage.value = 'Failed to reset password. Please try again.';
     }

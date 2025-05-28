@@ -378,12 +378,6 @@ button:disabled {
   cursor: not-allowed;
 }
 
-.error-message {
-  color: red;
-  font-size: 11px;
-  margin-top: -3px;
-  text-align: left;
-}
 .login-text {
   margin-top: 1rem;
   font-size: 0.85rem;
@@ -474,7 +468,23 @@ button:disabled {
 }
 
 .success-message {
-  color: #00f108;
+  color: green;
+  font-size: 12px;
+  margin: 0.9rem 0;
+  padding: 0.5rem;
+  background: rgba(76, 175, 80, 0.1);
+  border-radius: 4px;
+  border: 1px solid rgba(76, 175, 80, 0.2);
+  width: 95%;           /* Match input field width */
+  max-width: 95%;       /* Ensure it doesn't exceed input width */
+  box-sizing: border-box;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.error-message {
+  color: red;
   font-size: 12px;
   margin: 0.9rem 0;
   padding: 0.5rem;

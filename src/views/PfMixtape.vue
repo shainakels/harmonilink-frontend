@@ -3,10 +3,15 @@
   <div class="background"></div>
 
   <div class="create-text">Create your Mixtape</div>
+  <div class="subtitle-text">Let people reach you through this!</div>
 
   <div class="main-box">
     <div class="upload-box" @click="triggerPhotoUpload">
-      <img v-if="photoUrl" :src="getFullPhotoUrl(photoUrl)" class="photo-preview" />
+      <img
+        v-if="photoUrl"
+        :src="getFullPhotoUrl(photoUrl)"
+        class="photo-preview"
+      />
       <!-- EDITED HERE -->
       <span v-else class="upload-icon">
         <i class="fa-regular fa-image"></i>
@@ -16,72 +21,100 @@
     </div>
     <p v-if="photoUploadError" class="error-message">{{ photoUploadError }}</p>
 
-    <input type="text" v-model="mixtapeName" class="input" :class="{ error: mixtapeNameError }"
-      placeholder="Mixtape Name" @input="validateMixtapeName" />
+    <input
+      type="text"
+      v-model="mixtapeName"
+      class="input"
+      :class="{ error: mixtapeNameError }"
+      placeholder="Mixtape Name"
+      @input="validateMixtapeName"
+    />
 
     <p v-if="mixtapeNameError" class="error-message">{{ mixtapeNameError }}</p>
 
-    <textarea v-model="mixtapeBio" class="textarea" :class="{ error: mixtapeBioError }"
-      placeholder="Say something about your mixtape" @input="validateMixtapeBio"></textarea>
+    <textarea
+      v-model="mixtapeBio"
+      class="textarea"
+      :class="{ error: mixtapeBioError }"
+      placeholder="Say something about your mixtape"
+      @input="validateMixtapeBio"
+    ></textarea>
 
     <p v-if="mixtapeBioError" class="error-message">{{ mixtapeBioError }}</p>
 
-
-
     <!-- SONGS AREA (keep this) -->
-    <div class="songs-area-label">
-      Add 3 songs to create your first mixtape
-    </div>
+    <div class="songs-area-label">Add 3 songs to create your first mixtape</div>
     <div class="songs-area">
       <div
-  v-for="i in 3"
-  :key="i"
-  class="song-slot"
-  :class="{ filled: songs[i-1] }"
->
-  <template v-if="songs[i-1]">
-    <div class="song-info">
-      <img v-if="songs[i-1].artwork" :src="songs[i-1].artwork" alt="Artwork" class="song-artwork-mini" />
-      <div class="song-meta">
-        <div class="song-title">{{ songs[i-1].name }}</div>
-        <div class="song-artist">{{ songs[i-1].artist }}</div>
-      </div>
-      <button
-        v-if="songs[i-1].previewUrl"
-        class="mini-audio-btn"
-        @click.stop="togglePlay(i-1)"
-        :aria-label="playingIndex === (i-1) ? 'Pause preview' : 'Play preview'"
+        v-for="i in 3"
+        :key="i"
+        class="song-slot"
+        :class="{ filled: songs[i - 1] }"
       >
-        <i :class="playingIndex === (i-1) ? 'fa-solid fa-pause' : 'fa-solid fa-play'"></i>
-      </button>
-      <!-- Bind the audio ref using :ref and the index -->
-      <audio
-        v-if="songs[i-1].previewUrl"
-        :ref="el => audioRefs[i-1] = el"
-        :src="songs[i-1].previewUrl"
-        @ended="onAudioEnded"
-        style="display: none;"
-      ></audio>
-    </div>
-    <button class="remove-song-btn" @click="deleteSong(i-1)">
-      <i class="fa-solid fa-minus"></i>
-    </button>
-  </template>
+        <template v-if="songs[i - 1]">
+          <div class="song-info">
+            <img
+              v-if="songs[i - 1].artwork"
+              :src="songs[i - 1].artwork"
+              alt="Artwork"
+              class="song-artwork-mini"
+            />
+            <div class="song-meta">
+              <div class="song-title">{{ songs[i - 1].name }}</div>
+              <div class="song-artist">{{ songs[i - 1].artist }}</div>
+            </div>
+            <button
+              v-if="songs[i - 1].previewUrl"
+              class="mini-audio-btn"
+              @click.stop="togglePlay(i - 1)"
+              :aria-label="
+                playingIndex === i - 1 ? 'Pause preview' : 'Play preview'
+              "
+            >
+              <i
+                :class="
+                  playingIndex === i - 1
+                    ? 'fa-solid fa-pause'
+                    : 'fa-solid fa-play'
+                "
+              ></i>
+            </button>
+            <!-- Bind the audio ref using :ref and the index -->
+            <audio
+              v-if="songs[i - 1].previewUrl"
+              :ref="(el) => (audioRefs[i - 1] = el)"
+              :src="songs[i - 1].previewUrl"
+              @ended="onAudioEnded"
+              style="display: none"
+            ></audio>
+          </div>
+          <button class="remove-song-btn" @click="deleteSong(i - 1)">
+            <i class="fa-solid fa-minus"></i>
+          </button>
+        </template>
 
-  <template v-else>
-    <button class="add-song-btn" @click="openSongModal">
-      <i class="fa-solid fa-circle-plus"></i>
-    </button>
-  </template>
-</div>
-
+        <template v-else>
+          <button class="add-song-btn" @click="openSongModal">
+            <i class="fa-solid fa-circle-plus"></i>
+          </button>
+        </template>
+      </div>
     </div>
 
     <!-- MOVE BUTTON BELOW SONGS AREA -->
-    <p v-if="showSongError" class="error-message">You need to add at least 3 songs.</p>
-    <button class="create-button" :class="{ 'gradient-active': gradientActive, 'twinkle-effect': twinkleActive }"
-      :disabled="isSubmitting" @click="handleFinish">
-      {{ isSubmitting ? 'Creating...' : 'Create Mixtape' }}
+    <p v-if="showSongError" class="error-message">
+      You need to add at least 3 songs.
+    </p>
+    <button
+      class="create-button"
+      :class="{
+        'gradient-active': gradientActive,
+        'twinkle-effect': twinkleActive,
+      }"
+      :disabled="isSubmitting"
+      @click="handleFinish"
+    >
+      {{ isSubmitting ? "Creating..." : "Create Mixtape" }}
     </button>
 
     <!-- Song Modal IS EDITED -->
@@ -107,18 +140,44 @@
         />
 
         <div v-if="searchResults.length > 0" class="search-results">
-          <div v-for="(result, index) in searchResults" :key="index" class="search-item">
-            <img v-if="result.artworkUrl100" :src="result.artworkUrl100" alt="Artwork" class="search-artwork" />
+          <div
+            v-for="(result, index) in searchResults"
+            :key="index"
+            class="search-item"
+          >
+            <img
+              v-if="result.artworkUrl100"
+              :src="result.artworkUrl100"
+              alt="Artwork"
+              class="search-artwork"
+            />
             <div class="search-details" @click="addSongFromResult(result)">
               <strong>{{ result.trackName }}</strong> - {{ result.artistName }}
             </div>
-            <button v-if="result.previewUrl" class="mini-audio-btn" @click.stop="toggleSearchPlay(index)"
-              :aria-label="searchPlayingIndex === index ? 'Pause preview' : 'Play preview'">
-              <i :class="searchPlayingIndex === index ? 'fa-solid fa-pause' : 'fa-solid fa-play'"></i>
+            <button
+              v-if="result.previewUrl"
+              class="mini-audio-btn"
+              @click.stop="toggleSearchPlay(index)"
+              :aria-label="
+                searchPlayingIndex === index ? 'Pause preview' : 'Play preview'
+              "
+            >
+              <i
+                :class="
+                  searchPlayingIndex === index
+                    ? 'fa-solid fa-pause'
+                    : 'fa-solid fa-play'
+                "
+              ></i>
             </button>
             <div v-else class="no-preview">No preview available</div>
-            <audio v-if="result.previewUrl" ref="searchAudioRefs" :src="result.previewUrl" @ended="onSearchAudioEnded"
-              style="display: none;"></audio>
+            <audio
+              v-if="result.previewUrl"
+              ref="searchAudioRefs"
+              :src="result.previewUrl"
+              @ended="onSearchAudioEnded"
+              style="display: none"
+            ></audio>
           </div>
         </div>
       </div>
@@ -139,23 +198,23 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import axios from 'axios';
+import { ref, watch, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import axios from "axios";
 
 const router = useRouter();
 
 const photoInput = ref(null);
-const photoUrl = ref('');
-const mixtapeName = ref('');
-const mixtapeBio = ref('');
+const photoUrl = ref("");
+const mixtapeName = ref("");
+const mixtapeBio = ref("");
 const songs = ref([]);
 
 const showSongModal = ref(false);
 const showCongratsPopup = ref(false);
 
-const songName = ref('');
-const artistName = ref('');
+const songName = ref("");
+const artistName = ref("");
 const searchResults = ref([]);
 
 const twinkleActive = ref(false);
@@ -163,11 +222,11 @@ const twinkleActive = ref(false);
 // ADDED THIS
 const gradientActive = ref(false);
 
-const mixtapeNameError = ref('');
-const mixtapeBioError = ref('');
+const mixtapeNameError = ref("");
+const mixtapeBioError = ref("");
 const showSongError = ref(false);
 const isSubmitting = ref(false);
-const photoUploadError = ref('');
+const photoUploadError = ref("");
 
 const isEditing = ref(false);
 const editingIndex = ref(null);
@@ -180,12 +239,12 @@ const searchAudioRefs = ref([]);
 const searchPlayingIndex = ref(null);
 
 const rawUrl = import.meta.env.VITE_API_URL;
-const VITE_API_URL = rawUrl.endsWith('/') ? rawUrl.slice(0, -1) : rawUrl;
+const VITE_API_URL = rawUrl.endsWith("/") ? rawUrl.slice(0, -1) : rawUrl;
 
 function getFullPhotoUrl(url) {
-  if (!url) return '';
-  if (url.startsWith('http')) return url;
-  return `${VITE_API_URL.replace(/\/$/, '')}/${url.replace(/^\/?/, '')}`;
+  if (!url) return "";
+  if (url.startsWith("http")) return url;
+  return `${VITE_API_URL.replace(/\/$/, "")}/${url.replace(/^\/?/, "")}`;
 }
 
 function triggerPhotoUpload() {
@@ -193,11 +252,11 @@ function triggerPhotoUpload() {
 }
 
 async function handlePhotoUpload(event) {
-  photoUploadError.value = '';
+  photoUploadError.value = "";
   const file = event.target.files[0];
   if (file) {
     const formData = new FormData();
-    formData.append('photo', file);
+    formData.append("photo", file);
 
     try {
       const response = await axios.post(`${VITE_API_URL}/api/upload`, formData);
@@ -206,7 +265,7 @@ async function handlePhotoUpload(event) {
       if (error.response && error.response.data && error.response.data.error) {
         photoUploadError.value = error.response.data.error;
       } else {
-        photoUploadError.value = 'Photo upload failed. Please try again.';
+        photoUploadError.value = "Photo upload failed. Please try again.";
       }
     }
   }
@@ -214,8 +273,8 @@ async function handlePhotoUpload(event) {
 
 function openSongModal() {
   showSongModal.value = true;
-  songName.value = '';
-  artistName.value = '';
+  songName.value = "";
+  artistName.value = "";
   searchResults.value = [];
 }
 
@@ -227,8 +286,8 @@ function addSongFromResult(result) {
   const newSong = {
     name: result.trackName,
     artist: result.artistName,
-    previewUrl: result.previewUrl || null,   // <-- camelCase
-    artwork: result.artworkUrl100 || null    // <-- camelCase
+    previewUrl: result.previewUrl || null, // <-- camelCase
+    artwork: result.artworkUrl100 || null, // <-- camelCase
   };
   if (isEditing.value && editingIndex.value !== null) {
     songs.value[editingIndex.value] = newSong;
@@ -249,35 +308,35 @@ async function searchSongs() {
 
   const query = `${songName.value} ${artistName.value}`.trim();
   try {
-    const response = await axios.get('https://itunes.apple.com/search', {
+    const response = await axios.get("https://itunes.apple.com/search", {
       params: {
         term: query,
-        entity: 'musicTrack',
+        entity: "musicTrack",
         limit: 5,
       },
     });
     searchResults.value = response.data.results || [];
   } catch (err) {
-    console.error('Error fetching songs from iTunes:', err);
+    console.error("Error fetching songs from iTunes:", err);
     searchResults.value = [];
   }
 }
 
 function validateMixtapeName() {
   if (mixtapeName.value.length > 50) {
-    mixtapeNameError.value = 'Mixtape name cannot exceed 50 characters.';
+    mixtapeNameError.value = "Mixtape name cannot exceed 50 characters.";
   } else if (!mixtapeName.value.trim()) {
-    mixtapeNameError.value = 'Mixtape name cannot be empty.';
+    mixtapeNameError.value = "Mixtape name cannot be empty.";
   } else {
-    mixtapeNameError.value = '';
+    mixtapeNameError.value = "";
   }
 }
 
 function validateMixtapeBio() {
   if (mixtapeBio.value.length > 120) {
-    mixtapeBioError.value = 'Mixtape bio cannot exceed 120 characters.';
+    mixtapeBioError.value = "Mixtape bio cannot exceed 120 characters.";
   } else {
-    mixtapeBioError.value = '';
+    mixtapeBioError.value = "";
   }
 }
 
@@ -288,15 +347,15 @@ const handleFinish = async () => {
   validateMixtapeBio();
 
   if (mixtapeNameError.value || mixtapeBioError.value) return;
-  if (!photoUrl.value) return alert('Mixtape photo is required.');
-  if (songs.value.length < 3) return showSongError.value = true;
+  if (!photoUrl.value) return alert("Mixtape photo is required.");
+  if (songs.value.length < 3) return (showSongError.value = true);
 
-  const user_id = Number(localStorage.getItem('user_id'));
+  const user_id = Number(localStorage.getItem("user_id"));
   if (isSubmitting.value) return;
   isSubmitting.value = true;
 
   try {
-    console.log('Submitting songs:', songs.value);
+    console.log("Submitting songs:", songs.value);
     const response = await axios.post(`${VITE_API_URL}/api/pfmixtape`, {
       user_id,
       name: mixtapeName.value,
@@ -305,26 +364,26 @@ const handleFinish = async () => {
       songs: songs.value,
     });
 
-    if (response.data.status === 'success') {
+    if (response.data.status === "success") {
       await axios.post(`${VITE_API_URL}/api/complete-onboarding`, { user_id });
-      localStorage.setItem('onboardingStep', 'welcome');
+      localStorage.setItem("onboardingStep", "welcome");
       showCongratsPopup.value = true;
     }
   } catch (error) {
-    console.error('Error in handleFinish:', error);
-    alert('Failed to create mixtape. Please try again.');
+    console.error("Error in handleFinish:", error);
+    alert("Failed to create mixtape. Please try again.");
   } finally {
     isSubmitting.value = false;
   }
 };
 
 function skipMixtapeCreation() {
-  router.push('/welcome');
+  router.push("/welcome");
 }
 
 function closePopupAndRedirect() {
   showCongratsPopup.value = false;
-  router.push('/welcome');
+  router.push("/welcome");
 }
 
 function editSong(index) {
@@ -397,27 +456,30 @@ watch(searchResults, () => {
 });
 
 onMounted(() => {
-  document.addEventListener('play', function (e) {
-    const audios = document.querySelectorAll('audio');
-    audios.forEach((audio) => {
-      if (audio !== e.target) {
-        audio.pause();
-      }
-    });
-  }, true);
+  document.addEventListener(
+    "play",
+    function (e) {
+      const audios = document.querySelectorAll("audio");
+      audios.forEach((audio) => {
+        if (audio !== e.target) {
+          audio.pause();
+        }
+      });
+    },
+    true
+  );
 });
 
 watch(songs, () => {
   audioRefs.value = [];
 });
-
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap");
 
 * {
-  font-family: 'Fira Code', monospace;
+  font-family: "Fira Code", monospace;
 }
 
 /*EDITED*/
@@ -427,7 +489,14 @@ watch(songs, () => {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: linear-gradient(120deg, #e3b8ff 0%, #dbb4d7 25%, #c697bd 50%, #8a6bb8 75%, #322848 100%);
+  background: linear-gradient(
+    120deg,
+    #e3b8ff 0%,
+    #dbb4d7 25%,
+    #c697bd 50%,
+    #8a6bb8 75%,
+    #322848 100%
+  );
   background-size: 200% 200%;
   background-position: 0% 50%;
   background-repeat: no-repeat;
@@ -456,7 +525,7 @@ watch(songs, () => {
 
 /*EDITED*/
 .create-text {
-  width:100%;
+  width: 100%;
   position: absolute;
   top: 2rem;
   left: 50%;
@@ -465,6 +534,18 @@ watch(songs, () => {
   color: #322848;
   text-align: center;
   font-weight: 425;
+  z-index: 1;
+}
+
+/* ADDED */
+.subtitle-text {
+  width: 100%;
+  position: relative;  /* removed absolute positioning */
+  margin-top: 6.6rem;    /* spacing below the title */
+  font-size: 1.1rem;
+  color: #322848;
+  text-align: center;
+  font-weight: 300;
   z-index: 1;
 }
 
@@ -600,10 +681,10 @@ watch(songs, () => {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  justify-content: center; 
+  justify-content: center;
   margin-bottom: 1rem;
   cursor: pointer;
-  width: 95%; 
+  width: 95%;
   margin-left: auto;
   margin-right: auto;
 }
@@ -683,7 +764,14 @@ watch(songs, () => {
   top: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(120deg, #e3b8ff 0%, #dbb4d7 25%, #c697bd 50%, #8a6bb8 75%, #322848 100%);
+  background: linear-gradient(
+    120deg,
+    #e3b8ff 0%,
+    #dbb4d7 25%,
+    #c697bd 50%,
+    #8a6bb8 75%,
+    #322848 100%
+  );
   background-size: 200% 200%;
   animation: buttonGradientMove 2s linear infinite;
   opacity: 0.85;
@@ -757,7 +845,7 @@ watch(songs, () => {
   position: relative;
 }
 
-/* Song Search Modal matches main-box glassmorphism - EDITED THIS PARTS TOO ABT SONG MODAL*/ 
+/* Song Search Modal matches main-box glassmorphism - EDITED THIS PARTS TOO ABT SONG MODAL*/
 .song-modal-box {
   background: rgba(255, 255, 255, 0.744);
   border-radius: 15px;
@@ -887,7 +975,7 @@ watch(songs, () => {
 .error-message {
   color: red;
   font-size: 0.7rem;
-  margin-top: -0.rem;
+  margin-top: -0rem;
   margin-bottom: 0.5rem;
   text-align: center;
 }
@@ -1004,20 +1092,20 @@ watch(songs, () => {
 
 .song-slot {
   width: 90%;
-  margin-left: auto;            
-  margin-right: auto;        
+  margin-left: auto;
+  margin-right: auto;
   margin-bottom: 0;
   border-radius: 8px;
   min-height: 56px;
   display: flex;
   align-items: center;
-  justify-content: flex-start; 
+  justify-content: flex-start;
   background: none;
   transition: background 0.3s;
 }
 
 .song-slot.filled {
-  background: #322848; 
+  background: #322848;
   padding: 0.1rem;
 }
 
@@ -1047,7 +1135,7 @@ watch(songs, () => {
 .add-song-btn:active {
   background: #3228485a;
   color: #fff;
-  border: none;      /* Ensure no border on hover/focus/click */
+  border: none; /* Ensure no border on hover/focus/click */
   outline: none;
   box-shadow: none;
 }
@@ -1055,7 +1143,7 @@ watch(songs, () => {
 /* Align song meta (title & artist) to the left, beside artwork */
 .song-info {
   display: flex;
-  align-items: center; 
+  align-items: center;
   width: 100%;
   gap: 0.5rem;
   background: rgba(255, 255, 255, 0.05);
@@ -1068,7 +1156,7 @@ watch(songs, () => {
   height: 40px;
   border-radius: 3px;
   object-fit: cover;
-  margin-right: 0.10rem;
+  margin-right: 0.1rem;
 }
 
 .song-meta {
@@ -1076,7 +1164,7 @@ watch(songs, () => {
   margin-left: 0;
   display: flex;
   flex-direction: column;
-  align-items: flex-start; 
+  align-items: flex-start;
   justify-content: center;
 }
 
@@ -1165,7 +1253,14 @@ watch(songs, () => {
   inset: 0;
   z-index: 0;
   border-radius: 1rem;
-  background: linear-gradient(120deg, #e3b8ff 0%, #dbb4d7 25%, #c697bd 50%, #8a6bb8 75%, #322848 100%);
+  background: linear-gradient(
+    120deg,
+    #e3b8ff 0%,
+    #dbb4d7 25%,
+    #c697bd 50%,
+    #8a6bb8 75%,
+    #322848 100%
+  );
   background-size: 200% 200%;
   animation: gradientMove 6s ease-in-out infinite;
   opacity: 0.95;
@@ -1178,10 +1273,7 @@ watch(songs, () => {
   font-weight: bold;
   color: #322848;
   z-index: 1;
-  text-shadow:
-    0 0 10px #dbb4d7,
-    0 0 20px #c697bd,
-    0 0 30px #8a6bb8,
+  text-shadow: 0 0 10px #dbb4d7, 0 0 20px #c697bd, 0 0 30px #8a6bb8,
     0 0 40px #e3b8ff;
   margin-bottom: 1rem;
   letter-spacing: 1px;
@@ -1211,23 +1303,21 @@ watch(songs, () => {
 
 /* Responsive styles */
 @media (max-width: 1024px) {
-  .main-box{
+  .main-box {
     width: 60%;
   }
-
-  }
+}
 @media (max-width: 768px) {
-  .main-box{
+  .main-box {
     width: 80%;
     top: 55%;
   }
-
-  }
-  /* Additional styles for very small screens */
-  @media (max-width: 480px) {
-.main-box{
+}
+/* Additional styles for very small screens */
+@media (max-width: 480px) {
+  .main-box {
     width: 90%;
     top: 80%;
   }
-  }
+}
 </style>
