@@ -187,33 +187,40 @@
             :key="mixtape.id"
             class="mixtape-item editable-mixtape"
           >
-            <div
-              v-if="editingMixtapeId !== mixtape.id"
-              class="mixtape-content-wrapper"
-              style="cursor: pointer;"
-              @click="selectedMixtape = mixtape"
-            >
-              <img
-                v-if="mixtape.cover"
-                :src="mixtape.cover"
-                alt="Mixtape Cover"
-                class="mixtape-cover"
-              />
-              <span v-else class="no-cover">No cover</span>
-              <div class="mixtape-info">
-                <h3 class="mixtape-name">{{ mixtape.name }}</h3>
-              </div>
-              <div class="mixtape-actions-top-right">
-                <button @click="startEditMixtape(mixtape)">Edit</button>
-                <button
-                  @click="deleteMixtape(mixtape)"
-                  :disabled="mixtape.id === firstMixtapeId"
-                  v-if="mixtape.id !== firstMixtapeId"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
+          
+
+<div
+  v-if="editingMixtapeId !== mixtape.id"
+  class="mixtape-content-wrapper"
+  style="cursor: pointer;"
+  @click="selectedMixtape = mixtape"
+>
+  <img
+    v-if="mixtape.cover"
+    :src="mixtape.cover"
+    alt="Mixtape Cover"
+    class="mixtape-cover"
+  />
+  <span v-else class="no-cover">No cover</span>
+  <div class="mixtape-info">
+    <h3 class="mixtape-name">{{ mixtape.name }}</h3>
+  </div>
+  <div class="mixtape-actions-top-right">
+    <button 
+      @click.stop="startEditMixtape(mixtape)" 
+      class="edit-btn"
+    >
+      Edit
+    </button>
+    <button
+      @click.stop="deleteMixtape(mixtape)"
+      :disabled="mixtape.id === firstMixtapeId"
+      v-if="mixtape.id !== firstMixtapeId"
+    >
+      Delete
+    </button>
+  </div>
+</div>
             <div v-else class="mixtape-edit-form">
               <div class="upload-box" @click="triggerEditCoverUpload">
                 <input
@@ -402,36 +409,44 @@
     </div>
 
     <!-- Mixtape Detail Popup -->
-    <div v-if="selectedMixtape" class="mixtape-detail-overlay" @click="selectedMixtape = null">
-      <div class="mixtape-detail-box" @click.stop>
-        <div class="close-detail" @click="selectedMixtape = null">&times;</div>
-        <img 
-          :src="selectedMixtape.cover || '/src/assets/noimage.jpg'" 
-          :alt="selectedMixtape.name" 
-          class="detail-img"
+    <!-- Find this section in your template and replace it -->
+<div v-if="selectedMixtape" class="mixtape-detail-overlay" @click="selectedMixtape = null">
+  <div class="mixtape-detail-box" @click.stop>
+    <div class="close-detail" @click="selectedMixtape = null">&times;</div>
+    <img 
+      :src="selectedMixtape.cover || '/src/assets/noimage.jpg'" 
+      :alt="selectedMixtape.name" 
+      class="detail-img"
+    />
+    <h2>{{ selectedMixtape.name }}</h2>
+    <p v-if="selectedMixtape.description">{{ selectedMixtape.description }}</p>
+    <div class="song-list">
+      <div 
+        v-for="(song, index) in selectedMixtape.songs" 
+        :key="index"
+        class="song-details-flex"
+      >
+        <img
+          v-if="song.artwork_url"
+          :src="song.artwork_url"
+          alt="Song artwork"
+          class="song-artwork"
         />
-        <h2>{{ selectedMixtape.name }}</h2>
-        <p v-if="selectedMixtape.description">{{ selectedMixtape.description }}</p>
-        <div class="song-list">
-          <div 
-            v-for="(song, index) in selectedMixtape.songs" 
-            :key="index"
-            class="song-details-flex"
-          >
-            <span>{{ index + 1 }}.</span>
-            <span class="song-title">{{ song.name }}</span>
-            <span>by {{ song.artist }}</span>
-            <button 
-              v-if="song.preview_url" 
-              class="mini-audio-btn"
-              @click="playPreview(song.preview_url, index)"
-            >
-              <i :class="playingIndex === index ? 'fa-solid fa-pause' : 'fa-solid fa-play'"></i>
-            </button>
-          </div>
+        <div class="song-info">
+          <span class="song-title">{{ song.name }}</span>
+          <span class="artist-name">by {{ song.artist }}</span>
         </div>
+        <button 
+          v-if="song.preview_url" 
+          class="mini-audio-btn"
+          @click="playPreview(song.preview_url, index)"
+        >
+          <i :class="playingIndex === index ? 'fa-solid fa-pause' : 'fa-solid fa-play'"></i>
+        </button>
       </div>
     </div>
+  </div>
+</div>
 
     <!-- Create Mixtape Popup -->
     <div v-if="showPopup" class="popup-overlay" @click="closePopup">
@@ -459,14 +474,22 @@
           class="description-box"
         ></textarea>
         <div class="song-list-scroll">
-          <div v-for="(song, index) in songs" :key="index" class="song-item-flex">
-            <span>{{ song.name }} - {{ song.artist }}</span>
-            <div class="song-actions-buttons">
-              <i class="fa-solid fa-pen" @click="editSong(index)"></i>
-              <i class="fa-solid fa-trash" @click="deleteSong(index)"></i>
-            </div>
-          </div>
-        </div>
+  <div v-for="(song, index) in songs" :key="index" class="song-item-flex">
+    <!-- Add the artwork display -->
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <img
+        v-if="song.artwork_url"
+        :src="song.artwork_url"
+        alt="Song artwork"
+        style="width: 40px; height: 40px; border-radius: 6px;"
+      />
+      <span>{{ song.name }} - {{ song.artist }}</span>
+    </div>
+    <div class="song-actions-buttons">
+      <i class="fa-solid fa-trash" @click="deleteSong(index)"></i>
+    </div>
+  </div>
+</div>
         <button class="add-song-btn" @click="showSongModal = true">
           <i class="fa-solid fa-plus"></i> Add Song
         </button>
@@ -923,15 +946,24 @@ const createMixtape = async () => {
         songs: formattedSongs,
       },
       {
-        headers: { Authorization: `Bearer ${token}` },
+         headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
     );
-    await fetchMixtapes();
-    resetCreateForm();
-    showPopup.value = false;
+
+    alert("Mixtape created successfully!");
+    // Clear input fields after successful creation
+    mixtapeName.value = "";
+    mixtapeDescription.value = "";
+    songs.value = [];
+    photoUrl.value = null;
+
+    await fetchMixtapes(); // Refresh mixtapes list
+    closePopup();         // <-- Add this line to close the modal
   } catch (error) {
+    console.error("Failed to create mixtape:", error);
     alert("Failed to create mixtape.");
-    console.error(error);
   }
 };
 
@@ -1008,13 +1040,7 @@ const removeSongFromEditable = (index) => {
   editableMixtape.value.songs.splice(index, 1);
 };
 
-const editSong = (index) => {
-  const song = songs.value[index];
-  songName.value = song.name;
-  artistName.value = song.artist;
-  editingSongIndex.value = index;
-  showSongModal.value = true;
-};
+
 
 const editEditableSong = (index) => {
   editingSongIndex.value = index;
@@ -1024,24 +1050,6 @@ const editEditableSong = (index) => {
   showEditSongModal.value = true;
 };
 
-const saveEditedSong = () => {
-  if (!songName.value.trim() || !artistName.value.trim()) {
-    alert("Please enter both song name and artist");
-    return;
-  }
-
-  const updatedSong = {
-    name: songName.value.trim(),
-    artist: artistName.value.trim(),
-    url: songUrl.value.trim() || "#",
-  };
-
-  if (editingSongIndex.value !== null) {
-    editableMixtape.value.songs[editingSongIndex.value] = updatedSong;
-  }
-
-  closeEditSongModal();
-};
 
 function startEditMixtape(mixtape) {
   editingMixtapeId.value = mixtape.id;
@@ -1052,8 +1060,10 @@ function startEditMixtape(mixtape) {
   editableMixtape.value = {
     ...JSON.parse(JSON.stringify(mixtape)),
     cover: backendCover,
-    coverPreview: mixtape.cover, // full URL for preview
+    coverPreview: mixtape.cover,
   };
+  showSongModalEdit.value = false;
+  selectedMixtape.value = null;  // This ensures detail box is closed
 }
 
 async function saveEditMixtape(mixtape) {
@@ -1219,7 +1229,12 @@ async function searchSongs() {
 }
 
 function selectSongFromSearch(song) {
-  songs.value.push(song);
+  songs.value.push({
+    name: song.name,
+    artist: song.artist,
+    artwork_url: song.artwork_url,
+    preview_url: song.preview_url
+  });
   songSearchQuery.value = "";
   songSearchResults.value = [];
   showSongModal.value = false;
@@ -1248,14 +1263,13 @@ const firstMixtapeId = computed(() => {
   return Math.min(...mixtapes.value.map((m) => m.id));
 });
 
-async function uploadCoverIfNeeded() {
-  if (!photoUrl.value || photoUrl.value.startsWith("http")) {
-    return photoUrl.value;
-  }
-  const fileInput = photoInput.value;
-  if (fileInput && fileInput.files && fileInput.files[0]) {
-    const formData = new FormData();
-    formData.append("photo", fileInput.files[0]);
+const uploadCoverIfNeeded = async () => {
+  if (!photoUrl.value || !photoInput.value?.files?.[0]) return null;
+
+  const formData = new FormData();
+  formData.append("photo", photoInput.value.files[0]);
+
+  try {
     const response = await axios.post(
       `${import.meta.env.VITE_API_URL}/api/upload`,
       formData,
@@ -1267,9 +1281,13 @@ async function uploadCoverIfNeeded() {
       }
     );
     return response.data.imageUrl;
+  } catch (error) {
+    console.error("Cover upload failed:", error);
+    alert("Failed to upload cover image.");
+    return null;
   }
-  return "";
-}
+};
+
 
 // Speech recognition setup
 const recognizing = ref(false);
@@ -1875,7 +1893,9 @@ button:active {
   border: 1px solid #ccc;
   border-radius: 50px;
   background-color: rgba(169, 163, 173, 0.379);
+  color: #28203a; /* Add this line to change text color */
 }
+
 .search-input:focus {
   outline: none;
   border: none;
@@ -2463,7 +2483,7 @@ button:hover {
 }
 
 .artist-name {
-  color: #dbb4d7;
+  color: #2e1f45;
   font-size: 0.97em;
   margin-right: 8px;
 }
@@ -2557,7 +2577,7 @@ button:hover {
 
 /* For Mixtape PopUp */
 .close-detail {
-  position: absolute;
+   position: absolute;
   top: 1rem;
   right: 1rem;
   font-size: 2rem;
@@ -2586,5 +2606,48 @@ button:hover {
 .mini-audio-btn:hover {
   color: #dbb4d7;
 }
-/* For Mixtape PopUp */
+
+.song-search-results {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: 1rem;
+}
+
+.song-search-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+  background: rgba(255, 255, 255, 0.1);
+  margin-bottom: 8px;
+}
+
+.song-search-item:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.song-search-artwork {
+  width: 50px;
+  height: 50px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.song-search-info {
+  flex: 1;
+  text-align: left;
+}
+
+.song-search-name {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.song-search-artist {
+  font-size: 0.9em;
+  opacity: 0.8;
+}
 </style>

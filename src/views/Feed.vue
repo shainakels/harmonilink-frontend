@@ -147,7 +147,6 @@
                   />
                   <p :class="{'voted': option.voted}" style="margin-bottom: 0;">
                     {{ option.text }}
-                    <span v-if="option.voted" style="color: #080d2a; margin-left: 6px;">✔</span>
                   </p>
                   <!-- <span class="poll-percentage">{{ calculatePercentage(index) }}%</span> -->
 
@@ -261,7 +260,7 @@
             id: opt.id,
             text: opt.text,
             votes: opt.votes,
-            voted: false
+            voted: poll.user_vote_option_id === opt.id
           })),
           id: poll.id
         }
@@ -281,16 +280,26 @@
 
   function nextProfile() {
     if (currentIndex.value < profiles.value.length - 1) {
-      currentIndex.value++
-      resetVoteState()
+      currentIndex.value++;
+      updateCurrentVote();
+      resetVoteState();
     }
   }
-
   function prevProfile() {
     if (currentIndex.value > 0) {
-      currentIndex.value--
-      resetVoteState()
+      currentIndex.value--;
+      updateCurrentVote();
+      resetVoteState();
     }
+  }
+  function updateCurrentVote() {
+    const poll = profiles.value[currentIndex.value]?.poll;
+    if (!poll) {
+      currentVote.value = null;
+      return;
+    }
+    const idx = poll.options.findIndex(opt => opt.voted);
+    currentVote.value = idx !== -1 ? idx : null;
   }
 
   function resetVoteState() {
@@ -299,26 +308,38 @@
   }
 
   async function vote(optionIndex) {
-    if (pollEnded.value || currentProfile.value.userId === loggedInUserId) return;
-    const poll = profiles.value[currentIndex.value].poll;
-    const option = poll.options[optionIndex];
-    try {
-      await axios.post(`${API_URL}/api/feed/vote`, {
-        pollId: poll.id,
-        optionId: option.id
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      const prevIndex = currentIndex.value;
-      await fetchPolls();
-      currentIndex.value = prevIndex; 
-      hasVoted.value = true;
-      currentVote.value = optionIndex;
-    } catch (e) {
-      alert('Failed to vote');
+  if (pollEnded.value || currentProfile.value.userId === loggedInUserId) return;
+  const poll = profiles.value[currentIndex.value].poll;
+  const previousVoteIndex = poll.options.findIndex(opt => opt.voted);
+
+  // If already voted for this option, do nothing
+  if (previousVoteIndex === optionIndex) return;
+
+  const option = poll.options[optionIndex];
+  try {
+    await axios.post(`${API_URL}/api/feed/vote`, {
+      pollId: poll.id,
+      optionId: option.id
+    }, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    // Update votes locally
+    if (previousVoteIndex !== -1) {
+      // Decrement previous option's votes
+      poll.options[previousVoteIndex].votes = Math.max(0, poll.options[previousVoteIndex].votes - 1);
+      poll.options[previousVoteIndex].voted = false;
     }
+    // Increment new option's votes
+    poll.options[optionIndex].votes += 1;
+    poll.options[optionIndex].voted = true;
+
+    hasVoted.value = true;
+    currentVote.value = optionIndex;
+  } catch (e) {
+    alert('Failed to vote');
   }
+}
 
   function calculatePercentage(optionIndex) {
     const profile = profiles.value[currentIndex.value]
@@ -483,6 +504,9 @@
       .map((opt, idx) => (opt.votes === maxVotes && maxVotes > 0 ? idx : null))
       .filter(idx => idx !== null);
   });
+
+  const userVoteOptionId = profiles.value[0]?.poll.options.findIndex(opt => opt.voted);
+currentVote.value = userVoteOptionId !== -1 ? userVoteOptionId : null;
 </script>
 
 
