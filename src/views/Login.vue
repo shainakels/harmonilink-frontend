@@ -41,7 +41,21 @@
         </span>
       </div>
 
-      <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+      <!-- Replace the error message p tag with this -->
+      <div v-if="isUnverified" class="error-message-container">
+        <p>Your email is not verified yet.</p>
+        <p class="verify-link">
+          <router-link 
+            :to="{
+              path: '/otp-verification',
+              query: { email: unverifiedEmail, from: 'login' }
+            }"
+          >
+            Click here to verify your email
+          </router-link>
+        </p>
+      </div>
+      <p v-else-if="errorMessage" class="error-message">{{ errorMessage }}</p>
       <!--Keep Me Logged In checkbox-->
       <div class="checkbox-container">
         <div class="checkbox-group">
@@ -81,6 +95,8 @@ const keepLoggedIn = ref(false);
 const loading = ref(false);
 const errorMessage = ref('');
 const successMessage = ref('');
+const isUnverified = ref(false);
+const unverifiedEmail = ref('');
 
 // Show success message if ?signup=success exists in URL
 onMounted(() => {
@@ -125,13 +141,21 @@ const handleLogin = async () => {
       }
     }
   } catch (error) {
-    if (error.response?.status === 422) {
+    if (error.response?.status === 403 && error.response.data.status === 'unverified') {
+      isUnverified.value = true;
+      unverifiedEmail.value = error.response.data.email;
+      errorMessage.value = '';
+    } else if (error.response?.status === 422) {
+      isUnverified.value = false;
       errorMessage.value = 'Email and password are required.';
     } else if (error.response?.status === 404) {
+      isUnverified.value = false;
       errorMessage.value = 'User not registered. Please sign up first.';
     } else if (error.response?.status === 400) {
+      isUnverified.value = false;
       errorMessage.value = 'Invalid email or password.';
     } else {
+      isUnverified.value = false;
       errorMessage.value = 'Something went wrong. Please try again later.';
     }
   } finally {
@@ -472,9 +496,9 @@ button:disabled {
   font-size: 12px;
   margin: 0.9rem 0;
   padding: 0.5rem;
-  background: rgba(76, 175, 80, 0.1);
+  background: rgba(76, 175, 76, 0.1);
   border-radius: 4px;
-  border: 1px solid rgba(76, 175, 80, 0.2);
+  border: 1px solid rgba(76, 175, 76, 0.2);
   width: 95%;           /* Match input field width */
   max-width: 95%;       /* Ensure it doesn't exceed input width */
   box-sizing: border-box;
@@ -484,19 +508,62 @@ button:disabled {
 }
 
 .error-message {
-  color: red;
+  color: #d32f2f;
   font-size: 12px;
   margin: 0.9rem 0;
   padding: 0.5rem;
-  background: rgba(76, 175, 80, 0.1);
+  background: rgba(211, 47, 47, 0.1);
   border-radius: 4px;
-  border: 1px solid rgba(76, 175, 80, 0.2);
-  width: 95%;           /* Match input field width */
-  max-width: 95%;       /* Ensure it doesn't exceed input width */
+  border: 1px solid rgba(211, 47, 47, 0.2);
+  width: 95%;
+  max-width: 95%;
   box-sizing: border-box;
   display: block;
   margin-left: auto;
   margin-right: auto;
+}
+
+.error-message /deep/ a {
+  color: #322848;
+  text-decoration: underline;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  display: inline-block;
+}
+
+.error-message /deep/ a:hover {
+  color: #8a6bb8;
+}
+
+.error-message-container {
+  text-align: center;
+  margin: 1rem 0;
+  padding: 0.5rem;
+  background: rgba(211, 47, 47, 0.1);
+  border-radius: 4px;
+  border: 1px solid rgba(211, 47, 47, 0.2);
+  width: 95%;
+  max-width: 95%;
+  box-sizing: border-box;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.verify-link {
+  margin-top: 0.5rem;
+  font-size: 12px;
+}
+
+.verify-link a {
+  color: #322848;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.verify-link a:hover {
+  color: #8a6bb8;
 }
 
 /* Remove dark mode since we're using specific gradients */

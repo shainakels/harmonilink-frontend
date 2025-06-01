@@ -291,18 +291,38 @@ const handleSignup = async () => {
   try {
     loading.value = true;
 
-    await axios.post(`${import.meta.env.VITE_API_URL}/api/signup`, {
+    const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/signup`, {
       username: username.value,
       email: email.value,
       password: password.value,
       recaptchaResponse,
     });
 
-    router.push({ path: '/login', query: { signup: 'success' } });
+    if (response.status === 201) {
+      // Redirect to OTP verification with email parameter
+      router.push({ 
+        path: '/otp-verification', 
+        query: { email: email.value } 
+      });
+    }
   } catch (error) {
     console.error(error);
+    
+    if (error.response?.status === 422) {
+      const errors = error.response.data.errors;
+      if (errors.username) usernameError.value = errors.username;
+      if (errors.email) emailError.value = errors.email;
+    } else if (error.response?.status === 400) {
+      // Handle reCAPTCHA or other validation errors
+      alert(error.response.data.message || 'Please verify reCAPTCHA');
+    } else {
+      alert('An error occurred during signup. Please try again.');
+    }
   } finally {
     loading.value = false;
+    if (typeof grecaptcha !== 'undefined') {
+      grecaptcha.reset();
+    }
   }
 };
 </script>
