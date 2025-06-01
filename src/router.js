@@ -10,6 +10,7 @@ import Discover from './views/Discover.vue';
 import Favorites from './views/Favorites.vue';
 import Feed from './views/feed.vue';
 import Profile from './views/Profile.vue';
+import OtpVerification from './views/OtpVerification.vue'; // Add this import
 
 const routes = [
   { 
@@ -31,6 +32,7 @@ const routes = [
   },
   { path: '/signup', component: Signup },
   { path: '/login', component: Login },
+  { path: '/otp-verification', component: OtpVerification }, // Add this line
   { path: '/discover', component: () => import('./views/Discover.vue') },
   { path: '/forgot-password', component: ForgotPassword }, 
   { path: '/pfcustom', component: PfCustom }, 
@@ -51,7 +53,7 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
 
-  const publicPages = ['/login', '/signup', '/terms', '/forgot-password', '/reset-password'];
+  const publicPages = ['/login', '/signup', '/terms', '/forgot-password', '/reset-password', '/otp-verification']; // Add '/otp-verification' here
   const isPublic = publicPages.includes(to.path);
 
   if (!isLoggedIn && !isPublic) {
