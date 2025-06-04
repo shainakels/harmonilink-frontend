@@ -156,16 +156,8 @@ const handleVerifyOtp = async () => {
 
     if (response.status === 200) {
       successMessage.value = 'Email verified successfully!';
-      
-      // Check if user came from login
-      const fromLogin = route.query.from === 'login';
-      
       setTimeout(() => {
-        if (fromLogin) {
-          router.push('/login?verified=true');
-        } else {
-          router.push('/login?newuser=true');
-        }
+        router.push({ path: '/login', query: { verified: 'success' } });
       }, 1500);
     }
   } catch (error) {
